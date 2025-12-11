@@ -49,7 +49,6 @@ export async function PUT(request: Request, context: RouteParams) {
             PastHistory: body.pastHistory || "",
             DiagnosticImaging: body.diagnosticImaging || "",
             PainLocation: body.painLocation || "",
-            BodyMapImage: "",
             PainIntensity_VAS: body.painVas || 0,
             PainPattern: body.painDescription || "",
             ObservationPosture: body.observation || "",
