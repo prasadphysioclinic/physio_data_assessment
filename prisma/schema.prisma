@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Assessment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Patient Details
+  date       DateTime @default(now())
+  name       String
+  age        Int
+  occupation String?
+
+  // History
+  mechanismOfInjury String?
+  aggravatingFactors String?
+  twentyFourHourHistory String? // 24-Hour History
+  improvingStaticWorse String?
+  newOldInjury String?
+  pastHistory String?
+  diagnosticImaging String?
+
+  // Observation
+  observation String? // Posture etc.
+
+  // Examination
+  activeMovements String? // JSON string for L/R Ext/Flex
+  passiveMovements String? // JSON string for L/R Ext/Flex
+  comments String?
+  endFeel String?
+  capsularPattern String?
+
+  // Pain
+  painVas Int? // 0-10
+  painDescription String? // constant, periodic, episodic, occasional
+  symptomsLocation String? // JSON string for coordinates on body chart
+
+  // Tests
+  resistedIsometricMovements String?
+  functionalTesting String?
+  neurologicalTests String? // Sensory Scan, Reflexes, etc.
+  specialTests String?
+  jointPlayMovements String?
+  palpation String? // Tenderness, Effusion
+}

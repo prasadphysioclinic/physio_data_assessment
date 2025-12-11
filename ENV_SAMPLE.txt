@@ -1,0 +1,9 @@
+# Google Apps Script Configuration
+# Replace this with your actual Google Apps Script Web App URL
+# Get this URL after deploying your Apps Script (see SETUP_INSTRUCTIONS.md)
+GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec
+
+# Optional: If you want to keep using the old Google Sheets API method
+# GOOGLE_SHEET_ID=your_sheet_id_here
+# GOOGLE_CLIENT_EMAIL=your_service_account_email@project.iam.gserviceaccount.com
+# GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour private key here\n-----END PRIVATE KEY-----\n"
