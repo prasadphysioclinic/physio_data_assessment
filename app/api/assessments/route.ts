@@ -19,7 +19,6 @@ export async function POST(request: Request) {
             PastHistory: body.pastHistory || "",
             DiagnosticImaging: body.diagnosticImaging || "",
             PainLocation: body.painLocation || "",
-            BodyMapImage: body.bodyMapImage || "",
             PainIntensity_VAS: body.painVas || 0,
             PainPattern: body.painDescription || "",
             ObservationPosture: body.observation || "",
