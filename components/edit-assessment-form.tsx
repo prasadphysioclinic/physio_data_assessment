@@ -20,12 +20,13 @@ import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save, X, Loader2 } from "lucide-react";
 
 const formSchema = z.object({
     date: z.string(),
     name: z.string().min(2, "Name is required"),
     age: z.string(),
+    phoneNumber: z.string().optional(),
     occupation: z.string().optional(),
     mechanismOfInjury: z.string().optional(),
     aggravatingFactors: z.string().optional(),
@@ -50,6 +51,8 @@ const formSchema = z.object({
     comments: z.string().optional(),
     endFeel: z.string().optional(),
     capsularPattern: z.string().optional(),
+    whatTreatment: z.string().optional(),
+    treatmentPlan: z.string().optional(),
 });
 
 interface EditFormProps {
@@ -68,6 +71,7 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
             name: assessment.PatientName || "",
             age: assessment.Age?.toString() || "",
             occupation: assessment.Occupation || "",
+            phoneNumber: assessment.PhoneNumber || "",
             mechanismOfInjury: assessment.MechanismOfInjury || "",
             aggravatingFactors: assessment.AggravatingEasingFactors || "",
             twentyFourHourHistory: assessment.TwentyFourHourHistory || "",
@@ -91,6 +95,8 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
             comments: assessment.Comments || "",
             endFeel: assessment.EndFeel || "",
             capsularPattern: assessment.CapsularPattern || "",
+            whatTreatment: assessment.WhatTreatment || "",
+            treatmentPlan: assessment.TreatmentPlan || "",
         },
     });
 
@@ -132,18 +138,20 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button asChild variant="ghost" size="sm">
+                <Button asChild variant="ghost" size="sm" className="gap-2">
                     <Link href={`/assessment/${assessmentIndex}`}>
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Cancel
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Assessment
                     </Link>
                 </Button>
             </div>
 
             <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Edit Assessment</h1>
+                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                    Edit Assessment
+                </h1>
                 <p className="text-muted-foreground">
-                    Update the assessment details for {assessment.PatientName}
+                    Update the assessment details for <span className="font-semibold">{assessment.PatientName}</span>
                 </p>
             </div>
 
@@ -345,15 +353,34 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                         </Card>
                     </div>
 
-                    <div className="flex justify-end gap-4">
-                        <Button type="button" variant="outline" asChild>
-                            <Link href={`/assessment/${assessmentIndex}`}>
-                                Cancel
-                            </Link>
-                        </Button>
-                        <Button type="submit" size="lg" disabled={isSubmitting}>
-                            {isSubmitting ? "Updating..." : "Update Assessment"}
-                        </Button>
+                    {/* Action Buttons - Sticky Footer */}
+                    <div className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t pt-4 pb-2 -mx-4 px-4 mt-8">
+                        <div className="flex flex-col sm:flex-row justify-between gap-3">
+                            <Button type="button" variant="outline" asChild className="gap-2">
+                                <Link href={`/assessment/${assessmentIndex}`}>
+                                    <X className="h-4 w-4" />
+                                    Cancel
+                                </Link>
+                            </Button>
+                            <Button
+                                type="submit"
+                                size="lg"
+                                disabled={isSubmitting}
+                                className="gap-2 min-w-[180px]"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="h-4 w-4" />
+                                        Update Assessment
+                                    </>
+                                )}
+                            </Button>
+                        </div>
                     </div>
                 </form>
             </Form>

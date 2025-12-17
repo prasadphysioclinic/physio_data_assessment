@@ -12,7 +12,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Search, Eye, Edit, Loader2 } from "lucide-react";
 import { formatDateShort } from "@/lib/format-date";
 
 interface Assessment {
@@ -27,9 +27,10 @@ interface Assessment {
 
 interface DashboardTableProps {
     assessments: Assessment[];
+    loading?: boolean;
 }
 
-export function DashboardTable({ assessments }: DashboardTableProps) {
+export function DashboardTable({ assessments, loading = false }: DashboardTableProps) {
     const [searchQuery, setSearchQuery] = useState("");
 
     // Filter assessments based on search query
@@ -91,12 +92,36 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredAssessments.length === 0 ? (
+                        {loading ? (
+                            // Loading skeleton
+                            [...Array(5)].map((_, i) => (
+                                <TableRow key={i}>
+                                    <TableCell>
+                                        <div className="h-4 w-20 bg-muted rounded animate-pulse"></div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="h-4 w-32 bg-muted rounded animate-pulse"></div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="h-4 w-8 bg-muted rounded animate-pulse"></div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="h-4 w-24 bg-muted rounded animate-pulse"></div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="h-4 w-40 bg-muted rounded animate-pulse"></div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="h-8 w-16 bg-muted rounded animate-pulse ml-auto"></div>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : filteredAssessments.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="h-24 text-center">
                                     {searchQuery
                                         ? "No assessments found matching your search."
-                                        : "No assessments found."}
+                                        : "No assessments found. Click 'New Assessment' to create one."}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -118,11 +143,19 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                             {assessment.PastHistory || assessment.MechanismOfInjury}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="sm" asChild>
-                                                <Link href={`/assessment/${originalIndex}`}>
-                                                    View
-                                                </Link>
-                                            </Button>
+                                            <div className="flex justify-end gap-1">
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link href={`/assessment/${originalIndex}`}>
+                                                        <Eye className="h-4 w-4 mr-1" />
+                                                        View
+                                                    </Link>
+                                                </Button>
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link href={`/assessment/${originalIndex}/edit`}>
+                                                        <Edit className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 );

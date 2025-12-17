@@ -2,7 +2,7 @@ import { getFromGoogleSheet } from "@/lib/apps-script";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft, Pencil, Phone, Calendar, User, Briefcase } from "lucide-react";
 import { notFound } from "next/navigation";
 import { formatDate, formatDateTime } from "@/lib/format-date";
 
@@ -44,26 +44,54 @@ export default async function AssessmentDetailPage(props: PageProps) {
             </div>
 
             <div className="space-y-2">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Assessment Details</h1>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                    Patient: {assessment.PatientName} | Date: {formatDate(assessment.Date)}
-                </p>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                    Assessment Details
+                </h1>
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                        <User className="h-4 w-4" />
+                        {assessment.PatientName}
+                    </span>
+                    <span className="hidden sm:inline">•</span>
+                    <span className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        {formatDate(assessment.Date)}
+                    </span>
+                    {assessment.PhoneNumber && (
+                        <>
+                            <span className="hidden sm:inline">•</span>
+                            <span className="flex items-center gap-1">
+                                <Phone className="h-4 w-4" />
+                                {assessment.PhoneNumber}
+                            </span>
+                        </>
+                    )}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 {/* Patient Details */}
-                <Card>
+                <Card className="border-l-4 border-l-primary">
                     <CardHeader>
-                        <CardTitle>Patient Information</CardTitle>
+                        <CardTitle className="flex items-center gap-2">
+                            <User className="h-5 w-5" />
+                            Patient Information
+                        </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">Name</p>
-                            <p className="text-base">{assessment.PatientName || 'N/A'}</p>
+                            <p className="text-base font-semibold">{assessment.PatientName || 'N/A'}</p>
                         </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Age</p>
-                            <p className="text-base">{assessment.Age || 'N/A'}</p>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">Age</p>
+                                <p className="text-base">{assessment.Age || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">Phone</p>
+                                <p className="text-base">{assessment.PhoneNumber || 'N/A'}</p>
+                            </div>
                         </div>
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">Occupation</p>
@@ -273,7 +301,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
                 </Card>
 
                 {/* Additional Information */}
-                <Card className="md:col-span-2">
+                <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle>Additional Information</CardTitle>
                     </CardHeader>
@@ -282,13 +310,32 @@ export default async function AssessmentDetailPage(props: PageProps) {
                             <p className="text-sm font-medium text-muted-foreground">Comments</p>
                             <p className="text-base">{assessment.Comments || 'N/A'}</p>
                         </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">Submitted By</p>
+                                <p className="text-base">{assessment.SubmittedBy || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">Timestamp</p>
+                                <p className="text-base">{formatDateTime(assessment.Timestamp)}</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Treatment */}
+                <Card className="lg:col-span-2 border-l-4 border-l-green-500 bg-green-50/50 dark:bg-green-950/20">
+                    <CardHeader>
+                        <CardTitle className="text-green-700 dark:text-green-400">Treatment Plan</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
                         <div>
-                            <p className="text-sm font-medium text-muted-foreground">Submitted By</p>
-                            <p className="text-base">{assessment.SubmittedBy || 'N/A'}</p>
+                            <p className="text-sm font-medium text-muted-foreground">Treatment Given</p>
+                            <p className="text-base">{assessment.WhatTreatment || 'N/A'}</p>
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-muted-foreground">Timestamp</p>
-                            <p className="text-base">{formatDateTime(assessment.Timestamp)}</p>
+                            <p className="text-sm font-medium text-muted-foreground">Treatment Plan</p>
+                            <p className="text-base">{assessment.TreatmentPlan || 'N/A'}</p>
                         </div>
                     </CardContent>
                 </Card>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -20,6 +21,7 @@ import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
+import { Save, X, RotateCcw, Loader2 } from "lucide-react";
 
 const formSchema = z.object({
     date: z.string(),
@@ -54,6 +56,7 @@ const formSchema = z.object({
 });
 
 export function AssessmentForm() {
+    const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -92,8 +95,8 @@ export function AssessmentForm() {
             const result = await response.json();
             console.log('Success response:', result);
 
-            alert("Assessment saved successfully!");
-            form.reset();
+            // Redirect to dashboard with success
+            router.push('/?success=Assessment saved successfully!');
         } catch (error) {
             console.error('Form submission error:', error);
             const errorMessage = error instanceof Error ? error.message : "Error saving assessment";
@@ -101,6 +104,26 @@ export function AssessmentForm() {
         } finally {
             setIsSubmitting(false);
             console.log('Form submission completed');
+        }
+    }
+
+    function handleCancel() {
+        if (form.formState.isDirty) {
+            const confirmCancel = window.confirm('You have unsaved changes. Are you sure you want to cancel?');
+            if (confirmCancel) {
+                router.push('/');
+            }
+        } else {
+            router.push('/');
+        }
+    }
+
+    function handleReset() {
+        if (form.formState.isDirty) {
+            const confirmReset = window.confirm('Are you sure you want to reset all fields?');
+            if (confirmReset) {
+                form.reset();
+            }
         }
     }
 
@@ -625,11 +648,49 @@ export function AssessmentForm() {
                         </Card>
                     </div>
                 </div>
-
-                <div className="flex justify-end">
-                    <Button type="submit" size="lg" disabled={isSubmitting}>
-                        {isSubmitting ? "Saving..." : "Save Assessment"}
-                    </Button>
+                {/* Action Buttons - Sticky Footer */}
+                <div className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t pt-4 pb-2 -mx-4 px-4 mt-8">
+                    <div className="flex flex-col sm:flex-row justify-between gap-3">
+                        <div className="flex gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleCancel}
+                                className="gap-2"
+                            >
+                                <X className="h-4 w-4" />
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={handleReset}
+                                disabled={!form.formState.isDirty}
+                                className="gap-2"
+                            >
+                                <RotateCcw className="h-4 w-4" />
+                                Reset
+                            </Button>
+                        </div>
+                        <Button
+                            type="submit"
+                            size="lg"
+                            disabled={isSubmitting}
+                            className="gap-2 min-w-[160px]"
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-4 w-4" />
+                                    Save Assessment
+                                </>
+                            )}
+                        </Button>
+                    </div>
                 </div>
             </form>
         </Form>
