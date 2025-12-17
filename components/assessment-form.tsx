@@ -21,7 +21,7 @@ import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
-import { Save, X, RotateCcw, Loader2 } from "lucide-react";
+import { Save, X, Loader2 } from "lucide-react";
 
 const formSchema = z.object({
     date: z.string(),
@@ -115,15 +115,6 @@ export function AssessmentForm() {
             }
         } else {
             router.push('/');
-        }
-    }
-
-    function handleReset() {
-        if (form.formState.isDirty) {
-            const confirmReset = window.confirm('Are you sure you want to reset all fields?');
-            if (confirmReset) {
-                form.reset();
-            }
         }
     }
 
@@ -660,16 +651,6 @@ export function AssessmentForm() {
                             >
                                 <X className="h-4 w-4" />
                                 Cancel
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={handleReset}
-                                disabled={!form.formState.isDirty}
-                                className="gap-2"
-                            >
-                                <RotateCcw className="h-4 w-4" />
-                                Reset
                             </Button>
                         </div>
                         <Button

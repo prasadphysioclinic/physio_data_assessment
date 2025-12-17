@@ -114,42 +114,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-card border rounded-lg p-4">
-          <p className="text-xs text-muted-foreground">Total Patients</p>
-          <p className="text-2xl font-bold">{loading ? '-' : assessments.length}</p>
-        </div>
-        <div className="bg-card border rounded-lg p-4">
-          <p className="text-xs text-muted-foreground">Today</p>
-          <p className="text-2xl font-bold">
-            {loading ? '-' : assessments.filter((a: any) => {
-              const today = new Date().toISOString().split('T')[0];
-              return a.Date?.includes(today);
-            }).length}
-          </p>
-        </div>
-        <div className="bg-card border rounded-lg p-4">
-          <p className="text-xs text-muted-foreground">This Week</p>
-          <p className="text-2xl font-bold">
-            {loading ? '-' : assessments.filter((a: any) => {
-              const now = new Date();
-              const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-              const assessmentDate = new Date(a.Date);
-              return assessmentDate >= weekAgo;
-            }).length}
-          </p>
-        </div>
-        <div className="bg-card border rounded-lg p-4">
-          <p className="text-xs text-muted-foreground">Avg. Pain Score</p>
-          <p className="text-2xl font-bold">
-            {loading ? '-' : assessments.length > 0
-              ? (assessments.reduce((sum: number, a: any) => sum + (parseInt(a.PainIntensity_VAS) || 0), 0) / assessments.length).toFixed(1)
-              : '0'}
-          </p>
-        </div>
-      </div>
-
       {/* Table */}
       <DashboardTable assessments={assessments} loading={loading} />
     </div>
