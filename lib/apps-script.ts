@@ -5,6 +5,7 @@ export interface AssessmentData {
     Date: string;
     PatientName: string;
     Age: string;
+    PhoneNumber?: string;
     Occupation?: string;
     MechanismOfInjury?: string;
     AggravatingEasingFactors?: string;
@@ -37,6 +38,8 @@ export interface AssessmentData {
     Palpation_Tenderness?: string;
     Palpation_Effusion?: string;
     Comments?: string;
+    WhatTreatment?: string;
+    TreatmentPlan?: string;
     SubmittedBy?: string;
     Timestamp?: string;
 }

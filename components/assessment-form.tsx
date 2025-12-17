@@ -25,6 +25,7 @@ const formSchema = z.object({
     date: z.string(),
     name: z.string().min(2, "Name is required"),
     age: z.string(),
+    phoneNumber: z.string().optional(),
     occupation: z.string().optional(),
     mechanismOfInjury: z.string().optional(),
     aggravatingFactors: z.string().optional(),
@@ -48,6 +49,8 @@ const formSchema = z.object({
     specialTests: z.string().optional(),
     jointPlayMovements: z.string().optional(),
     palpation: z.string().optional(),
+    whatTreatment: z.string().optional(),
+    treatmentPlan: z.string().optional(),
 });
 
 export function AssessmentForm() {
@@ -166,6 +169,19 @@ export function AssessmentForm() {
                                         )}
                                     />
                                 </div>
+                                <FormField
+                                    control={form.control}
+                                    name="phoneNumber"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Phone Number</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Contact Number" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             </CardContent>
                         </Card>
 
@@ -566,6 +582,40 @@ export function AssessmentForm() {
                                             <FormLabel>Palpation (Tenderness, Effusion)</FormLabel>
                                             <FormControl>
                                                 <Textarea {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Treatment</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <FormField
+                                    control={form.control}
+                                    name="whatTreatment"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>What Treatment (Given)</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="Treatment given during this session..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="treatmentPlan"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Treatment Plan</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="Planned future treatments..." {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

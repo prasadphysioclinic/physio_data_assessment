@@ -10,6 +10,7 @@ export async function POST(request: Request) {
             Date: body.date,
             PatientName: body.name,
             Age: body.age,
+            PhoneNumber: body.phoneNumber || "",
             Occupation: body.occupation || "",
             MechanismOfInjury: body.mechanismOfInjury || "",
             AggravatingEasingFactors: body.aggravatingFactors || "",
@@ -42,6 +43,8 @@ export async function POST(request: Request) {
             Palpation_Tenderness: body.palpation_Tenderness || "",
             Palpation_Effusion: body.palpation_Effusion || "",
             Comments: body.comments || "",
+            WhatTreatment: body.whatTreatment || "",
+            TreatmentPlan: body.treatmentPlan || "",
             SubmittedBy: body.submittedBy || "System",
             Timestamp: new Date().toISOString(),
         };
