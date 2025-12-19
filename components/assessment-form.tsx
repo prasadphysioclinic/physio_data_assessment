@@ -610,31 +610,6 @@ export function AssessmentForm() {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle>Patient Summary</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <FormField
-                                    control={form.control}
-                                    name="patientSummary"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Summary Details About Patient</FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    placeholder="Overall summary of patient's condition, key findings, and notes..."
-                                                    className="min-h-[120px]"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
                                 <CardTitle>Treatment</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -659,6 +634,31 @@ export function AssessmentForm() {
                                             <FormLabel>What Treatment (Given)</FormLabel>
                                             <FormControl>
                                                 <Textarea placeholder="Treatment given during this session..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Patient Summary</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <FormField
+                                    control={form.control}
+                                    name="patientSummary"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Summary Details About Patient</FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    placeholder="Overall summary of patient's condition, key findings, and notes..."
+                                                    className="min-h-[120px]"
+                                                    {...field}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
