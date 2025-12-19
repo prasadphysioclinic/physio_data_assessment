@@ -7,12 +7,13 @@ export interface AssessmentData {
     Age: string;
     PhoneNumber?: string;
     Occupation?: string;
-    MechanismOfInjury?: string;
+    ChiefComplaint?: string;
+    PresentHistory?: string;
+    PastHistory?: string;
     AggravatingEasingFactors?: string;
     TwentyFourHourHistory?: string;
     ImprovingStaticWorse?: string;
     NewOrOldInjury?: string;
-    PastHistory?: string;
     DiagnosticImaging?: string;
     PainLocation?: string;
     PainIntensity_VAS?: number;

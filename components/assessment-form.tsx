@@ -20,7 +20,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import Image from "next/image";
 import { Save, X, Loader2 } from "lucide-react";
 
 const formSchema = z.object({
@@ -29,12 +28,13 @@ const formSchema = z.object({
     age: z.string(),
     phoneNumber: z.string().optional(),
     occupation: z.string().optional(),
-    mechanismOfInjury: z.string().optional(),
+    chiefComplaint: z.string().optional(),
+    presentHistory: z.string().optional(),
+    pastHistory: z.string().optional(),
     aggravatingFactors: z.string().optional(),
     twentyFourHourHistory: z.string().optional(),
     improvingStaticWorse: z.enum(["Improving", "Static", "Worse"]).optional(),
     newOldInjury: z.enum(["New", "Old"]).optional(),
-    pastHistory: z.string().optional(),
     diagnosticImaging: z.string().optional(),
     observation: z.string().optional(),
     activeMovements: z.string().optional(),
@@ -206,12 +206,38 @@ export function AssessmentForm() {
                             <CardContent className="space-y-4">
                                 <FormField
                                     control={form.control}
-                                    name="mechanismOfInjury"
+                                    name="chiefComplaint"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Mechanism of Injury</FormLabel>
+                                            <FormLabel>C/C (Chief Complaint)</FormLabel>
                                             <FormControl>
-                                                <Textarea {...field} />
+                                                <Textarea placeholder="Chief complaint..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="presentHistory"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Present History Records</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="Present history..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="pastHistory"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Past History Records</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="Past history..." {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -323,19 +349,6 @@ export function AssessmentForm() {
                                 </div>
                                 <FormField
                                     control={form.control}
-                                    name="pastHistory"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Past History</FormLabel>
-                                            <FormControl>
-                                                <Textarea {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
                                     name="diagnosticImaging"
                                     render={({ field }) => (
                                         <FormItem>
@@ -383,7 +396,7 @@ export function AssessmentForm() {
                                             <FormItem>
                                                 <FormLabel>Active Movements</FormLabel>
                                                 <FormControl>
-                                                    <Textarea placeholder="L/R Ext/Flex" {...field} />
+                                                    <Textarea placeholder="L/R" {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -396,7 +409,7 @@ export function AssessmentForm() {
                                             <FormItem>
                                                 <FormLabel>Passive Movements</FormLabel>
                                                 <FormControl>
-                                                    <Textarea placeholder="L/R Ext/Flex" {...field} />
+                                                    <Textarea placeholder="L/R" {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -453,16 +466,6 @@ export function AssessmentForm() {
                                 <CardTitle>Pain & Symptoms</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-6">
-                                <div className="flex justify-center border p-4 rounded-md">
-                                    <div className="relative w-[300px] h-[400px]">
-                                        <Image
-                                            src="/body-chart.png"
-                                            alt="Body Chart"
-                                            fill
-                                            className="object-contain"
-                                        />
-                                    </div>
-                                </div>
                                 <FormField
                                     control={form.control}
                                     name="symptomsLocation"
