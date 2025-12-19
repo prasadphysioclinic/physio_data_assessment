@@ -44,6 +44,7 @@ export async function POST(request: Request) {
             Palpation_Tenderness: body.palpation_Tenderness || "",
             Palpation_Effusion: body.palpation_Effusion || "",
             Comments: body.comments || "",
+            PatientSummary: body.patientSummary || "",
             WhatTreatment: body.whatTreatment || "",
             TreatmentPlan: body.treatmentPlan || "",
             SubmittedBy: body.submittedBy || "System",

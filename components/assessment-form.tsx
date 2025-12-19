@@ -51,6 +51,7 @@ const formSchema = z.object({
     specialTests: z.string().optional(),
     jointPlayMovements: z.string().optional(),
     palpation: z.string().optional(),
+    patientSummary: z.string().optional(),
     whatTreatment: z.string().optional(),
     treatmentPlan: z.string().optional(),
 });
@@ -599,6 +600,31 @@ export function AssessmentForm() {
                                             <FormLabel>Palpation (Tenderness, Effusion)</FormLabel>
                                             <FormControl>
                                                 <Textarea {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Patient Summary</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <FormField
+                                    control={form.control}
+                                    name="patientSummary"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Summary Details About Patient</FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    placeholder="Overall summary of patient's condition, key findings, and notes..."
+                                                    className="min-h-[120px]"
+                                                    {...field}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

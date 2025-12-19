@@ -39,6 +39,7 @@ export interface AssessmentData {
     Palpation_Tenderness?: string;
     Palpation_Effusion?: string;
     Comments?: string;
+    PatientSummary?: string;
     WhatTreatment?: string;
     TreatmentPlan?: string;
     SubmittedBy?: string;
