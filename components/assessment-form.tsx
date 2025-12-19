@@ -640,12 +640,12 @@ export function AssessmentForm() {
                             <CardContent className="space-y-4">
                                 <FormField
                                     control={form.control}
-                                    name="whatTreatment"
+                                    name="treatmentPlan"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>What Treatment (Given)</FormLabel>
+                                            <FormLabel>Treatment Plan</FormLabel>
                                             <FormControl>
-                                                <Textarea placeholder="Treatment given during this session..." {...field} />
+                                                <Textarea placeholder="Planned future treatments..." {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -653,12 +653,12 @@ export function AssessmentForm() {
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="treatmentPlan"
+                                    name="whatTreatment"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Treatment Plan</FormLabel>
+                                            <FormLabel>What Treatment (Given)</FormLabel>
                                             <FormControl>
-                                                <Textarea placeholder="Planned future treatments..." {...field} />
+                                                <Textarea placeholder="Treatment given during this session..." {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
