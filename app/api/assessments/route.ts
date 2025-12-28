@@ -7,46 +7,73 @@ export async function POST(request: Request) {
 
         // Map form data to exact Google Sheet column names
         const rowData: AssessmentData = {
+            // I. Patient Demographics
             Date: body.date,
             PatientName: body.name,
             Age: body.age,
-            PhoneNumber: body.phoneNumber || "",
+            Sex: body.sex || "",
             Occupation: body.occupation || "",
+            PhoneNumber: body.phoneNumber || "",
+            Height: body.height || "",
+            Weight: body.weight || "",
+            BloodPressure: body.bloodPressure || "",
+            SugarLevel: body.sugarLevel || "",
+
+            // II. Clinical History
             ChiefComplaint: body.chiefComplaint || "",
             PresentHistory: body.presentHistory || "",
             PastHistory: body.pastHistory || "",
-            AggravatingEasingFactors: body.aggravatingFactors || "",
-            TwentyFourHourHistory: body.twentyFourHourHistory || "",
-            ImprovingStaticWorse: body.improvingStaticWorse || "",
-            NewOrOldInjury: body.newOldInjury || "",
             DiagnosticImaging: body.diagnosticImaging || "",
-            PainLocation: body.painLocation || "",
-            PainIntensity_VAS: body.painVas || 0,
-            PainPattern: body.painDescription || "",
-            ObservationPosture: body.observation || "",
-            Active_L_Flex: body.active_L_Flex || "",
-            Active_R_Flex: body.active_R_Flex || "",
-            Active_L_Ext: body.active_L_Ext || "",
-            Active_R_Ext: body.active_R_Ext || "",
-            Passive_L_Flex: body.passive_L_Flex || "",
-            Passive_R_Flex: body.passive_R_Flex || "",
-            Passive_L_Ext: body.passive_L_Ext || "",
-            Passive_R_Ext: body.passive_R_Ext || "",
+            RedFlags: body.redFlags || "",
+
+            // III. Observation & Physical Examination
+            Observation: body.observation || "",
+            ActiveROM: body.activeMovements || "",
+            PassiveROM: body.passiveMovements || "",
+            MusclePower: body.musclePower || "",
+            Palpation: body.palpation || "",
+            Gait: body.gait || "",
+            NeurologicalTests: body.neurologicalTests || "",
+            Sensation: body.sensation || "",
+            Reflexes: body.reflexes || "",
+            SpecialTests: body.specialTests || "",
             EndFeel: body.endFeel || "",
             CapsularPattern: body.capsularPattern || "",
             ResistedIsometrics: body.resistedIsometricMovements || "",
             FunctionalTesting: body.functionalTesting || "",
-            SensoryScan: body.sensoryScan || "",
-            Reflexes: body.reflexes || "",
-            NeuroSpecialTests: body.neuroSpecialTests || "",
-            SpecialTests: body.specialTests || "",
             JointPlayMovements: body.jointPlayMovements || "",
-            Palpation_Tenderness: body.palpation_Tenderness || "",
-            Palpation_Effusion: body.palpation_Effusion || "",
             Comments: body.comments || "",
-            PatientSummary: body.patientSummary || "",
-            WhatTreatment: body.whatTreatment || "",
+
+            // IV. Pain Assessment
+            PainHistory: body.painHistory || "",
+            AggravatingFactors: body.aggravatingFactors || "",
+            EasingFactors: body.easingFactors || "",
+            PainDescription: body.painDescription || "",
+            PainIntensity_VAS: body.painVas || 0,
+            SymptomsLocation: body.symptomsLocation || "",
+
+            // V. Diagnosis & Treatment Plan
+            Diagnosis: body.diagnosis || "",
             TreatmentPlan: body.treatmentPlan || "",
+            ManualTherapy: body.manualTherapy || "",
+            Electrotherapy: body.electrotherapy || "",
+            ExercisePrescription: body.exercisePrescription || "",
+            PatientEducation: body.patientEducation || "",
+            HomeFollowups: body.homeFollowups || "",
+            WhatTreatment: body.whatTreatment || "",
+
+            // VI. Summary & Follow-up
+            PatientSummary: body.patientSummary || "",
+            Review1: body.review1 || "",
+            Review2: body.review2 || "",
+            Review3: body.review3 || "",
+
+            // Legacy fields
+            TwentyFourHourHistory: body.twentyFourHourHistory || "",
+            ImprovingStaticWorse: body.improvingStaticWorse || "",
+            NewOrOldInjury: body.newOldInjury || "",
+
+            // System fields
             SubmittedBy: body.submittedBy || "System",
             Timestamp: new Date().toISOString(),
         };

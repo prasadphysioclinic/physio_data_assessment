@@ -2,10 +2,13 @@
  * PhysioTrack - Google Apps Script
  * Updated: December 2024
  * 
- * New fields added:
- * - ChiefComplaint (replaces MechanismOfInjury)
- * - PresentHistory
- * - PatientSummary
+ * COMPLETE RESTRUCTURE with new fields:
+ * - Demographics: Sex, Height, Weight, BloodPressure, SugarLevel
+ * - Clinical History: RedFlags
+ * - Physical Exam: MusclePower, Gait, Sensation, Reflexes
+ * - Pain: PainHistory, EasingFactors
+ * - Treatment: Diagnosis, ManualTherapy, Electrotherapy, ExercisePrescription, PatientEducation, HomeFollowups
+ * - Reviews: Review1, Review2, Review3
  */
 
 function doPost(e) {
@@ -22,7 +25,6 @@ function doPost(e) {
         return handleCreate(sheet, data);
 
     } catch (error) {
-        // Return error response
         return ContentService.createTextOutput(JSON.stringify({
             success: false,
             error: error.toString(),
@@ -32,27 +34,12 @@ function doPost(e) {
 }
 
 function handleCreate(sheet, data) {
-    // Define the exact column order matching your headers (43 columns)
-    // Updated: ChiefComplaint, PresentHistory, PatientSummary added
-    const columns = [
-        'Date', 'PatientName', 'Age', 'PhoneNumber', 'Occupation',
-        'ChiefComplaint', 'PresentHistory', 'PastHistory',
-        'AggravatingEasingFactors', 'TwentyFourHourHistory', 'ImprovingStaticWorse',
-        'NewOrOldInjury', 'DiagnosticImaging', 'PainLocation',
-        'PainIntensity_VAS', 'PainPattern', 'ObservationPosture',
-        'Active_L_Flex', 'Active_R_Flex', 'Active_L_Ext', 'Active_R_Ext',
-        'Passive_L_Flex', 'Passive_R_Flex', 'Passive_L_Ext', 'Passive_R_Ext',
-        'EndFeel', 'CapsularPattern', 'ResistedIsometrics', 'FunctionalTesting',
-        'SensoryScan', 'Reflexes', 'NeuroSpecialTests', 'SpecialTests',
-        'JointPlayMovements', 'Palpation_Tenderness', 'Palpation_Effusion',
-        'Comments', 'TreatmentPlan', 'WhatTreatment', 'PatientSummary',
-        'SubmittedBy', 'Timestamp'
-    ];
+    // Define the exact column order (50+ columns)
+    const columns = getColumns();
 
     // Create row data in the correct order
     const rowData = columns.map(col => {
         const value = data[col];
-        // Handle undefined/null values
         if (value === undefined || value === null) {
             return '';
         }
@@ -60,14 +47,14 @@ function handleCreate(sheet, data) {
     });
 
     // Add timestamp if not provided
-    if (!data.Timestamp) {
-        rowData[rowData.length - 1] = new Date().toISOString();
+    const timestampIndex = columns.indexOf('Timestamp');
+    if (!data.Timestamp && timestampIndex !== -1) {
+        rowData[timestampIndex] = new Date().toISOString();
     }
 
     // Append the row to the sheet
     sheet.appendRow(rowData);
 
-    // Return success response
     return ContentService.createTextOutput(JSON.stringify({
         success: true,
         message: 'Assessment saved successfully',
@@ -77,25 +64,8 @@ function handleCreate(sheet, data) {
 
 function handleUpdate(sheet, data) {
     const rowIndex = data.rowIndex;
+    const columns = getColumns();
 
-    // Define the exact column order (43 columns)
-    // Updated: ChiefComplaint, PresentHistory, PatientSummary added
-    const columns = [
-        'Date', 'PatientName', 'Age', 'PhoneNumber', 'Occupation',
-        'ChiefComplaint', 'PresentHistory', 'PastHistory',
-        'AggravatingEasingFactors', 'TwentyFourHourHistory', 'ImprovingStaticWorse',
-        'NewOrOldInjury', 'DiagnosticImaging', 'PainLocation',
-        'PainIntensity_VAS', 'PainPattern', 'ObservationPosture',
-        'Active_L_Flex', 'Active_R_Flex', 'Active_L_Ext', 'Active_R_Ext',
-        'Passive_L_Flex', 'Passive_R_Flex', 'Passive_L_Ext', 'Passive_R_Ext',
-        'EndFeel', 'CapsularPattern', 'ResistedIsometrics', 'FunctionalTesting',
-        'SensoryScan', 'Reflexes', 'NeuroSpecialTests', 'SpecialTests',
-        'JointPlayMovements', 'Palpation_Tenderness', 'Palpation_Effusion',
-        'Comments', 'TreatmentPlan', 'WhatTreatment', 'PatientSummary',
-        'SubmittedBy', 'Timestamp'
-    ];
-
-    // Create row data in the correct order
     const rowData = columns.map(col => {
         const value = data[col];
         if (value === undefined || value === null) {
@@ -105,13 +75,15 @@ function handleUpdate(sheet, data) {
     });
 
     // Update timestamp
-    rowData[rowData.length - 1] = new Date().toISOString();
+    const timestampIndex = columns.indexOf('Timestamp');
+    if (timestampIndex !== -1) {
+        rowData[timestampIndex] = new Date().toISOString();
+    }
 
     // Update the specific row
     const range = sheet.getRange(rowIndex, 1, 1, rowData.length);
     range.setValues([rowData]);
 
-    // Return success response
     return ContentService.createTextOutput(JSON.stringify({
         success: true,
         message: 'Assessment updated successfully',
@@ -124,7 +96,6 @@ function doGet(e) {
         const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
         const data = sheet.getDataRange().getValues();
 
-        // Check if sheet has data
         if (data.length === 0) {
             return ContentService.createTextOutput(JSON.stringify({
                 success: true,
@@ -135,7 +106,6 @@ function doGet(e) {
         const headers = data[0];
         const rows = data.slice(1);
 
-        // Convert rows to objects using headers
         const assessments = rows.map(row => {
             const obj = {};
             headers.forEach((header, index) => {
@@ -144,7 +114,6 @@ function doGet(e) {
             return obj;
         });
 
-        // Return success response with data
         return ContentService.createTextOutput(JSON.stringify({
             success: true,
             data: assessments,
@@ -152,7 +121,6 @@ function doGet(e) {
         })).setMimeType(ContentService.MimeType.JSON);
 
     } catch (error) {
-        // Return error response
         return ContentService.createTextOutput(JSON.stringify({
             success: false,
             error: error.toString(),
@@ -162,25 +130,46 @@ function doGet(e) {
 }
 
 /**
+ * Returns the column headers in order
+ */
+function getColumns() {
+    return [
+        // I. Patient Demographics
+        'Date', 'PatientName', 'Age', 'Sex', 'Occupation', 'PhoneNumber',
+        'Height', 'Weight', 'BloodPressure', 'SugarLevel',
+
+        // II. Clinical History
+        'ChiefComplaint', 'PresentHistory', 'PastHistory', 'DiagnosticImaging', 'RedFlags',
+
+        // III. Observation & Physical Examination
+        'Observation', 'ActiveROM', 'PassiveROM', 'MusclePower', 'Palpation', 'Gait',
+        'NeurologicalTests', 'Sensation', 'Reflexes', 'SpecialTests',
+        'EndFeel', 'CapsularPattern', 'ResistedIsometrics', 'FunctionalTesting',
+        'JointPlayMovements', 'Comments',
+
+        // IV. Pain Assessment
+        'PainHistory', 'AggravatingFactors', 'EasingFactors', 'PainDescription',
+        'PainIntensity_VAS', 'SymptomsLocation',
+
+        // V. Diagnosis & Treatment Plan
+        'Diagnosis', 'TreatmentPlan', 'ManualTherapy', 'Electrotherapy',
+        'ExercisePrescription', 'PatientEducation', 'HomeFollowups', 'WhatTreatment',
+
+        // VI. Summary & Follow-up
+        'PatientSummary', 'Review1', 'Review2', 'Review3',
+
+        // Legacy & System
+        'TwentyFourHourHistory', 'ImprovingStaticWorse', 'NewOrOldInjury',
+        'SubmittedBy', 'Timestamp'
+    ];
+}
+
+/**
  * Run this function ONCE to set up the headers in your sheet
- * This will overwrite the first row with the new headers
  */
 function setupHeaders() {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    const columns = [
-        'Date', 'PatientName', 'Age', 'PhoneNumber', 'Occupation',
-        'ChiefComplaint', 'PresentHistory', 'PastHistory',
-        'AggravatingEasingFactors', 'TwentyFourHourHistory', 'ImprovingStaticWorse',
-        'NewOrOldInjury', 'DiagnosticImaging', 'PainLocation',
-        'PainIntensity_VAS', 'PainPattern', 'ObservationPosture',
-        'Active_L_Flex', 'Active_R_Flex', 'Active_L_Ext', 'Active_R_Ext',
-        'Passive_L_Flex', 'Passive_R_Flex', 'Passive_L_Ext', 'Passive_R_Ext',
-        'EndFeel', 'CapsularPattern', 'ResistedIsometrics', 'FunctionalTesting',
-        'SensoryScan', 'Reflexes', 'NeuroSpecialTests', 'SpecialTests',
-        'JointPlayMovements', 'Palpation_Tenderness', 'Palpation_Effusion',
-        'Comments', 'TreatmentPlan', 'WhatTreatment', 'PatientSummary',
-        'SubmittedBy', 'Timestamp'
-    ];
+    const columns = getColumns();
 
     sheet.getRange(1, 1, 1, columns.length).setValues([columns]);
     Logger.log('Headers set up successfully! Total columns: ' + columns.length);
@@ -194,4 +183,5 @@ function testScript() {
     Logger.log('Sheet name: ' + sheet.getName());
     Logger.log('Last row: ' + sheet.getLastRow());
     Logger.log('Last column: ' + sheet.getLastColumn());
+    Logger.log('Expected columns: ' + getColumns().length);
 }
