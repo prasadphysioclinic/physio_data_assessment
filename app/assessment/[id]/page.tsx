@@ -2,17 +2,28 @@ import { getFromGoogleSheet } from "@/lib/apps-script";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowLeft, Pencil, Phone, Calendar, User, Briefcase } from "lucide-react";
+import { ArrowLeft, Pencil, Phone, Calendar, User, Briefcase, Activity, Stethoscope, Heart, FileText } from "lucide-react";
 import { notFound } from "next/navigation";
 import { formatDate, formatDateTime } from "@/lib/format-date";
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0; // Always fetch fresh data from Google Sheets
+export const revalidate = 0;
 
 interface PageProps {
     params: Promise<{
         id: string;
     }>;
+}
+
+// Helper component for displaying field
+function Field({ label, value }: { label: string; value: any }) {
+    const displayValue = value === undefined || value === null || value === '' ? 'N/A' : value;
+    return (
+        <div>
+            <p className="text-sm font-medium text-muted-foreground">{label}</p>
+            <p className="text-base">{displayValue}</p>
+        </div>
+    );
 }
 
 export default async function AssessmentDetailPage(props: PageProps) {
@@ -24,7 +35,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
         notFound();
     }
 
-    const assessment = assessments[assessmentIndex];
+    const a = assessments[assessmentIndex];
 
     return (
         <div className="space-y-4 sm:space-y-6">
@@ -50,292 +61,204 @@ export default async function AssessmentDetailPage(props: PageProps) {
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                         <User className="h-4 w-4" />
-                        {assessment.PatientName}
+                        {a.PatientName}
                     </span>
                     <span className="hidden sm:inline">•</span>
                     <span className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        {formatDate(assessment.Date)}
+                        {formatDate(a.Date)}
                     </span>
-                    {assessment.PhoneNumber && (
+                    {a.PhoneNumber && (
                         <>
                             <span className="hidden sm:inline">•</span>
                             <span className="flex items-center gap-1">
                                 <Phone className="h-4 w-4" />
-                                {assessment.PhoneNumber}
+                                {a.PhoneNumber}
                             </span>
                         </>
                     )}
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                {/* Patient Details */}
+            <div className="space-y-6">
+                {/* ========== I. PATIENT DEMOGRAPHICS ========== */}
                 <Card className="border-l-4 border-l-primary">
-                    <CardHeader>
+                    <CardHeader className="bg-primary/5">
                         <CardTitle className="flex items-center gap-2">
                             <User className="h-5 w-5" />
-                            Patient Information
+                            I. Patient Demographics
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Name</p>
-                            <p className="text-base font-semibold">{assessment.PatientName || 'N/A'}</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Age</p>
-                                <p className="text-base">{assessment.Age || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Phone</p>
-                                <p className="text-base">{assessment.PhoneNumber || 'N/A'}</p>
-                            </div>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Occupation</p>
-                            <p className="text-base">{assessment.Occupation || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Date</p>
-                            <p className="text-base">{formatDate(assessment.Date)}</p>
+                    <CardContent className="pt-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <Field label="Name" value={a.PatientName} />
+                            <Field label="Age" value={a.Age} />
+                            <Field label="Sex" value={a.Sex} />
+                            <Field label="Occupation" value={a.Occupation} />
+                            <Field label="Phone Number" value={a.PhoneNumber} />
+                            <Field label="Height" value={a.Height} />
+                            <Field label="Weight" value={a.Weight} />
+                            <Field label="Blood Pressure" value={a.BloodPressure} />
+                            <Field label="Sugar Level" value={a.SugarLevel} />
+                            <Field label="Date" value={formatDate(a.Date)} />
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* History */}
+                {/* ========== II. CLINICAL HISTORY ========== */}
                 <Card>
-                    <CardHeader>
-                        <CardTitle>History</CardTitle>
+                    <CardHeader className="bg-primary/5">
+                        <CardTitle className="flex items-center gap-2">
+                            <FileText className="h-5 w-5" />
+                            II. Clinical History
+                        </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Mechanism of Injury</p>
-                            <p className="text-base">{assessment.MechanismOfInjury || 'N/A'}</p>
+                    <CardContent className="pt-4 space-y-4">
+                        <Field label="Chief Complaints" value={a.ChiefComplaint} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Field label="Present History" value={a.PresentHistory} />
+                            <Field label="Past Medical History" value={a.PastHistory} />
                         </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Aggravating/Easing Factors</p>
-                            <p className="text-base">{assessment.AggravatingEasingFactors || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">24-Hour History</p>
-                            <p className="text-base">{assessment.TwentyFourHourHistory || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Status</p>
-                            <p className="text-base">{assessment.ImprovingStaticWorse || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Injury Type</p>
-                            <p className="text-base">{assessment.NewOrOldInjury || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Past History</p>
-                            <p className="text-base">{assessment.PastHistory || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Diagnostic Imaging</p>
-                            <p className="text-base">{assessment.DiagnosticImaging || 'N/A'}</p>
-                        </div>
+                        <Field label="Diagnostic Image Reports" value={a.DiagnosticImaging} />
+                        <Field label="Red Flags" value={a.RedFlags} />
                     </CardContent>
                 </Card>
 
-                {/* Pain & Symptoms */}
+                {/* ========== III. OBSERVATION & PHYSICAL EXAMINATION ========== */}
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Pain & Symptoms</CardTitle>
+                    <CardHeader className="bg-primary/5">
+                        <CardTitle className="flex items-center gap-2">
+                            <Stethoscope className="h-5 w-5" />
+                            III. Observation & Physical Examination
+                        </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Pain Location</p>
-                            <p className="text-base">{assessment.PainLocation || 'N/A'}</p>
+                    <CardContent className="pt-4 space-y-4">
+                        <Field label="On Observation (Posture)" value={a.Observation} />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Field label="Active ROM" value={a.ActiveROM} />
+                            <Field label="Passive ROM" value={a.PassiveROM} />
                         </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Pain Intensity (VAS 0-10)</p>
-                            <p className="text-base font-semibold text-lg">{assessment.PainIntensity_VAS || '0'}/10</p>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <Field label="Muscle Power" value={a.MusclePower} />
+                            <Field label="Palpation" value={a.Palpation} />
+                            <Field label="Gait" value={a.Gait} />
                         </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Pain Pattern</p>
-                            <p className="text-base">{assessment.PainPattern || 'N/A'}</p>
+
+                        <div className="border-t pt-4">
+                            <p className="text-sm font-medium text-muted-foreground mb-3">Neurological Screening</p>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <Field label="Sensation" value={a.Sensation} />
+                                <Field label="Reflexes" value={a.Reflexes} />
+                                <Field label="Neurological Tests" value={a.NeurologicalTests} />
+                            </div>
                         </div>
+
+                        <Field label="Special Tests (Orthopedic)" value={a.SpecialTests} />
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <Field label="End Feel" value={a.EndFeel} />
+                            <Field label="Capsular Pattern" value={a.CapsularPattern} />
+                            <Field label="Joint Play Movements" value={a.JointPlayMovements} />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Field label="Resisted Isometric Movements" value={a.ResistedIsometrics} />
+                            <Field label="Functional Testing" value={a.FunctionalTesting} />
+                        </div>
+
+                        <Field label="Additional Comments" value={a.Comments} />
                     </CardContent>
                 </Card>
 
-                {/* Observation */}
+                {/* ========== IV. PAIN ASSESSMENT ========== */}
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Observation</CardTitle>
+                    <CardHeader className="bg-primary/5">
+                        <CardTitle className="flex items-center gap-2">
+                            <Activity className="h-5 w-5" />
+                            IV. Pain Assessment
+                        </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Posture</p>
-                            <p className="text-base">{assessment.ObservationPosture || 'N/A'}</p>
+                    <CardContent className="pt-4 space-y-4">
+                        <Field label="Pain History" value={a.PainHistory} />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Field label="Aggravating Factors" value={a.AggravatingFactors} />
+                            <Field label="Easing Factors" value={a.EasingFactors} />
+                        </div>
+
+                        <Field label="Type of Pain (Patient's Words)" value={a.PainDescription} />
+
+                        <div className="bg-muted/50 p-4 rounded-lg">
+                            <p className="text-sm font-medium text-muted-foreground">VAS Score (0-10)</p>
+                            <p className="text-3xl font-bold text-primary">{a.PainIntensity_VAS || '0'}/10</p>
+                        </div>
+
+                        <Field label="Symptoms Location" value={a.SymptomsLocation} />
+                    </CardContent>
+                </Card>
+
+                {/* ========== V. DIAGNOSIS & TREATMENT PLAN ========== */}
+                <Card className="border-l-4 border-l-green-500">
+                    <CardHeader className="bg-green-50/50 dark:bg-green-950/20">
+                        <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                            <Heart className="h-5 w-5" />
+                            V. Diagnosis & Treatment Plan
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                        <div className="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg">
+                            <p className="text-sm font-medium text-muted-foreground">Diagnosis</p>
+                            <p className="text-lg font-semibold">{a.Diagnosis || 'N/A'}</p>
+                        </div>
+
+                        <Field label="Treatment Plan" value={a.TreatmentPlan} />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Field label="Manual Therapy" value={a.ManualTherapy} />
+                            <Field label="Electrotherapy / Modalities" value={a.Electrotherapy} />
+                        </div>
+
+                        <Field label="Exercise Prescription" value={a.ExercisePrescription} />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Field label="Patient Education" value={a.PatientEducation} />
+                            <Field label="Home Follow-ups" value={a.HomeFollowups} />
+                        </div>
+
+                        <Field label="Treatment Given (This Session)" value={a.WhatTreatment} />
+                    </CardContent>
+                </Card>
+
+                {/* ========== VI. SUMMARY & FOLLOW-UP ========== */}
+                <Card className="border-l-4 border-l-blue-500">
+                    <CardHeader className="bg-blue-50/50 dark:bg-blue-950/20">
+                        <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                            <FileText className="h-5 w-5" />
+                            VI. Summary & Follow-up
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                        <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+                            <p className="text-sm font-medium text-muted-foreground">Patient Summary</p>
+                            <p className="text-base">{a.PatientSummary || 'N/A'}</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <Field label="Review 1" value={a.Review1} />
+                            <Field label="Review 2" value={a.Review2} />
+                            <Field label="Review 3" value={a.Review3} />
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Active Movements */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Active Movements</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Left Flexion</p>
-                                <p className="text-base">{assessment.Active_L_Flex || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Right Flexion</p>
-                                <p className="text-base">{assessment.Active_R_Flex || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Left Extension</p>
-                                <p className="text-base">{assessment.Active_L_Ext || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Right Extension</p>
-                                <p className="text-base">{assessment.Active_R_Ext || 'N/A'}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Passive Movements */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Passive Movements</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Left Flexion</p>
-                                <p className="text-base">{assessment.Passive_L_Flex || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Right Flexion</p>
-                                <p className="text-base">{assessment.Passive_R_Flex || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Left Extension</p>
-                                <p className="text-base">{assessment.Passive_L_Ext || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Right Extension</p>
-                                <p className="text-base">{assessment.Passive_R_Ext || 'N/A'}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Examination Findings */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Examination Findings</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">End Feel</p>
-                            <p className="text-base">{assessment.EndFeel || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Capsular Pattern</p>
-                            <p className="text-base">{assessment.CapsularPattern || 'N/A'}</p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Tests */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Tests</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Resisted Isometrics</p>
-                            <p className="text-base">{assessment.ResistedIsometrics || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Functional Testing</p>
-                            <p className="text-base">{assessment.FunctionalTesting || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Sensory Scan</p>
-                            <p className="text-base">{assessment.SensoryScan || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Reflexes</p>
-                            <p className="text-base">{assessment.Reflexes || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Neurological Special Tests</p>
-                            <p className="text-base">{assessment.NeuroSpecialTests || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Special Tests</p>
-                            <p className="text-base">{assessment.SpecialTests || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Joint Play Movements</p>
-                            <p className="text-base">{assessment.JointPlayMovements || 'N/A'}</p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Palpation */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Palpation</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Tenderness</p>
-                            <p className="text-base">{assessment.Palpation_Tenderness || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Effusion</p>
-                            <p className="text-base">{assessment.Palpation_Effusion || 'N/A'}</p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Additional Information */}
-                <Card className="lg:col-span-2">
-                    <CardHeader>
-                        <CardTitle>Additional Information</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Comments</p>
-                            <p className="text-base">{assessment.Comments || 'N/A'}</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Submitted By</p>
-                                <p className="text-base">{assessment.SubmittedBy || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Timestamp</p>
-                                <p className="text-base">{formatDateTime(assessment.Timestamp)}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Treatment */}
-                <Card className="lg:col-span-2 border-l-4 border-l-green-500 bg-green-50/50 dark:bg-green-950/20">
-                    <CardHeader>
-                        <CardTitle className="text-green-700 dark:text-green-400">Treatment Plan</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Treatment Given</p>
-                            <p className="text-base">{assessment.WhatTreatment || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Treatment Plan</p>
-                            <p className="text-base">{assessment.TreatmentPlan || 'N/A'}</p>
+                {/* System Info */}
+                <Card className="bg-muted/30">
+                    <CardContent className="pt-4">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                            <Field label="Submitted By" value={a.SubmittedBy} />
+                            <Field label="Timestamp" value={formatDateTime(a.Timestamp)} />
                         </div>
                     </CardContent>
                 </Card>

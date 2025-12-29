@@ -12,7 +12,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
-import { Search, Eye, Edit, Loader2 } from "lucide-react";
+import { Search, Eye, Edit } from "lucide-react";
 import { formatDateShort } from "@/lib/format-date";
 
 interface Assessment {
@@ -20,8 +20,8 @@ interface Assessment {
     PatientName: string;
     Age: string;
     Occupation: string;
-    MechanismOfInjury?: string;
-    PastHistory?: string;
+    Diagnosis?: string;
+    ChiefComplaint?: string;
     [key: string]: any;
 }
 
@@ -40,8 +40,8 @@ export function DashboardTable({ assessments, loading = false }: DashboardTableP
             assessment.PatientName?.toLowerCase().includes(query) ||
             assessment.Age?.toString().toLowerCase().includes(query) ||
             assessment.Occupation?.toLowerCase().includes(query) ||
-            assessment.MechanismOfInjury?.toLowerCase().includes(query) ||
-            assessment.PastHistory?.toLowerCase().includes(query) ||
+            assessment.Diagnosis?.toLowerCase().includes(query) ||
+            assessment.ChiefComplaint?.toLowerCase().includes(query) ||
             assessment.Date?.toLowerCase().includes(query)
         );
     });
@@ -87,7 +87,7 @@ export function DashboardTable({ assessments, loading = false }: DashboardTableP
                             <TableHead>Patient Name</TableHead>
                             <TableHead>Age</TableHead>
                             <TableHead>Occupation</TableHead>
-                            <TableHead>Diagnosis/History</TableHead>
+                            <TableHead>Diagnosis</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -140,7 +140,7 @@ export function DashboardTable({ assessments, loading = false }: DashboardTableP
                                         <TableCell>{assessment.Age}</TableCell>
                                         <TableCell>{assessment.Occupation}</TableCell>
                                         <TableCell className="max-w-[200px] truncate">
-                                            {assessment.PastHistory || assessment.MechanismOfInjury}
+                                            {assessment.Diagnosis || assessment.ChiefComplaint || 'N/A'}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-1">
