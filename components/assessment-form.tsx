@@ -20,6 +20,8 @@ import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
+import { Camera, Video, X, Upload, FileVideo, FileImage, Plus } from "lucide-react";
+import { useRef } from "react";
 
 const formSchema = z.object({
     // I. Patient Demographics
@@ -156,18 +158,63 @@ export function AssessmentForm() {
         },
     });
 
+    const [mediaFiles, setMediaFiles] = useState<{ file: File; base64: string; type: 'image' | 'video' }[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files) return;
+
+        const newFiles = Array.from(files);
+        if (mediaFiles.length + newFiles.length > 4) {
+            alert("Maximum 4 attachments allowed");
+            return;
+        }
+
+        const processedFiles = await Promise.all(
+            newFiles.map(async (file) => {
+                const base64 = await toBase64(file);
+                return {
+                    file,
+                    base64: base64 as string,
+                    type: (file.type.startsWith('video/') ? 'video' : 'image') as 'image' | 'video'
+                };
+            })
+        );
+
+        setMediaFiles([...mediaFiles, ...processedFiles]);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const toBase64 = (file: File) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+
+    const removeFile = (index: number) => {
+        setMediaFiles(mediaFiles.filter((_, i) => i !== index));
+    };
+
     async function onSubmit(values: z.infer<typeof formSchema>) {
         console.log('Form submission started');
-        console.log('Form values:', values);
         setIsSubmitting(true);
         try {
-            console.log('Sending POST request to /api/assessments');
-            const response = await fetch("/api/assessments", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(values),
+            // Include media files in the submission
+            const payload = {
+                ...values,
+                files: mediaFiles.map(mf => ({
+                    name: mf.file.name,
+                    type: mf.file.type,
+                    data: mf.base64.split(',')[1] // Just the bytes
+                }))
+            };
+
+            const response = await fetch('/api/assessments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
             });
 
             console.log('Response status:', response.status);
@@ -958,7 +1005,69 @@ export function AssessmentForm() {
                     </div>
                 </div>
 
-                <div className="flex justify-end">
+                {/* Media Attachments Section */}
+                <Card className="mt-6">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle>Media Attachments (Max 4)</CardTitle>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={mediaFiles.length >= 4}
+                        >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Photo/Video
+                        </Button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            className="hidden"
+                            accept="image/*,video/*"
+                            multiple
+                            onChange={handleFileChange}
+                        />
+                    </CardHeader>
+                    <CardContent>
+                        {mediaFiles.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg text-muted-foreground">
+                                <Upload className="h-10 w-10 mb-2 opacity-20" />
+                                <p>No media attached. Click the button above to add up to 4 photos or videos.</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {mediaFiles.map((mf, index) => (
+                                    <div key={index} className="relative group rounded-lg overflow-hidden border">
+                                        {mf.type === 'image' ? (
+                                            <img
+                                                src={mf.base64}
+                                                alt={`Attachment ${index + 1}`}
+                                                className="w-full h-48 object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-48 bg-black flex items-center justify-center">
+                                                <FileVideo className="h-12 w-12 text-white opacity-50" />
+                                                <span className="absolute bottom-2 left-2 text-[10px] text-white bg-black/50 px-1 rounded">Video</span>
+                                            </div>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => removeFile(index)}
+                                            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                        <div className="p-2 text-xs truncate bg-background border-t">
+                                            {mf.file.name}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <div className="flex justify-end pt-6">
                     <Button type="submit" size="lg" disabled={isSubmitting}>
                         {isSubmitting ? "Saving..." : "Save Assessment"}
                     </Button>

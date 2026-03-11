@@ -272,6 +272,56 @@ export default async function AssessmentDetailPage(props: PageProps) {
                     </CardContent>
                 </Card>
 
+                {/* Media Attachments */}
+                {(assessment.Media1 || assessment.Media2 || assessment.Media3 || assessment.Media4) && (
+                    <Card className="md:col-span-2">
+                        <CardHeader>
+                            <CardTitle>Media Attachments</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {[assessment.Media1, assessment.Media2, assessment.Media3, assessment.Media4].map((url, index) => {
+                                    if (!url) return null;
+
+                                    // Check if it's likely a video (Apps Script will tag it or we can check extension in URL)
+                                    // For now, we'll try to infer or just provide a link if unsure.
+                                    // Drive URLs for videos often contain 'video' in the name or we can check the file name if we stored it.
+                                    const isVideo = url.toLowerCase().includes('mp4') || url.toLowerCase().includes('mov') || url.toLowerCase().includes('video');
+
+                                    return (
+                                        <div key={index} className="space-y-2">
+                                            <div className="rounded-lg overflow-hidden border bg-muted aspect-video flex items-center justify-center">
+                                                {isVideo ? (
+                                                    <video
+                                                        src={url}
+                                                        controls
+                                                        className="w-full h-full object-contain"
+                                                    />
+                                                ) : (
+                                                    <img
+                                                        src={url}
+                                                        alt={`Attachment ${index + 1}`}
+                                                        className="w-full h-full object-cover"
+                                                        onError={(e) => {
+                                                            // Fallback for Drive URLs that might need a different view
+                                                            (e.target as HTMLImageElement).src = '/file-placeholder.png';
+                                                        }}
+                                                    />
+                                                )}
+                                            </div>
+                                            <Button variant="outline" size="sm" className="w-full text-[10px]" asChild>
+                                                <a href={url} target="_blank" rel="noopener noreferrer">
+                                                    Open Original
+                                                </a>
+                                            </Button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
                 {/* Additional Information */}
                 <Card className="md:col-span-2">
                     <CardHeader>

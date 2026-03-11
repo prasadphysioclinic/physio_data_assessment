@@ -73,6 +73,19 @@ export interface AssessmentData {
     SubmittedBy?: string;
     Timestamp?: string;
 
+    // Media fields (Google Drive URLs)
+    Media1?: string;
+    Media2?: string;
+    Media3?: string;
+    Media4?: string;
+
+    // Temporary storage for files being uploaded
+    files?: {
+        name: string;
+        type: string;
+        data: string; // base64
+    }[];
+
     // Action for updates
     action?: 'create' | 'update';
     rowIndex?: number;

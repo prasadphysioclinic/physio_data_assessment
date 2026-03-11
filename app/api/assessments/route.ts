@@ -74,6 +74,9 @@ export async function POST(request: Request) {
                 timeZone: 'Asia/Kolkata',
             }).format(new Date()),
 
+            // Media file data for upload
+            files: body.files || [],
+
             action: body.action || 'create',
             rowIndex: body.rowIndex
         };
