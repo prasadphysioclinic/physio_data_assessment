@@ -187,6 +187,13 @@ export function AssessmentForm() {
                 videoRef.current.srcObject = stream;
             }
             setIsStreaming(true);
+
+            // Force play if needed
+            setTimeout(() => {
+                if (videoRef.current) {
+                    videoRef.current.play().catch(e => console.error("Auto-play failed:", e));
+                }
+            }, 100);
         } catch (err) {
             console.error("Error accessing camera:", err);
             alert("Could not access camera. Please check permissions.");
@@ -1118,36 +1125,28 @@ export function AssessmentForm() {
                 </div>
 
                 {/* Live Media Capture Section */}
-                <Card className="mt-6 overflow-hidden border-2 border-primary/20">
-                    <CardHeader className="bg-primary/5 flex flex-row items-center justify-between py-4">
-                        <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                <Camera className="h-4 w-4 text-primary" />
+                <Card className="mt-8 overflow-hidden border-2 border-primary/20 bg-secondary/5">
+                    <CardHeader className="bg-primary/5 flex flex-row items-center justify-between py-5 border-b">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <Camera className="h-5 w-5 text-primary" />
                             </div>
-                            <CardTitle className="text-lg">Live Media Capture ({mediaFiles.length}/4)</CardTitle>
+                            <div>
+                                <CardTitle className="text-xl font-bold">Clinical Evidence Capture</CardTitle>
+                                <p className="text-xs text-muted-foreground mt-0.5">Capture up to 4 photos or videos of the patient</p>
+                            </div>
                         </div>
                         <div className="flex gap-2">
                             <Button
                                 type="button"
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => fileInputRef.current?.click()}
-                                disabled={mediaFiles.length >= 4}
+                                className="text-xs h-9"
                             >
                                 <Upload className="h-4 w-4 mr-2" />
-                                Import
+                                Import Files
                             </Button>
-                            {!isStreaming ? (
-                                <Button type="button" size="sm" onClick={startCamera}>
-                                    <Camera className="h-4 w-4 mr-2" />
-                                    Open Camera
-                                </Button>
-                            ) : (
-                                <Button type="button" variant="destructive" size="sm" onClick={stopCamera}>
-                                    <X className="h-4 w-4 mr-2" />
-                                    Close Camera
-                                </Button>
-                            )}
                         </div>
                         <input
                             type="file"
@@ -1159,9 +1158,9 @@ export function AssessmentForm() {
                         />
                     </CardHeader>
                     <CardContent className="p-0">
-                        <div className="grid grid-cols-1 lg:grid-cols-2">
-                            {/* Live View */}
-                            <div className="relative bg-black aspect-video flex items-center justify-center group overflow-hidden">
+                        <div className="flex flex-col lg:flex-row min-h-[400px]">
+                            {/* Camera Viewport */}
+                            <div className="flex-1 bg-black relative flex items-center justify-center overflow-hidden min-h-[300px]">
                                 {isStreaming ? (
                                     <>
                                         <video
@@ -1169,106 +1168,164 @@ export function AssessmentForm() {
                                             autoPlay
                                             playsInline
                                             muted
-                                            className="w-full h-full object-cover"
+                                            onCanPlay={(e) => e.currentTarget.play()}
+                                            className="w-full h-full object-contain"
                                         />
-                                        <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+
+                                        {/* HUD Overlay */}
+                                        <div className="absolute top-4 left-4 flex gap-2">
+                                            <div className="flex items-center gap-1.5 bg-black/60 px-2.5 py-1 rounded-md border border-white/20">
+                                                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                                                <span className="text-[10px] text-white font-bold tracking-widest uppercase">LIVE</span>
+                                            </div>
+                                            {isRecording && (
+                                                <div className="flex items-center gap-1.5 bg-red-600 px-2.5 py-1 rounded-md border border-red-400">
+                                                    <div className="h-2 w-2 rounded-full bg-white animate-ping" />
+                                                    <span className="text-[10px] text-white font-bold tracking-widest uppercase">RECORDING</span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="absolute top-4 right-4">
                                             <Button
                                                 type="button"
-                                                size="sm"
-                                                className="bg-white text-black hover:bg-gray-200"
-                                                onClick={takePhoto}
-                                                disabled={mediaFiles.length >= 4}
+                                                variant="outline"
+                                                size="icon"
+                                                className="h-8 w-8 bg-black/40 border-white/20 text-white hover:bg-black/60"
+                                                onClick={toggleCamera}
                                             >
-                                                <Camera className="h-4 w-4 mr-2" />
-                                                Snap Photo
+                                                <Plus className="h-4 w-4 rotate-45" />
                                             </Button>
+                                        </div>
 
-                                            {!isRecording ? (
+                                        {/* Main Action Bar */}
+                                        <div className="absolute inset-x-0 bottom-6 flex justify-center items-center gap-6 px-4">
+                                            <div className="flex flex-col items-center gap-2">
                                                 <Button
                                                     type="button"
-                                                    size="sm"
-                                                    className="bg-red-600 hover:bg-red-700 text-white"
-                                                    onClick={startRecording}
+                                                    size="lg"
+                                                    className="h-16 w-16 rounded-full bg-white hover:bg-gray-200 text-primary border-[4px] border-primary/20 shadow-xl"
+                                                    onClick={takePhoto}
                                                     disabled={mediaFiles.length >= 4}
                                                 >
-                                                    <Video className="h-4 w-4 mr-2" />
-                                                    Record Video
+                                                    <Camera className="h-6 w-6" />
                                                 </Button>
-                                            ) : (
-                                                <Button
-                                                    type="button"
-                                                    size="sm"
-                                                    className="bg-red-600 animate-pulse text-white"
-                                                    onClick={stopRecording}
-                                                >
-                                                    <div className="h-3 w-3 rounded-full bg-white mr-2" />
-                                                    Stop Recording
-                                                </Button>
-                                            )}
-
-                                            <Button type="button" variant="outline" size="sm" className="bg-black/50 text-white" onClick={toggleCamera}>
-                                                Switch Camera
-                                            </Button>
-                                        </div>
-                                        {isRecording && (
-                                            <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/60 px-3 py-1 rounded-full border border-red-500">
-                                                <div className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
-                                                <span className="text-white text-xs font-medium uppercase tracking-wider">REC</span>
+                                                <span className="text-[10px] text-white font-bold drop-shadow-md">SNAP PHOTO</span>
                                             </div>
-                                        )}
+
+                                            <div className="flex flex-col items-center gap-2">
+                                                {!isRecording ? (
+                                                    <Button
+                                                        type="button"
+                                                        size="lg"
+                                                        className="h-16 w-16 rounded-full bg-red-600 hover:bg-red-700 text-white border-[4px] border-red-200 shadow-xl"
+                                                        onClick={startRecording}
+                                                        disabled={mediaFiles.length >= 4}
+                                                    >
+                                                        <Video className="h-6 w-6" />
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        type="button"
+                                                        size="lg"
+                                                        className="h-16 w-16 rounded-full bg-red-600 animate-pulse text-white border-[4px] border-white shadow-xl flex items-center justify-center p-0"
+                                                        onClick={stopRecording}
+                                                    >
+                                                        <div className="h-6 w-6 rounded-sm bg-white" />
+                                                    </Button>
+                                                )}
+                                                <span className="text-[10px] text-white font-bold drop-shadow-md uppercase">
+                                                    {isRecording ? "Stop Video" : "Record Video"}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </>
                                 ) : (
-                                    <div className="text-center p-8">
-                                        <div className="h-16 w-16 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-4">
-                                            <Camera className="h-8 w-8 text-white/40" />
+                                    <div className="text-center p-12 max-w-sm">
+                                        <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                                            <Camera className="h-10 w-10 text-primary/40" />
                                         </div>
-                                        <p className="text-white/60 mb-6">Camera is inactive. Open it to capture photos or videos live.</p>
-                                        <Button type="button" onClick={startCamera} className="bg-primary hover:bg-primary/90">
-                                            Enable Live Camera
+                                        <h4 className="text-white font-semibold mb-2">Camera Ready</h4>
+                                        <p className="text-white/40 text-sm mb-8">Click below to enable your camera and capture patient media live.</p>
+                                        <Button
+                                            type="button"
+                                            onClick={startCamera}
+                                            className="w-full h-12 text-sm font-bold tracking-wide"
+                                        >
+                                            ENABLE CAMERA VIEW
                                         </Button>
                                     </div>
                                 )}
                             </div>
 
-                            {/* Captures Preview */}
-                            <div className="bg-background p-4 border-l lg:max-h-[350px] overflow-y-auto">
-                                <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-muted-foreground">
-                                    Captured Evidence
-                                </h3>
+                            {/* Evidence Sidebar */}
+                            <div className="w-full lg:w-[320px] bg-background p-5 border-l">
+                                <div className="flex items-center justify-between mb-5">
+                                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                        Captured ({mediaFiles.length}/4)
+                                    </h3>
+                                    {isStreaming && (
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={stopCamera}
+                                            className="text-[10px] h-7 px-2"
+                                        >
+                                            Turn Off
+                                        </Button>
+                                    )}
+                                </div>
+
                                 {mediaFiles.length === 0 ? (
-                                    <div className="h-[200px] flex flex-col items-center justify-center border-2 border-dashed rounded-lg opacity-40">
-                                        <Plus className="h-8 w-8 mb-2" />
-                                        <p className="text-xs">No media captured yet</p>
+                                    <div className="h-[250px] flex flex-col items-center justify-center border-2 border-dashed rounded-xl bg-muted/30">
+                                        <Plus className="h-10 w-10 mb-3 text-muted-foreground/30" />
+                                        <p className="text-xs text-center px-6 text-muted-foreground">Captured photos or videos will appear here.</p>
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-2 gap-3">
                                         {mediaFiles.map((mf, index) => (
-                                            <div key={index} className="relative aspect-square rounded-md overflow-hidden border shadow-sm group">
+                                            <div key={index} className="relative aspect-square rounded-xl overflow-hidden border shadow-sm group bg-black">
                                                 {mf.type === 'image' ? (
                                                     <img src={mf.base64} className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <div className="w-full h-full bg-muted flex items-center justify-center">
-                                                        <FileVideo className="h-8 w-8 text-primary/40" />
-                                                        <span className="absolute bottom-1 left-1 text-[8px] bg-black/60 text-white px-1 rounded">VID</span>
+                                                    <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                                                        <FileVideo className="h-8 w-8 text-primary" />
+                                                        <span className="text-[8px] font-bold text-white bg-red-600 px-1.5 py-0.5 rounded uppercase">Video</span>
                                                     </div>
                                                 )}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeFile(index)}
-                                                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                                                >
-                                                    <X className="h-3 w-3" />
-                                                </button>
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <Button
+                                                        type="button"
+                                                        variant="destructive"
+                                                        size="icon"
+                                                        onClick={() => removeFile(index)}
+                                                        className="h-8 w-8 rounded-full shadow-lg"
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
                                             </div>
                                         ))}
+                                        {mediaFiles.length < 4 && (
+                                            <div className="aspect-square rounded-xl border-2 border-dashed flex items-center justify-center bg-muted/20">
+                                                <Plus className="h-6 w-6 text-muted-foreground/30" />
+                                            </div>
+                                        )}
                                     </div>
                                 )}
+
+                                <div className="mt-8 p-4 bg-primary/5 rounded-lg border border-primary/10">
+                                    <p className="text-[10px] leading-relaxed text-muted-foreground font-medium">
+                                        <span className="text-primary font-bold">INFO:</span> All media is automatically saved to your practice's Secure Google Drive folder upon form submission.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <div className="flex justify-end pt-8">
+                <div className="flex justify-end pt-10">
                     <Button type="submit" size="lg" disabled={isSubmitting}>
                         {isSubmitting ? "Saving..." : "Save Assessment"}
                     </Button>
