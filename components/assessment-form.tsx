@@ -162,10 +162,22 @@ export function AssessmentForm() {
     const [isStreaming, setIsStreaming] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('environment');
+    const [isInitializing, setIsInitializing] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Visibility Fix: Attach stream to video element only after mounting
+    useEffect(() => {
+        if (isStreaming && videoRef.current && streamRef.current) {
+            const v = videoRef.current;
+            if (v.srcObject !== streamRef.current) {
+                v.srcObject = streamRef.current;
+                v.play().catch(e => console.error("Playback error:", e));
+            }
+        }
+    }, [isStreaming, cameraFacing]); // Re-run if streaming starts or camera toggles
 
     useEffect(() => {
         return () => {
@@ -174,29 +186,35 @@ export function AssessmentForm() {
     }, []);
 
     const startCamera = async () => {
+        setIsInitializing(true);
         try {
             if (streamRef.current) {
                 stopCamera();
             }
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: cameraFacing },
-                audio: true
-            });
-            streamRef.current = stream;
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-            }
-            setIsStreaming(true);
 
-            // Force play if needed
-            setTimeout(() => {
-                if (videoRef.current) {
-                    videoRef.current.play().catch(e => console.error("Auto-play failed:", e));
-                }
-            }, 100);
+            let stream: MediaStream;
+            try {
+                // Try video and audio first
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: cameraFacing },
+                    audio: true
+                });
+            } catch (aErr) {
+                console.warn("Audio access failed, falling back to video only:", aErr);
+                // Fallback to video only
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: cameraFacing },
+                    audio: false
+                });
+            }
+
+            streamRef.current = stream;
+            setIsStreaming(true);
         } catch (err) {
-            console.error("Error accessing camera:", err);
-            alert("Could not access camera. Please check permissions.");
+            console.error("Camera access failed completely:", err);
+            alert("Could not access camera. Please check camera permissions in your browser.");
+        } finally {
+            setIsInitializing(false);
         }
     };
 
@@ -1161,6 +1179,13 @@ export function AssessmentForm() {
                         <div className="flex flex-col lg:flex-row min-h-[400px]">
                             {/* Camera Viewport */}
                             <div className="flex-1 bg-black relative flex items-center justify-center overflow-hidden min-h-[300px]">
+                                {isInitializing && (
+                                    <div className="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center gap-4">
+                                        <div className="h-12 w-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                                        <p className="text-white text-xs font-semibold tracking-widest uppercase">Initializing Camera...</p>
+                                    </div>
+                                )}
+
                                 {isStreaming ? (
                                     <>
                                         <video
