@@ -17,10 +17,12 @@ import { formatDateShort } from "@/lib/format-date";
 
 interface Assessment {
     Date: string;
+    Timestamp?: string;
     PatientName: string;
     Age: string;
     Occupation: string;
-    MechanismOfInjury?: string;
+    Diagnosis?: string;
+    ChiefComplaint?: string;
     PastHistory?: string;
     [key: string]: any;
 }
@@ -32,16 +34,40 @@ interface DashboardTableProps {
 export function DashboardTable({ assessments }: DashboardTableProps) {
     const [searchQuery, setSearchQuery] = useState("");
 
+    // Sort assessments by Date and Timestamp descending (latest first)
+    const sortedAssessments = [...assessments].sort((a, b) => {
+        // Try to sort by Timestamp if available (most reliable for "last entry")
+        if (a.Timestamp && b.Timestamp) {
+            // "08/03/2026, 11:51:03" format from Intl.DateTimeFormat 'en-GB'
+            // We can compare them as strings if they are formatted consistently,
+            // or convert them to sortable dates.
+            try {
+                const parseDate = (ts: string) => {
+                    const [datePart, timePart] = ts.split(', ');
+                    const [day, month, year] = datePart.split('/');
+                    return new Date(`${year}-${month}-${day}T${timePart}`).getTime();
+                };
+                return parseDate(b.Timestamp) - parseDate(a.Timestamp);
+            } catch (e) {
+                // Fallback to string comparison if parsing fails
+                return b.Timestamp.localeCompare(a.Timestamp);
+            }
+        }
+        // Fallback to Date if Timestamp is missing
+        return new Date(b.Date).getTime() - new Date(a.Date).getTime();
+    });
+
     // Filter assessments based on search query
-    const filteredAssessments = assessments.filter((assessment) => {
+    const filteredAssessments = sortedAssessments.filter((assessment) => {
         const query = searchQuery.toLowerCase();
         return (
-            assessment.PatientName?.toLowerCase().includes(query) ||
-            assessment.Age?.toString().toLowerCase().includes(query) ||
-            assessment.Occupation?.toLowerCase().includes(query) ||
-            assessment.MechanismOfInjury?.toLowerCase().includes(query) ||
-            assessment.PastHistory?.toLowerCase().includes(query) ||
-            assessment.Date?.toLowerCase().includes(query)
+            (assessment.PatientName && assessment.PatientName.toLowerCase().includes(query)) ||
+            (assessment.Age && assessment.Age.toString().toLowerCase().includes(query)) ||
+            (assessment.Occupation && assessment.Occupation.toLowerCase().includes(query)) ||
+            (assessment.Diagnosis && assessment.Diagnosis.toLowerCase().includes(query)) ||
+            (assessment.ChiefComplaint && assessment.ChiefComplaint.toLowerCase().includes(query)) ||
+            (assessment.PastHistory && assessment.PastHistory.toLowerCase().includes(query)) ||
+            (assessment.Date && assessment.Date.toLowerCase().includes(query))
         );
     });
 
@@ -115,7 +141,7 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                         <TableCell>{assessment.Age}</TableCell>
                                         <TableCell>{assessment.Occupation}</TableCell>
                                         <TableCell className="max-w-[200px] truncate">
-                                            {assessment.PastHistory || assessment.MechanismOfInjury}
+                                            {assessment.Diagnosis || assessment.ChiefComplaint || assessment.PastHistory}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <Button variant="ghost" size="sm" asChild>

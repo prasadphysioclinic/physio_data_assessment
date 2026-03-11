@@ -2,43 +2,80 @@
 const APPS_SCRIPT_URL = process.env.GOOGLE_APPS_SCRIPT_URL;
 
 export interface AssessmentData {
+    // I. Patient Demographics
     Date: string;
     PatientName: string;
     Age: string;
+    Sex?: string;
     Occupation?: string;
-    MechanismOfInjury?: string;
-    AggravatingEasingFactors?: string;
-    TwentyFourHourHistory?: string;
-    ImprovingStaticWorse?: string;
-    NewOrOldInjury?: string;
+    PhoneNumber?: string;
+    Height?: string;
+    Weight?: string;
+    BloodPressure?: string;
+    DiabeticMellitus?: string;
+    DietHabit?: string;
+    SleepingHistory?: string;
+    MenstruationHistory?: string;
+
+    // II. Clinical History
+    ChiefComplaint?: string;
+    PresentHistory?: string;
     PastHistory?: string;
     DiagnosticImaging?: string;
-    PainLocation?: string;
-    PainIntensity_VAS?: number;
-    PainPattern?: string;
-    ObservationPosture?: string;
-    Active_L_Flex?: string;
-    Active_R_Flex?: string;
-    Active_L_Ext?: string;
-    Active_R_Ext?: string;
-    Passive_L_Flex?: string;
-    Passive_R_Flex?: string;
-    Passive_L_Ext?: string;
-    Passive_R_Ext?: string;
+    RedFlags?: string;
+
+    // III. Observation & Physical Examination
+    Observation?: string;
+    ActiveROM?: string;
+    PassiveROM?: string;
+    MusclePower?: string;
+    Palpation?: string;
+    Gait?: string;
+    NeurologicalTests?: string;
+    Sensation?: string;
+    Reflexes?: string;
+    SpecialTests?: string;
     EndFeel?: string;
     CapsularPattern?: string;
     ResistedIsometrics?: string;
     FunctionalTesting?: string;
-    SensoryScan?: string;
-    Reflexes?: string;
-    NeuroSpecialTests?: string;
-    SpecialTests?: string;
     JointPlayMovements?: string;
-    Palpation_Tenderness?: string;
-    Palpation_Effusion?: string;
     Comments?: string;
+
+    // IV. Pain Assessment
+    PainHistory?: string;
+    AggravatingFactors?: string;
+    EasingFactors?: string;
+    PainDescription?: string;
+    PainIntensity_VAS?: number;
+    SymptomsLocation?: string;
+
+    // V. Diagnosis & Treatment Plan
+    Diagnosis?: string;
+    TreatmentPlan?: string;
+    ManualTherapy?: string;
+    Electrotherapy?: string;
+    ExercisePrescription?: string;
+    PatientEducation?: string;
+    HomeFollowups?: string;
+    WhatTreatment?: string;
+
+    // VI. Summary & Follow-up
+    PatientSummary?: string;
+    Review1?: string;
+    Review2?: string;
+    Review3?: string;
+
+    // Legacy & System
+    TwentyFourHourHistory?: string;
+    ImprovingStaticWorse?: string;
+    NewOrOldInjury?: string;
     SubmittedBy?: string;
     Timestamp?: string;
+
+    // Action for updates
+    action?: 'create' | 'update';
+    rowIndex?: number;
 }
 
 export async function saveToGoogleSheet(data: AssessmentData) {

@@ -22,32 +22,74 @@ import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 
 const formSchema = z.object({
+    // I. Patient Demographics
     date: z.string(),
     name: z.string().min(2, "Name is required"),
     age: z.string(),
+    sex: z.string().optional(),
     occupation: z.string().optional(),
-    mechanismOfInjury: z.string().optional(),
-    aggravatingFactors: z.string().optional(),
-    twentyFourHourHistory: z.string().optional(),
-    improvingStaticWorse: z.enum(["Improving", "Static", "Worse"]).optional(),
-    newOldInjury: z.enum(["New", "Old"]).optional(),
+    phoneNumber: z.string().optional(),
+    height: z.string().optional(),
+    weight: z.string().optional(),
+    bloodPressure: z.string().optional(),
+    diabeticMellitus: z.string().optional(),
+    dietHabit: z.string().optional(),
+    sleepingHistory: z.string().optional(),
+    menstruationHistory: z.string().optional(),
+
+    // II. Clinical History
+    chiefComplaint: z.string().optional(),
+    presentHistory: z.string().optional(),
     pastHistory: z.string().optional(),
     diagnosticImaging: z.string().optional(),
+    redFlags: z.string().optional(),
+
+    // III. Observation & Physical Examination
     observation: z.string().optional(),
-    activeMovements: z.string().optional(),
-    passiveMovements: z.string().optional(),
-    comments: z.string().optional(),
+    activeROM: z.string().optional(),
+    passiveROM: z.string().optional(),
+    musclePower: z.string().optional(),
+    palpation: z.string().optional(),
+    gait: z.string().optional(),
+    neurologicalTests: z.string().optional(),
+    sensation: z.string().optional(),
+    reflexes: z.string().optional(),
+    specialTests: z.string().optional(),
     endFeel: z.string().optional(),
     capsularPattern: z.string().optional(),
-    painVas: z.number().min(0).max(10),
-    painDescription: z.string().optional(),
-    symptomsLocation: z.string().optional(),
-    resistedIsometricMovements: z.string().optional(),
+    resistedIsometrics: z.string().optional(),
     functionalTesting: z.string().optional(),
-    neurologicalTests: z.string().optional(),
-    specialTests: z.string().optional(),
     jointPlayMovements: z.string().optional(),
-    palpation: z.string().optional(),
+    comments: z.string().optional(),
+
+    // IV. Pain Assessment
+    painHistory: z.string().optional(),
+    aggravatingFactors: z.string().optional(),
+    easingFactors: z.string().optional(),
+    painDescription: z.string().optional(),
+    painVas: z.number().min(0).max(10),
+    symptomsLocation: z.string().optional(),
+
+    // V. Diagnosis & Treatment Plan
+    diagnosis: z.string().optional(),
+    treatmentPlan: z.string().optional(),
+    manualTherapy: z.string().optional(),
+    electrotherapy: z.string().optional(),
+    exercisePrescription: z.string().optional(),
+    patientEducation: z.string().optional(),
+    homeFollowups: z.string().optional(),
+    whatTreatment: z.string().optional(),
+
+    // VI. Summary & Follow-up
+    patientSummary: z.string().optional(),
+    review1: z.string().optional(),
+    review2: z.string().optional(),
+    review3: z.string().optional(),
+
+    // Legacy/Mixed
+    twentyFourHourHistory: z.string().optional(),
+    improvingStaticWorse: z.string().optional(),
+    newOldInjury: z.string().optional(),
 });
 
 export function AssessmentForm() {
@@ -56,10 +98,61 @@ export function AssessmentForm() {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            date: new Date().toISOString().split("T")[0],
+            date: new Date().toISOString().split('T')[0],
             name: "",
             age: "",
+            sex: "",
+            occupation: "",
+            phoneNumber: "",
+            height: "",
+            weight: "",
+            bloodPressure: "",
+            diabeticMellitus: "",
+            dietHabit: "",
+            sleepingHistory: "",
+            menstruationHistory: "",
+            chiefComplaint: "",
+            presentHistory: "",
+            pastHistory: "",
+            diagnosticImaging: "",
+            redFlags: "",
+            observation: "",
+            activeROM: "",
+            passiveROM: "",
+            musclePower: "",
+            palpation: "",
+            gait: "",
+            neurologicalTests: "",
+            sensation: "",
+            reflexes: "",
+            specialTests: "",
+            endFeel: "",
+            capsularPattern: "",
+            resistedIsometrics: "",
+            functionalTesting: "",
+            jointPlayMovements: "",
+            comments: "",
+            painHistory: "",
+            aggravatingFactors: "",
+            easingFactors: "",
+            painDescription: "",
             painVas: 0,
+            symptomsLocation: "",
+            diagnosis: "",
+            treatmentPlan: "",
+            manualTherapy: "",
+            electrotherapy: "",
+            exercisePrescription: "",
+            patientEducation: "",
+            homeFollowups: "",
+            whatTreatment: "",
+            patientSummary: "",
+            review1: "",
+            review2: "",
+            review3: "",
+            twentyFourHourHistory: "",
+            improvingStaticWorse: "Static",
+            newOldInjury: "New",
         },
     });
 
@@ -166,6 +259,75 @@ export function AssessmentForm() {
                                         )}
                                     />
                                 </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="bloodPressure"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Blood Pressure</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="e.g., 120/80" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="diabeticMellitus"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Diabetic Mellitus</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Sugar Level" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="dietHabit"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Diet Habit</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Diet" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="sleepingHistory"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Sleeping History</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Sleep pattern" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <FormField
+                                    control={form.control}
+                                    name="menstruationHistory"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Menstruation History</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="History" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             </CardContent>
                         </Card>
 
@@ -176,12 +338,12 @@ export function AssessmentForm() {
                             <CardContent className="space-y-4">
                                 <FormField
                                     control={form.control}
-                                    name="mechanismOfInjury"
+                                    name="chiefComplaint"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Mechanism of Injury</FormLabel>
+                                            <FormLabel>Chief Complaint</FormLabel>
                                             <FormControl>
-                                                <Textarea {...field} />
+                                                <Textarea placeholder="Current issues..." {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -189,12 +351,12 @@ export function AssessmentForm() {
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="aggravatingFactors"
+                                    name="presentHistory"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Aggravating/Easing Factors</FormLabel>
+                                            <FormLabel>History of Present Illness</FormLabel>
                                             <FormControl>
-                                                <Textarea {...field} />
+                                                <Textarea placeholder="Onset, progression..." {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -202,12 +364,38 @@ export function AssessmentForm() {
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="twentyFourHourHistory"
+                                    name="pastHistory"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>24-Hour History</FormLabel>
+                                            <FormLabel>Past Medical History</FormLabel>
                                             <FormControl>
-                                                <Input {...field} />
+                                                <Textarea placeholder="Surgeries, other conditions..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="diagnosticImaging"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Diagnostic Imaging / Reports</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="X-ray, MRI, Blood tests..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="redFlags"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Red Flags</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Any warning signs..." {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -219,7 +407,7 @@ export function AssessmentForm() {
                                         name="improvingStaticWorse"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Status</FormLabel>
+                                                <FormLabel>Progress Status</FormLabel>
                                                 <FormControl>
                                                     <RadioGroup
                                                         onValueChange={field.onChange}
@@ -230,25 +418,19 @@ export function AssessmentForm() {
                                                             <FormControl>
                                                                 <RadioGroupItem value="Improving" />
                                                             </FormControl>
-                                                            <FormLabel className="font-normal">
-                                                                Improving
-                                                            </FormLabel>
+                                                            <FormLabel className="font-normal">Improving</FormLabel>
                                                         </FormItem>
                                                         <FormItem className="flex items-center space-x-3 space-y-0">
                                                             <FormControl>
                                                                 <RadioGroupItem value="Static" />
                                                             </FormControl>
-                                                            <FormLabel className="font-normal">
-                                                                Static
-                                                            </FormLabel>
+                                                            <FormLabel className="font-normal">Static</FormLabel>
                                                         </FormItem>
                                                         <FormItem className="flex items-center space-x-3 space-y-0">
                                                             <FormControl>
                                                                 <RadioGroupItem value="Worse" />
                                                             </FormControl>
-                                                            <FormLabel className="font-normal">
-                                                                Worse
-                                                            </FormLabel>
+                                                            <FormLabel className="font-normal">Worse</FormLabel>
                                                         </FormItem>
                                                     </RadioGroup>
                                                 </FormControl>
@@ -272,17 +454,13 @@ export function AssessmentForm() {
                                                             <FormControl>
                                                                 <RadioGroupItem value="New" />
                                                             </FormControl>
-                                                            <FormLabel className="font-normal">
-                                                                New
-                                                            </FormLabel>
+                                                            <FormLabel className="font-normal">New</FormLabel>
                                                         </FormItem>
                                                         <FormItem className="flex items-center space-x-3 space-y-0">
                                                             <FormControl>
                                                                 <RadioGroupItem value="Old" />
                                                             </FormControl>
-                                                            <FormLabel className="font-normal">
-                                                                Old
-                                                            </FormLabel>
+                                                            <FormLabel className="font-normal">Old</FormLabel>
                                                         </FormItem>
                                                     </RadioGroup>
                                                 </FormControl>
@@ -291,6 +469,19 @@ export function AssessmentForm() {
                                         )}
                                     />
                                 </div>
+                                <FormField
+                                    control={form.control}
+                                    name="twentyFourHourHistory"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>24-Hour Severity/Symptoms</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Morning/Night patterns..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                                 <FormField
                                     control={form.control}
                                     name="pastHistory"
@@ -342,16 +533,16 @@ export function AssessmentForm() {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle>Examination</CardTitle>
+                                <CardTitle>Examination Results</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
-                                        name="activeMovements"
+                                        name="activeROM"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Active Movements</FormLabel>
+                                                <FormLabel>Active ROM</FormLabel>
                                                 <FormControl>
                                                     <Textarea placeholder="L/R Ext/Flex" {...field} />
                                                 </FormControl>
@@ -361,10 +552,10 @@ export function AssessmentForm() {
                                     />
                                     <FormField
                                         control={form.control}
-                                        name="passiveMovements"
+                                        name="passiveROM"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Passive Movements</FormLabel>
+                                                <FormLabel>Passive ROM</FormLabel>
                                                 <FormControl>
                                                     <Textarea placeholder="L/R Ext/Flex" {...field} />
                                                 </FormControl>
@@ -373,12 +564,81 @@ export function AssessmentForm() {
                                         )}
                                     />
                                 </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="musclePower"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Muscle Power (MMT)</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="MMT Grade..." {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="gait"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Gait</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Normal, Antalgic..." {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="sensation"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Sensation</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Normal, Impaired..." {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="reflexes"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Reflexes</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Grades..." {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <FormField
+                                    control={form.control}
+                                    name="palpation"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Palpation</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="Tenderness, swelling..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                                 <FormField
                                     control={form.control}
                                     name="comments"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Comments</FormLabel>
+                                            <FormLabel>Additional Comments</FormLabel>
                                             <FormControl>
                                                 <Input {...field} />
                                             </FormControl>
@@ -386,32 +646,34 @@ export function AssessmentForm() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
-                                    control={form.control}
-                                    name="endFeel"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>End Feel</FormLabel>
-                                            <FormControl>
-                                                <Input {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="capsularPattern"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Capsular Pattern</FormLabel>
-                                            <FormControl>
-                                                <Input {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="endFeel"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>End Feel</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="capsularPattern"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Capsular Pattern</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
                             </CardContent>
                         </Card>
                     </div>
@@ -495,10 +757,10 @@ export function AssessmentForm() {
                             <CardContent className="space-y-4">
                                 <FormField
                                     control={form.control}
-                                    name="resistedIsometricMovements"
+                                    name="resistedIsometrics"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Resisted Isometric Movements</FormLabel>
+                                            <FormLabel>Resisted Isometrics</FormLabel>
                                             <FormControl>
                                                 <Textarea {...field} />
                                             </FormControl>
@@ -564,6 +826,126 @@ export function AssessmentForm() {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Palpation (Tenderness, Effusion)</FormLabel>
+                                            <FormControl>
+                                                <Textarea {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Treatment Plan</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <FormField
+                                    control={form.control}
+                                    name="diagnosis"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Physiotherapy Diagnosis</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="Based on assessment..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="manualTherapy"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Manual Therapy</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="Techniques used..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="electrotherapy"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Electrotherapy</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="Modalities used..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="exercisePrescription"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Exercise Prescription</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="Home exercise program..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Reviews & Summary</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <FormField
+                                    control={form.control}
+                                    name="review1"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Review 1</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="review2"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Review 2</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="review3"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Review 3</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="patientSummary"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Overall Patient Summary</FormLabel>
                                             <FormControl>
                                                 <Textarea {...field} />
                                             </FormControl>
