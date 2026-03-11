@@ -21,7 +21,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { Camera, Video, X, Upload, FileVideo, FileImage, Plus } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 
 const formSchema = z.object({
     // I. Patient Demographics
@@ -159,7 +159,119 @@ export function AssessmentForm() {
     });
 
     const [mediaFiles, setMediaFiles] = useState<{ file: File; base64: string; type: 'image' | 'video' }[]>([]);
+    const [isStreaming, setIsStreaming] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('environment');
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const streamRef = useRef<MediaStream | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        return () => {
+            stopCamera();
+        };
+    }, []);
+
+    const startCamera = async () => {
+        try {
+            if (streamRef.current) {
+                stopCamera();
+            }
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: cameraFacing },
+                audio: true
+            });
+            streamRef.current = stream;
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+            setIsStreaming(true);
+        } catch (err) {
+            console.error("Error accessing camera:", err);
+            alert("Could not access camera. Please check permissions.");
+        }
+    };
+
+    const stopCamera = () => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
+        }
+        setIsStreaming(false);
+    };
+
+    const toggleCamera = () => {
+        setCameraFacing(prev => prev === 'user' ? 'environment' : 'user');
+        if (isStreaming) {
+            startCamera();
+        }
+    };
+
+    const takePhoto = () => {
+        if (!videoRef.current || mediaFiles.length >= 4) return;
+
+        const video = videoRef.current;
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.drawImage(video, 0, 0);
+            const base64 = canvas.toDataURL('image/jpeg');
+
+            // Create a fake file object for compatibility
+            const blob = dataURLToBlob(base64);
+            const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+
+            setMediaFiles([...mediaFiles, { file, base64, type: 'image' }]);
+        }
+    };
+
+    const startRecording = () => {
+        if (!streamRef.current || mediaFiles.length >= 4) return;
+
+        const chunks: BlobPart[] = [];
+        const recorder = new MediaRecorder(streamRef.current);
+
+        recorder.ondataavailable = (e) => {
+            if (e.data.size > 0) chunks.push(e.data);
+        };
+
+        recorder.onstop = async () => {
+            const blob = new Blob(chunks, { type: 'video/mp4' });
+            const base64 = await toBase64(new File([blob], "video.mp4"));
+            const file = new File([blob], `video_${Date.now()}.mp4`, { type: 'video/mp4' });
+
+            setMediaFiles(prev => [...prev, { file, base64: base64 as string, type: 'video' }]);
+        };
+
+        recorder.start();
+        mediaRecorderRef.current = recorder;
+        setIsRecording(true);
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop();
+            setIsRecording(false);
+        }
+    };
+
+    const dataURLToBlob = (dataurl: string) => {
+        const arr = dataurl.split(',');
+        const mime = arr[0].match(/:(.*?);/)![1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], { type: mime });
+    };
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -1005,20 +1117,38 @@ export function AssessmentForm() {
                     </div>
                 </div>
 
-                {/* Media Attachments Section */}
-                <Card className="mt-6">
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle>Media Attachments (Max 4)</CardTitle>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={mediaFiles.length >= 4}
-                        >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Photo/Video
-                        </Button>
+                {/* Live Media Capture Section */}
+                <Card className="mt-6 overflow-hidden border-2 border-primary/20">
+                    <CardHeader className="bg-primary/5 flex flex-row items-center justify-between py-4">
+                        <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                <Camera className="h-4 w-4 text-primary" />
+                            </div>
+                            <CardTitle className="text-lg">Live Media Capture ({mediaFiles.length}/4)</CardTitle>
+                        </div>
+                        <div className="flex gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={mediaFiles.length >= 4}
+                            >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Import
+                            </Button>
+                            {!isStreaming ? (
+                                <Button type="button" size="sm" onClick={startCamera}>
+                                    <Camera className="h-4 w-4 mr-2" />
+                                    Open Camera
+                                </Button>
+                            ) : (
+                                <Button type="button" variant="destructive" size="sm" onClick={stopCamera}>
+                                    <X className="h-4 w-4 mr-2" />
+                                    Close Camera
+                                </Button>
+                            )}
+                        </div>
                         <input
                             type="file"
                             ref={fileInputRef}
@@ -1028,46 +1158,117 @@ export function AssessmentForm() {
                             onChange={handleFileChange}
                         />
                     </CardHeader>
-                    <CardContent>
-                        {mediaFiles.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg text-muted-foreground">
-                                <Upload className="h-10 w-10 mb-2 opacity-20" />
-                                <p>No media attached. Click the button above to add up to 4 photos or videos.</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {mediaFiles.map((mf, index) => (
-                                    <div key={index} className="relative group rounded-lg overflow-hidden border">
-                                        {mf.type === 'image' ? (
-                                            <img
-                                                src={mf.base64}
-                                                alt={`Attachment ${index + 1}`}
-                                                className="w-full h-48 object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-48 bg-black flex items-center justify-center">
-                                                <FileVideo className="h-12 w-12 text-white opacity-50" />
-                                                <span className="absolute bottom-2 left-2 text-[10px] text-white bg-black/50 px-1 rounded">Video</span>
+                    <CardContent className="p-0">
+                        <div className="grid grid-cols-1 lg:grid-cols-2">
+                            {/* Live View */}
+                            <div className="relative bg-black aspect-video flex items-center justify-center group overflow-hidden">
+                                {isStreaming ? (
+                                    <>
+                                        <video
+                                            ref={videoRef}
+                                            autoPlay
+                                            playsInline
+                                            muted
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                className="bg-white text-black hover:bg-gray-200"
+                                                onClick={takePhoto}
+                                                disabled={mediaFiles.length >= 4}
+                                            >
+                                                <Camera className="h-4 w-4 mr-2" />
+                                                Snap Photo
+                                            </Button>
+
+                                            {!isRecording ? (
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                                    onClick={startRecording}
+                                                    disabled={mediaFiles.length >= 4}
+                                                >
+                                                    <Video className="h-4 w-4 mr-2" />
+                                                    Record Video
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    className="bg-red-600 animate-pulse text-white"
+                                                    onClick={stopRecording}
+                                                >
+                                                    <div className="h-3 w-3 rounded-full bg-white mr-2" />
+                                                    Stop Recording
+                                                </Button>
+                                            )}
+
+                                            <Button type="button" variant="outline" size="sm" className="bg-black/50 text-white" onClick={toggleCamera}>
+                                                Switch Camera
+                                            </Button>
+                                        </div>
+                                        {isRecording && (
+                                            <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/60 px-3 py-1 rounded-full border border-red-500">
+                                                <div className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
+                                                <span className="text-white text-xs font-medium uppercase tracking-wider">REC</span>
                                             </div>
                                         )}
-                                        <button
-                                            type="button"
-                                            onClick={() => removeFile(index)}
-                                            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </button>
-                                        <div className="p-2 text-xs truncate bg-background border-t">
-                                            {mf.file.name}
+                                    </>
+                                ) : (
+                                    <div className="text-center p-8">
+                                        <div className="h-16 w-16 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-4">
+                                            <Camera className="h-8 w-8 text-white/40" />
                                         </div>
+                                        <p className="text-white/60 mb-6">Camera is inactive. Open it to capture photos or videos live.</p>
+                                        <Button type="button" onClick={startCamera} className="bg-primary hover:bg-primary/90">
+                                            Enable Live Camera
+                                        </Button>
                                     </div>
-                                ))}
+                                )}
                             </div>
-                        )}
+
+                            {/* Captures Preview */}
+                            <div className="bg-background p-4 border-l lg:max-h-[350px] overflow-y-auto">
+                                <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-muted-foreground">
+                                    Captured Evidence
+                                </h3>
+                                {mediaFiles.length === 0 ? (
+                                    <div className="h-[200px] flex flex-col items-center justify-center border-2 border-dashed rounded-lg opacity-40">
+                                        <Plus className="h-8 w-8 mb-2" />
+                                        <p className="text-xs">No media captured yet</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {mediaFiles.map((mf, index) => (
+                                            <div key={index} className="relative aspect-square rounded-md overflow-hidden border shadow-sm group">
+                                                {mf.type === 'image' ? (
+                                                    <img src={mf.base64} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-muted flex items-center justify-center">
+                                                        <FileVideo className="h-8 w-8 text-primary/40" />
+                                                        <span className="absolute bottom-1 left-1 text-[8px] bg-black/60 text-white px-1 rounded">VID</span>
+                                                    </div>
+                                                )}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeFile(index)}
+                                                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                                >
+                                                    <X className="h-3 w-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
 
-                <div className="flex justify-end pt-6">
+                <div className="flex justify-end pt-8">
                     <Button type="submit" size="lg" disabled={isSubmitting}>
                         {isSubmitting ? "Saving..." : "Save Assessment"}
                     </Button>
