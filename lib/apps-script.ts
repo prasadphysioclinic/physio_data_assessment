@@ -129,5 +129,11 @@ export async function getFromGoogleSheet() {
     }
 
     const result = await response.json();
+
+    // Handle both formats: direct array or { data: [...] }
+    if (Array.isArray(result)) {
+        return result;
+    }
+
     return result.data || [];
 }
