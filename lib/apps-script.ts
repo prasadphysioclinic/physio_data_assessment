@@ -12,7 +12,10 @@ export interface AssessmentData {
     Height?: string;
     Weight?: string;
     BloodPressure?: string;
-    SugarLevel?: string;
+    DiabeticMellitus?: string;
+    DietHabit?: string;
+    SleepingHistory?: string;
+    MenstruationHistory?: string;
 
     // II. Clinical History
     ChiefComplaint?: string;
@@ -63,14 +66,16 @@ export interface AssessmentData {
     Review2?: string;
     Review3?: string;
 
-    // Legacy fields
+    // Legacy & System
     TwentyFourHourHistory?: string;
     ImprovingStaticWorse?: string;
     NewOrOldInjury?: string;
-
-    // System fields
     SubmittedBy?: string;
     Timestamp?: string;
+
+    // Action for updates
+    action?: 'create' | 'update';
+    rowIndex?: number;
 }
 
 export async function saveToGoogleSheet(data: AssessmentData) {

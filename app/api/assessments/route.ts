@@ -5,31 +5,30 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
 
-        // Map form data to exact Google Sheet column names
+        // Map form data to exact Google Sheet column names from restructured Apps Script
         const rowData: AssessmentData = {
-            // I. Patient Demographics
-            Date: body.date,
+            Date: body.date || new Date().toISOString().split('T')[0],
             PatientName: body.name,
-            Age: body.age,
+            Age: String(body.age),
             Sex: body.sex || "",
             Occupation: body.occupation || "",
             PhoneNumber: body.phoneNumber || "",
             Height: body.height || "",
             Weight: body.weight || "",
             BloodPressure: body.bloodPressure || "",
-            SugarLevel: body.sugarLevel || "",
+            DiabeticMellitus: body.diabeticMellitus || "",
+            DietHabit: body.dietHabit || "",
+            SleepingHistory: body.sleepingHistory || "",
+            MenstruationHistory: body.menstruationHistory || "",
 
-            // II. Clinical History
             ChiefComplaint: body.chiefComplaint || "",
             PresentHistory: body.presentHistory || "",
             PastHistory: body.pastHistory || "",
             DiagnosticImaging: body.diagnosticImaging || "",
             RedFlags: body.redFlags || "",
-
-            // III. Observation & Physical Examination
             Observation: body.observation || "",
-            ActiveROM: body.activeMovements || "",
-            PassiveROM: body.passiveMovements || "",
+            ActiveROM: body.activeROM || "",
+            PassiveROM: body.passiveROM || "",
             MusclePower: body.musclePower || "",
             Palpation: body.palpation || "",
             Gait: body.gait || "",
@@ -39,12 +38,11 @@ export async function POST(request: Request) {
             SpecialTests: body.specialTests || "",
             EndFeel: body.endFeel || "",
             CapsularPattern: body.capsularPattern || "",
-            ResistedIsometrics: body.resistedIsometricMovements || "",
+            ResistedIsometrics: body.resistedIsometrics || "",
             FunctionalTesting: body.functionalTesting || "",
             JointPlayMovements: body.jointPlayMovements || "",
             Comments: body.comments || "",
 
-            // IV. Pain Assessment
             PainHistory: body.painHistory || "",
             AggravatingFactors: body.aggravatingFactors || "",
             EasingFactors: body.easingFactors || "",
@@ -52,7 +50,6 @@ export async function POST(request: Request) {
             PainIntensity_VAS: body.painVas || 0,
             SymptomsLocation: body.symptomsLocation || "",
 
-            // V. Diagnosis & Treatment Plan
             Diagnosis: body.diagnosis || "",
             TreatmentPlan: body.treatmentPlan || "",
             ManualTherapy: body.manualTherapy || "",
@@ -61,21 +58,24 @@ export async function POST(request: Request) {
             PatientEducation: body.patientEducation || "",
             HomeFollowups: body.homeFollowups || "",
             WhatTreatment: body.whatTreatment || "",
-
-            // VI. Summary & Follow-up
             PatientSummary: body.patientSummary || "",
             Review1: body.review1 || "",
             Review2: body.review2 || "",
             Review3: body.review3 || "",
 
-            // Legacy fields
             TwentyFourHourHistory: body.twentyFourHourHistory || "",
             ImprovingStaticWorse: body.improvingStaticWorse || "",
             NewOrOldInjury: body.newOldInjury || "",
-
-            // System fields
             SubmittedBy: body.submittedBy || "System",
-            Timestamp: new Date().toISOString(),
+
+            Timestamp: new Intl.DateTimeFormat('en-GB', {
+                dateStyle: 'short',
+                timeStyle: 'medium',
+                timeZone: 'Asia/Kolkata',
+            }).format(new Date()),
+
+            action: body.action || 'create',
+            rowIndex: body.rowIndex
         };
 
         const result = await saveToGoogleSheet(rowData);

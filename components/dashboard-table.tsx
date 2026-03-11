@@ -12,37 +12,62 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
-import { Search, Eye, Edit } from "lucide-react";
+import { Search } from "lucide-react";
 import { formatDateShort } from "@/lib/format-date";
 
 interface Assessment {
     Date: string;
+    Timestamp?: string;
     PatientName: string;
     Age: string;
     Occupation: string;
     Diagnosis?: string;
     ChiefComplaint?: string;
+    PastHistory?: string;
     [key: string]: any;
 }
 
 interface DashboardTableProps {
     assessments: Assessment[];
-    loading?: boolean;
 }
 
-export function DashboardTable({ assessments, loading = false }: DashboardTableProps) {
+export function DashboardTable({ assessments }: DashboardTableProps) {
     const [searchQuery, setSearchQuery] = useState("");
 
+    // Sort assessments by Date and Timestamp descending (latest first)
+    const sortedAssessments = [...assessments].sort((a, b) => {
+        // Try to sort by Timestamp if available (most reliable for "last entry")
+        if (a.Timestamp && b.Timestamp) {
+            // "08/03/2026, 11:51:03" format from Intl.DateTimeFormat 'en-GB'
+            // We can compare them as strings if they are formatted consistently,
+            // or convert them to sortable dates.
+            try {
+                const parseDate = (ts: string) => {
+                    const [datePart, timePart] = ts.split(', ');
+                    const [day, month, year] = datePart.split('/');
+                    return new Date(`${year}-${month}-${day}T${timePart}`).getTime();
+                };
+                return parseDate(b.Timestamp) - parseDate(a.Timestamp);
+            } catch (e) {
+                // Fallback to string comparison if parsing fails
+                return b.Timestamp.localeCompare(a.Timestamp);
+            }
+        }
+        // Fallback to Date if Timestamp is missing
+        return new Date(b.Date).getTime() - new Date(a.Date).getTime();
+    });
+
     // Filter assessments based on search query
-    const filteredAssessments = assessments.filter((assessment) => {
+    const filteredAssessments = sortedAssessments.filter((assessment) => {
         const query = searchQuery.toLowerCase();
         return (
-            assessment.PatientName?.toLowerCase().includes(query) ||
-            assessment.Age?.toString().toLowerCase().includes(query) ||
-            assessment.Occupation?.toLowerCase().includes(query) ||
-            assessment.Diagnosis?.toLowerCase().includes(query) ||
-            assessment.ChiefComplaint?.toLowerCase().includes(query) ||
-            assessment.Date?.toLowerCase().includes(query)
+            (assessment.PatientName && assessment.PatientName.toLowerCase().includes(query)) ||
+            (assessment.Age && assessment.Age.toString().toLowerCase().includes(query)) ||
+            (assessment.Occupation && assessment.Occupation.toLowerCase().includes(query)) ||
+            (assessment.Diagnosis && assessment.Diagnosis.toLowerCase().includes(query)) ||
+            (assessment.ChiefComplaint && assessment.ChiefComplaint.toLowerCase().includes(query)) ||
+            (assessment.PastHistory && assessment.PastHistory.toLowerCase().includes(query)) ||
+            (assessment.Date && assessment.Date.toLowerCase().includes(query))
         );
     });
 
@@ -87,41 +112,17 @@ export function DashboardTable({ assessments, loading = false }: DashboardTableP
                             <TableHead>Patient Name</TableHead>
                             <TableHead>Age</TableHead>
                             <TableHead>Occupation</TableHead>
-                            <TableHead>Diagnosis</TableHead>
+                            <TableHead>Diagnosis/History</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {loading ? (
-                            // Loading skeleton
-                            [...Array(5)].map((_, i) => (
-                                <TableRow key={i}>
-                                    <TableCell>
-                                        <div className="h-4 w-20 bg-muted rounded animate-pulse"></div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="h-4 w-32 bg-muted rounded animate-pulse"></div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="h-4 w-8 bg-muted rounded animate-pulse"></div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="h-4 w-24 bg-muted rounded animate-pulse"></div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="h-4 w-40 bg-muted rounded animate-pulse"></div>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="h-8 w-16 bg-muted rounded animate-pulse ml-auto"></div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        ) : filteredAssessments.length === 0 ? (
+                        {filteredAssessments.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="h-24 text-center">
                                     {searchQuery
                                         ? "No assessments found matching your search."
-                                        : "No assessments found. Click 'New Assessment' to create one."}
+                                        : "No assessments found."}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -140,22 +141,14 @@ export function DashboardTable({ assessments, loading = false }: DashboardTableP
                                         <TableCell>{assessment.Age}</TableCell>
                                         <TableCell>{assessment.Occupation}</TableCell>
                                         <TableCell className="max-w-[200px] truncate">
-                                            {assessment.Diagnosis || assessment.ChiefComplaint || 'N/A'}
+                                            {assessment.Diagnosis || assessment.ChiefComplaint || assessment.PastHistory}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <div className="flex justify-end gap-1">
-                                                <Button variant="ghost" size="sm" asChild>
-                                                    <Link href={`/assessment/${originalIndex}`}>
-                                                        <Eye className="h-4 w-4 mr-1" />
-                                                        View
-                                                    </Link>
-                                                </Button>
-                                                <Button variant="ghost" size="sm" asChild>
-                                                    <Link href={`/assessment/${originalIndex}/edit`}>
-                                                        <Edit className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-                                            </div>
+                                            <Button variant="ghost" size="sm" asChild>
+                                                <Link href={`/assessment/${originalIndex}`}>
+                                                    View
+                                                </Link>
+                                            </Button>
                                         </TableCell>
                                     </TableRow>
                                 );

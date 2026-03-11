@@ -25,79 +25,53 @@ export async function PUT(request: Request, context: RouteParams) {
             );
         }
 
+        // Update the Google Sheet via Apps Script
+        // Since Google Sheets doesn't have a direct "update row" API,
+        // we need to use the Apps Script to update the specific row
         const APPS_SCRIPT_URL = process.env.GOOGLE_APPS_SCRIPT_URL;
 
         if (!APPS_SCRIPT_URL) {
             throw new Error('GOOGLE_APPS_SCRIPT_URL is not configured');
         }
 
-        // Prepare the data with all new fields
+        // Prepare the data with the row index
         const updateData = {
-            action: 'update',
-            rowIndex: assessmentIndex + 2, // +2 for header row and 1-based indexing
-
-            // I. Patient Demographics
+            rowIndex: assessmentIndex + 2, // +2 because: +1 for header row, +1 for 1-based indexing
             Date: body.date,
             PatientName: body.name,
             Age: body.age,
-            Sex: body.sex || "",
             Occupation: body.occupation || "",
-            PhoneNumber: body.phoneNumber || "",
-            Height: body.height || "",
-            Weight: body.weight || "",
-            BloodPressure: body.bloodPressure || "",
-            SugarLevel: body.sugarLevel || "",
-
-            // II. Clinical History
-            ChiefComplaint: body.chiefComplaint || "",
-            PresentHistory: body.presentHistory || "",
+            MechanismOfInjury: body.mechanismOfInjury || "",
+            AggravatingEasingFactors: body.aggravatingFactors || "",
+            TwentyFourHourHistory: body.twentyFourHourHistory || "",
+            ImprovingStaticWorse: body.improvingStaticWorse || "",
+            NewOrOldInjury: body.newOldInjury || "",
             PastHistory: body.pastHistory || "",
             DiagnosticImaging: body.diagnosticImaging || "",
-            RedFlags: body.redFlags || "",
-
-            // III. Observation & Physical Examination
-            Observation: body.observation || "",
-            ActiveROM: body.activeMovements || "",
-            PassiveROM: body.passiveMovements || "",
-            MusclePower: body.musclePower || "",
-            Palpation: body.palpation || "",
-            Gait: body.gait || "",
-            NeurologicalTests: body.neurologicalTests || "",
-            Sensation: body.sensation || "",
-            Reflexes: body.reflexes || "",
-            SpecialTests: body.specialTests || "",
+            PainLocation: body.painLocation || "",
+            PainIntensity_VAS: body.painVas || 0,
+            PainPattern: body.painDescription || "",
+            ObservationPosture: body.observation || "",
+            Active_L_Flex: "",
+            Active_R_Flex: "",
+            Active_L_Ext: "",
+            Active_R_Ext: "",
+            Passive_L_Flex: "",
+            Passive_R_Flex: "",
+            Passive_L_Ext: "",
+            Passive_R_Ext: "",
             EndFeel: body.endFeel || "",
             CapsularPattern: body.capsularPattern || "",
             ResistedIsometrics: body.resistedIsometricMovements || "",
             FunctionalTesting: body.functionalTesting || "",
+            SensoryScan: body.sensoryScan || "",
+            Reflexes: body.reflexes || "",
+            NeuroSpecialTests: body.neuroSpecialTests || "",
+            SpecialTests: body.specialTests || "",
             JointPlayMovements: body.jointPlayMovements || "",
+            Palpation_Tenderness: body.palpation_Tenderness || "",
+            Palpation_Effusion: body.palpation_Effusion || "",
             Comments: body.comments || "",
-
-            // IV. Pain Assessment
-            PainHistory: body.painHistory || "",
-            AggravatingFactors: body.aggravatingFactors || "",
-            EasingFactors: body.easingFactors || "",
-            PainDescription: body.painDescription || "",
-            PainIntensity_VAS: body.painVas || 0,
-            SymptomsLocation: body.symptomsLocation || "",
-
-            // V. Diagnosis & Treatment Plan
-            Diagnosis: body.diagnosis || "",
-            TreatmentPlan: body.treatmentPlan || "",
-            ManualTherapy: body.manualTherapy || "",
-            Electrotherapy: body.electrotherapy || "",
-            ExercisePrescription: body.exercisePrescription || "",
-            PatientEducation: body.patientEducation || "",
-            HomeFollowups: body.homeFollowups || "",
-            WhatTreatment: body.whatTreatment || "",
-
-            // VI. Summary & Follow-up
-            PatientSummary: body.patientSummary || "",
-            Review1: body.review1 || "",
-            Review2: body.review2 || "",
-            Review3: body.review3 || "",
-
-            // System fields
             SubmittedBy: "System (Updated)",
             Timestamp: new Date().toISOString(),
         };
@@ -105,8 +79,13 @@ export async function PUT(request: Request, context: RouteParams) {
         // Send update request to Apps Script
         const response = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updateData),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'update',
+                ...updateData
+            }),
             redirect: 'follow',
         });
 
