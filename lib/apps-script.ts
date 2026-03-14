@@ -65,6 +65,7 @@ export interface AssessmentData {
     Review1?: string;
     Review2?: string;
     Review3?: string;
+    DailyNotes?: string;
 
     // Legacy & System
     TwentyFourHourHistory?: string;

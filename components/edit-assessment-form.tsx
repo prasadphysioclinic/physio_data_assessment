@@ -50,6 +50,7 @@ const formSchema = z.object({
     comments: z.string().optional(),
     endFeel: z.string().optional(),
     capsularPattern: z.string().optional(),
+    dailyNotes: z.string().optional(),
 });
 
 interface EditFormProps {
@@ -91,6 +92,7 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
             comments: assessment.Comments || "",
             endFeel: assessment.EndFeel || "",
             capsularPattern: assessment.CapsularPattern || "",
+            dailyNotes: assessment.DailyNotes || "",
         },
     });
 
@@ -336,6 +338,23 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                                             <FormLabel>Comments</FormLabel>
                                             <FormControl>
                                                 <Textarea {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="dailyNotes"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-primary font-bold">Daily Notes</FormLabel>
+                                            <FormControl>
+                                                <Textarea 
+                                                    placeholder="Update daily progress notes..." 
+                                                    className="min-h-[100px] bg-primary/5 border-primary/20"
+                                                    {...field} 
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

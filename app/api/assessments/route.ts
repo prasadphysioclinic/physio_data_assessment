@@ -62,6 +62,7 @@ export async function POST(request: Request) {
             Review1: body.review1 || "",
             Review2: body.review2 || "",
             Review3: body.review3 || "",
+            DailyNotes: body.dailyNotes || "",
 
             TwentyFourHourHistory: body.twentyFourHourHistory || "",
             ImprovingStaticWorse: body.improvingStaticWorse || "",

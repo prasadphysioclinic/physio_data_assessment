@@ -9,10 +9,13 @@ export const revalidate = 0; // Always fetch fresh data
 
 export default async function Home() {
   let assessments = [];
+  let error: string | null = null;
+  
   try {
     assessments = await getFromGoogleSheet();
-  } catch (error) {
-    console.error("Failed to fetch assessments:", error);
+  } catch (err) {
+    console.error("Failed to fetch assessments:", err);
+    error = err instanceof Error ? err.message : "Could not connect to Google Sheets";
   }
 
   return (
@@ -40,6 +43,15 @@ export default async function Home() {
           </Button>
         </div>
       </div>
+      
+      {error && (
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg flex items-center gap-3 mb-6">
+          <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+          <p className="text-sm font-medium">
+            <span className="font-bold">Sync Error:</span> {error}. Please verify your deployment settings or try refreshing.
+          </p>
+        </div>
+      )}
 
       <DashboardTable assessments={assessments} />
     </div>

@@ -144,11 +144,18 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                             {assessment.Diagnosis || assessment.ChiefComplaint || assessment.PastHistory}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="sm" asChild>
-                                                <Link href={`/assessment/${originalIndex}`}>
-                                                    View
-                                                </Link>
-                                            </Button>
+                                            <div className="flex justify-end gap-2">
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link href={`/assessment/${originalIndex}`}>
+                                                        View
+                                                    </Link>
+                                                </Button>
+                                                <Button variant="outline" size="sm" asChild className="h-8 px-2 text-xs">
+                                                    <Link href={`/assessment/${originalIndex}/edit`}>
+                                                        Edit
+                                                    </Link>
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 );

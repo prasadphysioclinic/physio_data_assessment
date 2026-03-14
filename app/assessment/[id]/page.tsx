@@ -17,7 +17,35 @@ interface PageProps {
 
 export default async function AssessmentDetailPage(props: PageProps) {
     const params = await props.params;
-    const assessments = await getFromGoogleSheet();
+    let assessments = [];
+    
+    try {
+        assessments = await getFromGoogleSheet();
+    } catch (error) {
+        console.error("Failed to fetch assessment details:", error);
+        return (
+            <div className="space-y-6">
+                <Button asChild variant="ghost" size="sm">
+                    <Link href="/">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to Dashboard
+                    </Link>
+                </Button>
+                <Card className="border-destructive">
+                    <CardContent className="pt-6">
+                        <div className="flex flex-col items-center justify-center text-center py-10">
+                            <h2 className="text-xl font-bold text-destructive mb-2">Error Loading Data</h2>
+                            <p className="text-muted-foreground mb-6">Could not connect to the Google Sheet. Please check your internet connection or APPS_SCRIPT_URL configuration.</p>
+                            <Button asChild>
+                                <Link href="/">Return to Dashboard</Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
     const assessmentIndex = parseInt(params.id);
 
     if (isNaN(assessmentIndex) || assessmentIndex < 0 || assessmentIndex >= assessments.length) {
@@ -331,6 +359,10 @@ export default async function AssessmentDetailPage(props: PageProps) {
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">Comments</p>
                             <p className="text-base">{assessment.Comments || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">Daily Notes</p>
+                            <p className="text-base bg-primary/5 p-3 rounded-md border border-primary/10">{assessment.DailyNotes || 'N/A'}</p>
                         </div>
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">Submitted By</p>

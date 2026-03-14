@@ -1,6 +1,7 @@
 import { getFromGoogleSheet } from "@/lib/apps-script";
 import { EditAssessmentForm } from "@/components/edit-assessment-form";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -13,7 +14,21 @@ interface PageProps {
 
 export default async function EditAssessmentPage(props: PageProps) {
     const params = await props.params;
-    const assessments = await getFromGoogleSheet();
+    let assessments = [];
+    
+    try {
+        assessments = await getFromGoogleSheet();
+    } catch (error) {
+        console.error("Failed to fetch assessment for editing:", error);
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-6 bg-muted/20 rounded-xl border-2 border-dashed">
+                <h2 className="text-xl font-bold text-destructive mb-2">Connection Error</h2>
+                <p className="text-muted-foreground mb-6">Could not retrieve data from Google Sheets.</p>
+                <Link href="/" className="text-primary hover:underline font-medium">Return to Dashboard</Link>
+            </div>
+        );
+    }
+
     const assessmentIndex = parseInt(params.id);
 
     if (isNaN(assessmentIndex) || assessmentIndex < 0 || assessmentIndex >= assessments.length) {

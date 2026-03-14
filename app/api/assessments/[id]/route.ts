@@ -72,6 +72,7 @@ export async function PUT(request: Request, context: RouteParams) {
             Palpation_Tenderness: body.palpation_Tenderness || "",
             Palpation_Effusion: body.palpation_Effusion || "",
             Comments: body.comments || "",
+            DailyNotes: body.dailyNotes || "",
             SubmittedBy: "System (Updated)",
             Timestamp: new Date().toISOString(),
         };

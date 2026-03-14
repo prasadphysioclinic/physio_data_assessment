@@ -77,7 +77,7 @@ Date | PatientName | Age | Occupation | MechanismOfInjury | ... (38 columns tota
    - You can use `ENV_SAMPLE.txt` as a reference
 2. Add this line (replace with your actual URL):
    ```
-   GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/YOUR_ACTUAL_SCRIPT_ID/exec
+   GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/AKfycbw7FLPoP3zRUQ8PyuUDd_e1NZhJFu4AdqfHzJolEu-2MB7ZmBiWe8-WBdnzH-aiG1LL/exec
    ```
 3. Save the file
 
