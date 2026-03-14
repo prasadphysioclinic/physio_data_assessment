@@ -65,7 +65,7 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            date: assessment.Date || new Date().toISOString().split("T")[0],
+            date: assessment.Date ? assessment.Date.split('T')[0] : new Date().toISOString().split("T")[0],
             name: assessment.PatientName || "",
             age: assessment.Age?.toString() || "",
             occupation: assessment.Occupation || "",

@@ -20,7 +20,8 @@ export default async function AssessmentDetailPage(props: PageProps) {
     let assessments = [];
     
     try {
-        assessments = await getFromGoogleSheet();
+        const data = await getFromGoogleSheet();
+        assessments = Array.isArray(data) ? data : [];
     } catch (error) {
         console.error("Failed to fetch assessment details:", error);
         return (

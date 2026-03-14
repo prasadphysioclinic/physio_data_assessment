@@ -12,7 +12,8 @@ export default async function Home() {
   let error: string | null = null;
   
   try {
-    assessments = await getFromGoogleSheet();
+    const data = await getFromGoogleSheet();
+    assessments = Array.isArray(data) ? data : [];
   } catch (err) {
     console.error("Failed to fetch assessments:", err);
     error = err instanceof Error ? err.message : "Could not connect to Google Sheets";
