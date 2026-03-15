@@ -90,8 +90,8 @@ export function checkDuplicate(
 ): boolean {
     return assessments.some((a, index) => {
         if (excludeIndex !== undefined && index === excludeIndex) return false;
-        const nameMatch = a.PatientName?.toLowerCase().trim() === patientName.toLowerCase().trim();
-        const dateMatch = a.Date?.split('T')[0] === date.split('T')[0];
+        const nameMatch = String(a.PatientName || '').toLowerCase().trim() === String(patientName || '').toLowerCase().trim();
+        const dateMatch = String(a.Date || '').split('T')[0] === String(date || '').split('T')[0];
         return nameMatch && dateMatch;
     });
 }
@@ -114,7 +114,7 @@ export function groupByPatient(assessments: any[]): PatientProfile[] {
     const patientMap = new Map<string, PatientProfile>();
 
     assessments.forEach((a, index) => {
-        const name = (a.PatientName || 'Unknown').trim();
+        const name = String(a.PatientName || 'Unknown').trim();
         const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
         if (!patientMap.has(slug)) {

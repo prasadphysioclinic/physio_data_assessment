@@ -50,10 +50,10 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
     const filteredAssessments = sortedAssessments.filter((assessment) => {
         const query = searchQuery.toLowerCase();
         return (
-            (assessment.PatientName && assessment.PatientName.toLowerCase().includes(query)) ||
-            (assessment.Diagnosis && assessment.Diagnosis.toLowerCase().includes(query)) ||
-            (assessment.ChiefComplaint && assessment.ChiefComplaint.toLowerCase().includes(query)) ||
-            (assessment.Date && assessment.Date.toLowerCase().includes(query))
+            (assessment.PatientName && String(assessment.PatientName).toLowerCase().includes(query)) ||
+            (assessment.Diagnosis && String(assessment.Diagnosis).toLowerCase().includes(query)) ||
+            (assessment.ChiefComplaint && String(assessment.ChiefComplaint).toLowerCase().includes(query)) ||
+            (assessment.Date && String(assessment.Date).toLowerCase().includes(query))
         );
     });
 
