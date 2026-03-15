@@ -58,18 +58,19 @@ export function convertDriveUrl(url: string | undefined | null): string {
     // Standard /file/d/ID/view or /file/d/ID/edit format
     const fileMatch = val.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
     if (fileMatch) {
-        return `https://drive.google.com/uc?export=view&id=${fileMatch[1]}`;
+        // Use thumbnail endpoint for better reliability in browser previews
+        return `https://drive.google.com/thumbnail?id=${fileMatch[1]}&sz=w800`;
     }
 
     // /open?id=ID format
     const openMatch = val.match(/[?&]id=([a-zA-Z0-9_-]+)/);
     if (openMatch) {
-        return `https://drive.google.com/uc?export=view&id=${openMatch[1]}`;
+        return `https://drive.google.com/thumbnail?id=${openMatch[1]}&sz=w800`;
     }
 
-    // fallback for naked IDs if they look like Drive IDs (28-33 chars typical)
+    // fallback for naked IDs
     if (val.length >= 25 && !val.includes('/') && !val.includes(':')) {
-        return `https://drive.google.com/uc?export=view&id=${val}`;
+        return `https://drive.google.com/thumbnail?id=${val}&sz=w800`;
     }
 
     return val;
@@ -179,4 +180,67 @@ export function extractPainHistory(assessments: any[], indices: number[]): PainD
             };
         })
         .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+}
+
+// ─── Image Compression for Speed ─────────────────────────────────────
+/**
+ * Compresses an image file before upload to save bandwidth and speed up Apps Script.
+ */
+export async function compressImage(file: File): Promise<{ base64: string; compressedFile: File }> {
+    if (!file.type.startsWith('image/')) {
+        // Not an image, return original
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve({ base64: reader.result as string, compressedFile: file });
+            reader.readAsDataURL(file);
+        });
+    }
+
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 1200;
+                const MAX_HEIGHT = 1200;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d')!;
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Get compressed base64 (0.7 quality)
+                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                
+                // Convert to File object
+                const byteString = atob(compressedBase64.split(',')[1]);
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                const blob = new Blob([ab], { type: 'image/jpeg' });
+                const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' });
+
+                resolve({ base64: compressedBase64, compressedFile });
+            };
+        };
+    });
 }

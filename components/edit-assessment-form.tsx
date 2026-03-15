@@ -22,7 +22,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Camera, Video, X, Upload, FileVideo, Plus } from "lucide-react";
-import { sanitizeFormData, validateFileSize, checkDuplicate } from "@/lib/utils-data";
+import { sanitizeFormData, validateFileSize, checkDuplicate, compressImage } from "@/lib/utils-data";
 import { getFromGoogleSheet } from "@/lib/apps-script";
 
 const formSchema = z.object({
@@ -206,8 +206,11 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
             const u8arr = new Uint8Array(n);
             while (n--) u8arr[n] = bstr.charCodeAt(n);
             const blob = new Blob([u8arr], { type: mime });
-            const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
-            setMediaFiles(prev => [...prev, { file, base64, type: 'image' }]);
+            const rawFile = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            
+            compressImage(rawFile).then(({ base64, compressedFile }) => {
+                setMediaFiles(prev => [...prev, { file: compressedFile, base64, type: 'image' }]);
+            });
         }
     };
 
@@ -262,10 +265,10 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
 
         const processedFiles = await Promise.all(
             validFiles.map(async (file) => {
-                const base64 = await toBase64(file);
+                const { base64, compressedFile } = await compressImage(file);
                 return { 
-                    file, 
-                    base64: base64 as string, 
+                    file: compressedFile, 
+                    base64: base64, 
                     type: (file.type.startsWith('video/') ? 'video' : 'image') as 'image' | 'video' 
                 };
             })

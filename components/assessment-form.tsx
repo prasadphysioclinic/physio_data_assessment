@@ -23,7 +23,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { Camera, Video, X, Upload, FileVideo, FileImage, Plus } from "lucide-react";
-import { sanitizeFormData, validateFileSize, checkDuplicate } from "@/lib/utils-data";
+import { sanitizeFormData, validateFileSize, checkDuplicate, compressImage } from "@/lib/utils-data";
 import { getFromGoogleSheet } from "@/lib/apps-script";
 
 const formSchema = z.object({
@@ -257,9 +257,15 @@ export function AssessmentForm() {
 
             // Create a fake file object for compatibility
             const blob = dataURLToBlob(base64);
-            const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
-
-            setMediaFiles([...mediaFiles, { file, base64, type: 'image' }]);
+            const rawFile = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            
+            compressImage(rawFile).then(({ base64: compressedBase64, compressedFile }) => {
+                setMediaFiles(prev => [...prev, { 
+                    file: compressedFile, 
+                    base64: compressedBase64, 
+                    type: 'image' 
+                }]);
+            });
         }
     };
 
@@ -327,10 +333,10 @@ export function AssessmentForm() {
 
         const processedFiles = await Promise.all(
             validFiles.map(async (file) => {
-                const base64 = await toBase64(file);
+                const { base64, compressedFile } = await compressImage(file);
                 return {
-                    file,
-                    base64: base64 as string,
+                    file: compressedFile,
+                    base64: base64,
                     type: (file.type.startsWith('video/') ? 'video' : 'image') as 'image' | 'video'
                 };
             })
