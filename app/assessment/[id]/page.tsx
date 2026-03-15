@@ -319,12 +319,17 @@ export default async function AssessmentDetailPage(props: PageProps) {
                             // Universal Scanner: Look for any field that contains a URL
                             const mediaUrls = Object.entries(assessment)
                                 .filter(([key, value]) => {
-                                    return typeof value === 'string' && 
-                                           (value.startsWith('http') || value.includes('drive.google.com')) &&
-                                           !key.toLowerCase().includes('name') && // Ignore patient name if it's a URL
-                                           !key.toLowerCase().includes('date');   // Ignore date fields
+                                    if (typeof value !== 'string') return false;
+                                    const val = value.trim();
+                                    const lowerVal = val.toLowerCase();
+                                    const lowerKey = key.toLowerCase();
+
+                                    return (lowerVal.startsWith('http') || lowerVal.includes('drive.google.com')) &&
+                                           !lowerKey.includes('name') && 
+                                           !lowerKey.includes('date') &&
+                                           val.length > 10; // Ignore tiny non-URL strings
                                 })
-                                .map(([_, value]) => value as string);
+                                .map(([_, value]) => (value as string).trim());
 
                             if (mediaUrls.length === 0) {
                                 return (
