@@ -84,7 +84,7 @@ const formSchema = z.object({
     // IV. Pain Assessment
     painHistory: z.string().optional(),
     painDescription: z.string().optional(),
-    painVas: z.coerce.number().min(0).max(10),
+    painVas: z.number().min(0).max(10),
     painLocation: z.string().optional(),
     symptomsLocation: z.string().optional(),
 
