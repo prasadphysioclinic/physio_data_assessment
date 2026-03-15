@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
     Table,
     TableBody,
@@ -12,7 +13,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Search, UserCircle, ExternalLink, Calendar } from "lucide-react";
 import { formatDateShort } from "@/lib/format-date";
 
 interface Assessment {
@@ -24,6 +25,7 @@ interface Assessment {
     Diagnosis?: string;
     ChiefComplaint?: string;
     PastHistory?: string;
+    PainIntensity_VAS?: string | number;
     [key: string]: any;
 }
 
@@ -34,64 +36,46 @@ interface DashboardTableProps {
 export function DashboardTable({ assessments }: DashboardTableProps) {
     const [searchQuery, setSearchQuery] = useState("");
 
-    // Sort assessments by Date and Timestamp descending (latest first)
-    const sortedAssessments = [...assessments].sort((a, b) => {
-        try {
-            // Try to sort by Timestamp if available (most reliable for "last entry")
-            if (a.Timestamp && b.Timestamp) {
-                try {
-                    const parseDate = (ts: string) => {
-                        if (!ts || typeof ts !== 'string') return 0;
-                        const parts = ts.split(', ');
-                        if (parts.length < 2) return 0;
-                        const [datePart, timePart] = parts;
-                        const dateParts = datePart.split('/');
-                        if (dateParts.length < 3) return 0;
-                        const [day, month, year] = dateParts;
-                        return new Date(`${year}-${month}-${day}T${timePart}`).getTime() || 0;
-                    };
-                    return parseDate(b.Timestamp) - parseDate(a.Timestamp);
-                } catch {
-                    return 0; // If parsing fails, treat as equal
-                }
-            }
-            // Fallback to Date if Timestamp is missing
-            const dateA = a.Date ? new Date(a.Date).getTime() : 0;
-            const dateB = b.Date ? new Date(b.Date).getTime() : 0;
-            return (dateB || 0) - (dateA || 0);
-        } catch {
-            return 0; // If anything fails, treat as equal
-        }
-    });
+    // Create a mapping for patient slugs
+    const getSlug = (name: string) => (name || '').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
+    // Sort assessments by Date descending (latest first)
+    const sortedAssessments = [...assessments].sort((a, b) => {
+        const dateA = a.Date ? new Date(a.Date).getTime() : 0;
+        const dateB = b.Date ? new Date(b.Date).getTime() : 0;
+        return (dateB || 0) - (dateA || 0);
+    });
 
     // Filter assessments based on search query
     const filteredAssessments = sortedAssessments.filter((assessment) => {
         const query = searchQuery.toLowerCase();
         return (
             (assessment.PatientName && assessment.PatientName.toLowerCase().includes(query)) ||
-            (assessment.Age && assessment.Age.toString().toLowerCase().includes(query)) ||
-            (assessment.Occupation && assessment.Occupation.toLowerCase().includes(query)) ||
             (assessment.Diagnosis && assessment.Diagnosis.toLowerCase().includes(query)) ||
             (assessment.ChiefComplaint && assessment.ChiefComplaint.toLowerCase().includes(query)) ||
-            (assessment.PastHistory && assessment.PastHistory.toLowerCase().includes(query)) ||
-            (assessment.DailyNotes && assessment.DailyNotes.toLowerCase().includes(query)) ||
             (assessment.Date && assessment.Date.toLowerCase().includes(query))
         );
     });
 
+    const getPainBadge = (vas: any) => {
+        const score = parseInt(vas);
+        if (isNaN(score)) return null;
+        if (score <= 3) return <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">VAS {score}</Badge>;
+        if (score <= 6) return <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-yellow-200">VAS {score}</Badge>;
+        return <Badge variant="secondary" className="bg-red-100 text-red-700 hover:bg-red-100 border-red-200">VAS {score}</Badge>;
+    };
+
     return (
         <div className="space-y-4">
-            {/* Search Bar */}
-            <div className="flex items-center gap-2">
-                <div className="relative flex-1 max-w-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="relative flex-1 w-full max-w-sm">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                         type="text"
-                        placeholder="Search by name, age, occupation, or diagnosis..."
+                        placeholder="Search patient name, diagnosis..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9"
+                        className="pl-9 h-10 rounded-xl"
                     />
                 </div>
                 {searchQuery && (
@@ -99,84 +83,89 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                         variant="ghost"
                         size="sm"
                         onClick={() => setSearchQuery("")}
+                        className="text-muted-foreground hover:text-foreground"
                     >
-                        Clear
+                        Clear Search
                     </Button>
                 )}
             </div>
 
-            {/* Results Count */}
-            {searchQuery && (
-                <p className="text-sm text-muted-foreground">
-                    Found {filteredAssessments.length} of {assessments.length} assessments
+            <div className="rounded-xl border bg-card overflow-hidden">
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader className="bg-muted/50">
+                            <TableRow>
+                                <TableHead className="w-[110px]">Date</TableHead>
+                                <TableHead>Patient</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="hidden md:table-cell">Diagnosis</TableHead>
+                                <TableHead className="hidden lg:table-cell">Daily Notes</TableHead>
+                                <TableHead className="text-right">Action</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {filteredAssessments.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="h-32 text-center text-muted-foreground italic">
+                                        {searchQuery ? "No results found." : "No assessments recorded yet."}
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                filteredAssessments.map((assessment) => {
+                                    const originalIndex = assessments.findIndex(a => a === assessment);
+                                    const slug = getSlug(assessment.PatientName);
+
+                                    return (
+                                        <TableRow key={`${originalIndex}-${assessment.Date}`} className="group hover:bg-muted/30 transition-colors">
+                                            <TableCell className="font-medium">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm">{formatDateShort(assessment.Date)}</span>
+                                                    <span className="text-[10px] text-muted-foreground font-mono">{assessment.Timestamp?.split(', ')[1]}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-col">
+                                                    <Link 
+                                                        href={`/patient/${slug}`}
+                                                        className="font-bold text-sm hover:text-primary hover:underline flex items-center gap-1 group/link"
+                                                    >
+                                                        {assessment.PatientName || 'Unknown'}
+                                                        <UserCircle className="h-3 w-3 opacity-0 group-hover/link:opacity-100 transition-opacity" />
+                                                    </Link>
+                                                    <span className="text-[10px] text-muted-foreground">{assessment.Age ? `${assessment.Age} yrs` : 'Age N/A'} • {assessment.Sex || '-'}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {getPainBadge(assessment.PainIntensity_VAS)}
+                                            </TableCell>
+                                            <TableCell className="hidden md:table-cell max-w-[200px] truncate text-sm">
+                                                {assessment.Diagnosis || assessment.ChiefComplaint || '-'}
+                                            </TableCell>
+                                            <TableCell className="hidden lg:table-cell max-w-[200px] truncate text-sm italic text-muted-foreground">
+                                                {assessment.DailyNotes || '-'}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button variant="ghost" size="sm" asChild className="h-8 w-8 p-0 rounded-full hover:bg-primary/10 hover:text-primary">
+                                                    <Link href={`/assessment/${originalIndex}`}>
+                                                        <ExternalLink className="h-4 w-4" />
+                                                        <span className="sr-only">View</span>
+                                                    </Link>
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+            </div>
+            {filteredAssessments.length > 0 && (
+                <p className="text-[10px] text-muted-foreground text-center italic">
+                    💡 Click a patient name to view their recovery history and progress graph.
                 </p>
             )}
-
-            {/* Table */}
-            <div className="rounded-md border mobile-scroll">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Patient Name</TableHead>
-                            <TableHead>Age</TableHead>
-                            <TableHead>Occupation</TableHead>
-                            <TableHead>Diagnosis/History</TableHead>
-                            <TableHead>Daily Notes</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredAssessments.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={7} className="h-24 text-center">
-                                    {searchQuery
-                                        ? "No assessments found matching your search."
-                                        : "No assessments found."}
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            filteredAssessments.map((assessment, index) => {
-                                // Find the original index in the full assessments array
-                                const originalIndex = assessments.findIndex(
-                                    (a) => a === assessment
-                                );
-
-                                return (
-                                    <TableRow key={originalIndex}>
-                                        <TableCell>{formatDateShort(assessment.Date)}</TableCell>
-                                        <TableCell className="font-medium">
-                                            {assessment.PatientName || 'N/A'}
-                                        </TableCell>
-                                        <TableCell>{assessment.Age || '-'}</TableCell>
-                                        <TableCell>{assessment.Occupation || '-'}</TableCell>
-                                        <TableCell className="max-w-[150px] truncate">
-                                            {assessment.Diagnosis || assessment.ChiefComplaint || assessment.PastHistory || '-'}
-                                        </TableCell>
-                                        <TableCell className="max-w-[150px] truncate italic text-muted-foreground">
-                                            {assessment.DailyNotes || "-"}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <Button variant="ghost" size="sm" asChild>
-                                                    <Link href={`/assessment/${originalIndex}`}>
-                                                        View
-                                                    </Link>
-                                                </Button>
-                                                <Button variant="outline" size="sm" asChild className="h-8 px-2 text-xs">
-                                                    <Link href={`/assessment/${originalIndex}/edit`}>
-                                                        Edit
-                                                    </Link>
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
         </div>
     );
 }
+

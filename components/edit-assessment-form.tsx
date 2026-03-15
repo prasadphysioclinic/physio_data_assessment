@@ -22,6 +22,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Camera, Video, X, Upload, FileVideo, Plus } from "lucide-react";
+import { sanitizeFormData, validateFileSize, checkDuplicate } from "@/lib/utils-data";
+import { getFromGoogleSheet } from "@/lib/apps-script";
 
 const formSchema = z.object({
     // I. Patient Demographics
@@ -247,12 +249,28 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
             alert(`Maximum 4 total attachments. You can add ${maxNewMedia - mediaFiles.length} more.`);
             return;
         }
+
+        const validFiles: File[] = [];
+        for (const file of newFiles) {
+            const validation = validateFileSize(file);
+            if (!validation.valid) {
+                alert(validation.error);
+                continue;
+            }
+            validFiles.push(file);
+        }
+
         const processedFiles = await Promise.all(
-            newFiles.map(async (file) => {
+            validFiles.map(async (file) => {
                 const base64 = await toBase64(file);
-                return { file, base64: base64 as string, type: (file.type.startsWith('video/') ? 'video' : 'image') as 'image' | 'video' };
+                return { 
+                    file, 
+                    base64: base64 as string, 
+                    type: (file.type.startsWith('video/') ? 'video' : 'image') as 'image' | 'video' 
+                };
             })
         );
+        
         setMediaFiles(prev => [...prev, ...processedFiles]);
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
@@ -344,8 +362,21 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true);
         try {
+            // 1. Sanitize data to prevent literal "undefined" in Sheets
+            const sanitizedValues = sanitizeFormData(values);
+
+            // 2. Check for duplicates
+            const allData = await getFromGoogleSheet();
+            const assessments = Array.isArray(allData) ? allData : [];
+            if (checkDuplicate(assessments, sanitizedValues.name, sanitizedValues.date, assessmentIndex)) {
+                if (!confirm(`An assessment for ${sanitizedValues.name} already exists on ${sanitizedValues.date}. Do you want to save anyway?`)) {
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+
             const payload = {
-                ...values,
+                ...sanitizedValues,
                 existingMedia,
                 files: mediaFiles.map(mf => ({
                     name: mf.file.name,

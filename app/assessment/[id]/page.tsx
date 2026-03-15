@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { notFound } from "next/navigation";
 import { formatDate, formatDateTime } from "@/lib/format-date";
+import { DownloadReportButton } from "@/components/download-report";
+import { convertDriveUrl, isVideoUrl } from "@/lib/utils-data";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0; // Always fetch fresh data from Google Sheets
@@ -67,12 +69,15 @@ export default async function AssessmentDetailPage(props: PageProps) {
                         Back to Dashboard
                     </Link>
                 </Button>
-                <Button asChild variant="default" size="sm" className="w-full sm:w-auto">
-                    <Link href={`/assessment/${assessmentIndex}/edit`}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Edit Assessment
-                    </Link>
-                </Button>
+                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                    <DownloadReportButton assessment={assessment} />
+                    <Button asChild variant="default" size="sm" className="flex-1 sm:flex-none">
+                        <Link href={`/assessment/${assessmentIndex}/edit`}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit Assessment
+                        </Link>
+                    </Button>
+                </div>
             </div>
 
             <div className="space-y-2">
@@ -305,52 +310,61 @@ export default async function AssessmentDetailPage(props: PageProps) {
                 </Card>
 
                 {/* Media Attachments */}
-                {(assessment.Media1 || assessment.Media2 || assessment.Media3 || assessment.Media4) && (
-                    <Card className="md:col-span-2">
-                        <CardHeader>
-                            <CardTitle>Media Attachments</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {[assessment.Media1, assessment.Media2, assessment.Media3, assessment.Media4].map((url, index) => {
-                                    if (!url || typeof url !== 'string') return null;
+                <Card className="md:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Media Attachments</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {(() => {
+                            const mediaUrls = [assessment.Media1, assessment.Media2, assessment.Media3, assessment.Media4]
+                                .filter(url => typeof url === 'string' && url.startsWith('http'));
 
-                                    const lower = url.toLowerCase();
-                                    const isVideo = lower.includes('mp4') || lower.includes('mov') || lower.includes('video');
+                            if (mediaUrls.length === 0) {
+                                return (
+                                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground bg-muted/30 rounded-lg border-2 border-dashed">
+                                        <p>No media attachments (photos or videos) for this assessment.</p>
+                                    </div>
+                                );
+                            }
 
-                                    return (
-                                        <div key={index} className="space-y-2">
-                                            <div className="rounded-lg overflow-hidden border bg-muted aspect-video flex items-center justify-center">
-                                                {isVideo ? (
-                                                    <video
-                                                        src={url}
-                                                        controls
-                                                        className="w-full h-full object-contain"
-                                                    />
-                                                ) : (
-                                                    <img
-                                                        src={url}
-                                                        alt={`Attachment ${index + 1}`}
-                                                        className="w-full h-full object-cover"
-                                                        onError={(e) => {
-                                                            // Fallback for Drive URLs that might need a different view
-                                                            (e.target as HTMLImageElement).src = '/file-placeholder.png';
-                                                        }}
-                                                    />
-                                                )}
+                            return (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {mediaUrls.map((url, i) => {
+                                        const directUrl = convertDriveUrl(url);
+                                        const isVideo = isVideoUrl(url);
+
+                                        return (
+                                            <div key={i} className="space-y-2">
+                                                <div className="group relative aspect-video sm:aspect-square rounded-xl overflow-hidden bg-black border shadow-sm">
+                                                    {isVideo ? (
+                                                        <video
+                                                            src={directUrl}
+                                                            controls
+                                                            className="w-full h-full object-contain"
+                                                        />
+                                                    ) : (
+                                                        <img
+                                                            src={directUrl}
+                                                            alt={`Evidence ${i + 1}`}
+                                                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                                            loading="lazy"
+                                                        />
+                                                    )}
+                                                </div>
+                                                <Button variant="outline" size="sm" className="w-full text-[10px] h-7" asChild>
+                                                    <a href={url} target="_blank" rel="noopener noreferrer">
+                                                        Open Original
+                                                    </a>
+                                                </Button>
                                             </div>
-                                            <Button variant="outline" size="sm" className="w-full text-[10px]" asChild>
-                                                <a href={url} target="_blank" rel="noopener noreferrer">
-                                                    Open Original
-                                                </a>
-                                            </Button>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })()}
+                    </CardContent>
+                </Card>
+
 
                 {/* Additional Information */}
                 <Card className="md:col-span-2">

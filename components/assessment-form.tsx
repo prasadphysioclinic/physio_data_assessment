@@ -22,6 +22,8 @@ import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { Camera, Video, X, Upload, FileVideo, FileImage, Plus } from "lucide-react";
 import { useRef, useEffect } from "react";
+import { sanitizeFormData, validateFileSize, checkDuplicate } from "@/lib/utils-data";
+import { getFromGoogleSheet } from "@/lib/apps-script";
 
 const formSchema = z.object({
     // I. Patient Demographics
@@ -310,8 +312,18 @@ export function AssessmentForm() {
             return;
         }
 
+        const validFiles: File[] = [];
+        for (const file of newFiles) {
+            const validation = validateFileSize(file);
+            if (!validation.valid) {
+                alert(validation.error);
+                continue;
+            }
+            validFiles.push(file);
+        }
+
         const processedFiles = await Promise.all(
-            newFiles.map(async (file) => {
+            validFiles.map(async (file) => {
                 const base64 = await toBase64(file);
                 return {
                     file,
@@ -340,9 +352,22 @@ export function AssessmentForm() {
         console.log('Form submission started');
         setIsSubmitting(true);
         try {
+            // 1. Sanitize
+            const sanitizedValues = sanitizeFormData(values);
+
+            // 2. Duplicate Check
+            const allData = await getFromGoogleSheet();
+            const assessments = Array.isArray(allData) ? allData : [];
+            if (checkDuplicate(assessments, sanitizedValues.name, sanitizedValues.date)) {
+                if (!confirm(`An assessment for ${sanitizedValues.name} already exists on ${sanitizedValues.date}. Save anyway?`)) {
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+
             // Include media files in the submission
             const payload = {
-                ...values,
+                ...sanitizedValues,
                 files: mediaFiles.map(mf => ({
                     name: mf.file.name,
                     type: mf.file.type,
