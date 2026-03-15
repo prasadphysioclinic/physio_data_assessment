@@ -328,10 +328,11 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                     const isUrl = lowerVal.startsWith('http') || lowerVal.includes('drive.google.com');
                                     const isID = val.length >= 25 && !val.includes(' ') && !val.includes('/') && !val.includes(':');
 
-                                    // 2. Filter out non-media fields (like Patient Name)
-                                    const isMetadata = lowerKey.includes('name') || lowerKey.includes('date') || lowerKey.includes('age');
+                                    // 2. Filter out known non-media system fields ONLY
+                                    const systemKeys = ['patientname', 'date', 'timestamp', 'age', 'sex', 'occupation', 'phonenumber', 'action', 'rowindex', 'submittedby'];
+                                    const isSystemField = systemKeys.some(sk => lowerKey === sk || lowerKey.replace(/\s+/g, '') === sk);
 
-                                    return (isUrl || isID) && !isMetadata;
+                                    return (isUrl || isID) && !isSystemField;
                                 })
                                 .map(([_, value]) => (value as string).trim());
 

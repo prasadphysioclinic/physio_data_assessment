@@ -25,14 +25,13 @@ export async function PUT(request: Request, context: RouteParams) {
             );
         }
 
-        // The library function saveToGoogleSheet now handles the fetch and URL check
-
-        // Map existing media URLs (ones the user kept) back into Media1-4 slots
+        const existingRow = assessments[assessmentIndex];
         const existingMedia: string[] = body.existingMedia || [];
 
-        // Prepare the data with the row index
-        const updateData: AssessmentData = {
-            rowIndex: assessmentIndex + 2, // +2: +1 header row, +1 for 1-based indexing
+        // Prepare the data with the row index, merging with existing row data to PRESERVE OTHER COLUMNS
+        const updateData: any = {
+            ...existingRow, // Spread everything first (preserves unknown columns)
+            rowIndex: assessmentIndex + 2,
             Date: body.date,
             PatientName: body.name,
             Age: body.age,
@@ -50,13 +49,13 @@ export async function PUT(request: Request, context: RouteParams) {
             ChiefComplaint: body.chiefComplaint || "",
             PresentHistory: body.presentHistory || "",
             MechanismOfInjury: body.mechanismOfInjury || "",
-            AggravatingEasingFactors: body.aggravatingFactors || "",
+            AggravatingEasingFactors: body.aggravatingEasingFactors || "", // Fixed key
             PastHistory: body.pastHistory || "",
             DiagnosticImaging: body.diagnosticImaging || "",
             RedFlags: body.redFlags || "",
 
             Observation: body.observation || "",
-            ObservationPosture: body.observation || "", // Mapping both for compatibility
+            ObservationPosture: body.observationPosture || "", 
             ActiveROM: body.activeROM || "",
             Active_L_Flex: body.active_L_Flex || "",
             Active_R_Flex: body.active_R_Flex || "",
@@ -88,7 +87,7 @@ export async function PUT(request: Request, context: RouteParams) {
             AggravatingFactors: body.aggravatingFactors || "",
             EasingFactors: body.easingFactors || "",
             PainDescription: body.painDescription || "",
-            PainPattern: body.painDescription || "", // Mapping both
+            PainPattern: body.painPattern || "", 
             PainIntensity_VAS: body.painVas || 0,
             PainLocation: body.painLocation || "",
             SymptomsLocation: body.symptomsLocation || "",
@@ -98,7 +97,7 @@ export async function PUT(request: Request, context: RouteParams) {
             ManualTherapy: body.manualTherapy || "",
             Electrotherapy: body.electrotherapy || "",
             ExercisePrescription: body.exercisePrescription || "",
-            PatientEducation: body.patientEducation || "",
+            PatientEducation: body.patientEducation || "" ,
             HomeFollowups: body.homeFollowups || "",
             WhatTreatment: body.whatTreatment || "",
 
@@ -118,14 +117,13 @@ export async function PUT(request: Request, context: RouteParams) {
                 hour12: false, timeZone: 'Asia/Kolkata'
             }).format(new Date()),
 
-            // Preserve existing media URLs
+            // Preserve current selection from form
             Media1: existingMedia[0] || "",
             Media2: existingMedia[1] || "",
             Media3: existingMedia[2] || "",
             Media4: existingMedia[3] || "",
         };
 
-        // Include new file uploads if any
         const payload: any = {
             action: 'update',
             ...updateData,

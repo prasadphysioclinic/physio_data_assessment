@@ -110,6 +110,7 @@ export interface AssessmentData {
     // Action for updates
     action?: 'create' | 'update';
     rowIndex?: number;
+    [key: string]: any;
 }
 
 export async function saveToGoogleSheet(data: AssessmentData) {

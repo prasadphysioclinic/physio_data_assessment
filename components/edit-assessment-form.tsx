@@ -22,7 +22,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Camera, Video, X, Upload, FileVideo, Plus } from "lucide-react";
-import { sanitizeFormData, validateFileSize, checkDuplicate, compressImage } from "@/lib/utils-data";
+import { sanitizeFormData, validateFileSize, checkDuplicate, compressImage, convertDriveUrl, isVideoUrl } from "@/lib/utils-data";
 import { getFromGoogleSheet } from "@/lib/apps-script";
 
 const formSchema = z.object({
@@ -132,14 +132,27 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
     const streamRef = useRef<MediaStream | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Load existing media URLs
+    // Load existing media URLs (Universal Loader)
     useEffect(() => {
-        const media: string[] = [];
-        [assessment.Media1, assessment.Media2, assessment.Media3, assessment.Media4].forEach(url => {
-            if (url && typeof url === 'string' && url.startsWith('http')) {
-                media.push(url);
-            }
-        });
+        const media: string[] = Object.entries(assessment)
+            .filter(([key, value]) => {
+                if (!value || typeof value !== 'string') return false;
+                const val = value.trim();
+                const lowerVal = val.toLowerCase();
+                const lowerKey = key.toLowerCase();
+
+                // 1. Must be a link OR a long Drive-like ID
+                const isUrl = lowerVal.startsWith('http') || lowerVal.includes('drive.google.com');
+                const isID = val.length >= 25 && !val.includes(' ') && !val.includes('/') && !val.includes(':');
+
+                // 2. Filter out known non-media system fields ONLY
+                const systemKeys = ['patientname', 'date', 'timestamp', 'age', 'sex', 'occupation', 'phonenumber', 'action', 'rowindex', 'submittedby'];
+                const isSystemField = systemKeys.some(sk => lowerKey === sk || lowerKey.replace(/\s+/g, '') === sk);
+
+                return (isUrl || isID) && !isSystemField;
+            })
+            .map(([_, value]) => (value as string).trim());
+        
         setExistingMedia(media);
     }, [assessment]);
 
@@ -993,8 +1006,8 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                                             <p className="text-xs text-muted-foreground mb-2 font-medium">📁 Existing Attachments</p>
                                             <div className="grid grid-cols-2 gap-3">
                                                 {existingMedia.map((url, index) => {
-                                                    const lower = url.toLowerCase();
-                                                    const isVideo = lower.includes('mp4') || lower.includes('mov') || lower.includes('video');
+                                                    const isVideo = isVideoUrl(url);
+                                                    const displayUrl = convertDriveUrl(url);
                                                     return (
                                                         <div key={`existing-${index}`} className="relative aspect-square rounded-xl overflow-hidden border shadow-sm group bg-black">
                                                             {isVideo ? (
@@ -1003,7 +1016,7 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                                                                     <span className="text-[8px] font-bold text-white bg-blue-600 px-1.5 py-0.5 rounded uppercase">Saved</span>
                                                                 </div>
                                                             ) : (
-                                                                <img src={url} className="w-full h-full object-cover" alt={`Existing ${index + 1}`} />
+                                                                <img src={displayUrl} className="w-full h-full object-cover" alt={`Existing ${index + 1}`} />
                                                             )}
                                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                                 <Button type="button" variant="destructive" size="icon" onClick={() => removeExistingMedia(index)} className="h-8 w-8 rounded-full shadow-lg">
