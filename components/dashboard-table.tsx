@@ -67,6 +67,7 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
             (assessment.Diagnosis && assessment.Diagnosis.toLowerCase().includes(query)) ||
             (assessment.ChiefComplaint && assessment.ChiefComplaint.toLowerCase().includes(query)) ||
             (assessment.PastHistory && assessment.PastHistory.toLowerCase().includes(query)) ||
+            (assessment.DailyNotes && assessment.DailyNotes.toLowerCase().includes(query)) ||
             (assessment.Date && assessment.Date.toLowerCase().includes(query))
         );
     });
@@ -113,13 +114,14 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                             <TableHead>Age</TableHead>
                             <TableHead>Occupation</TableHead>
                             <TableHead>Diagnosis/History</TableHead>
+                            <TableHead>Daily Notes</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {filteredAssessments.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center">
+                                <TableCell colSpan={7} className="h-24 text-center">
                                     {searchQuery
                                         ? "No assessments found matching your search."
                                         : "No assessments found."}
@@ -140,8 +142,11 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                         </TableCell>
                                         <TableCell>{assessment.Age}</TableCell>
                                         <TableCell>{assessment.Occupation}</TableCell>
-                                        <TableCell className="max-w-[200px] truncate">
+                                        <TableCell className="max-w-[150px] truncate">
                                             {assessment.Diagnosis || assessment.ChiefComplaint || assessment.PastHistory}
+                                        </TableCell>
+                                        <TableCell className="max-w-[150px] truncate italic text-muted-foreground">
+                                            {assessment.DailyNotes || "-"}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
