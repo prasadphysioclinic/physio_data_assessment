@@ -12,7 +12,7 @@ interface RouteParams {
 export async function PUT(request: Request, context: RouteParams) {
     try {
         const params = await context.params;
-        const assessmentIndex = parseInt(params.id);
+        const assessmentIndex = Number(params.id);
         const body = await request.json();
 
         // Get all assessments from Google Sheet
@@ -25,18 +25,18 @@ export async function PUT(request: Request, context: RouteParams) {
             );
         }
 
-        // Update the Google Sheet via Apps Script
-        // Since Google Sheets doesn't have a direct "update row" API,
-        // we need to use the Apps Script to update the specific row
         const APPS_SCRIPT_URL = process.env.GOOGLE_APPS_SCRIPT_URL;
 
         if (!APPS_SCRIPT_URL) {
             throw new Error('GOOGLE_APPS_SCRIPT_URL is not configured');
         }
 
+        // Map existing media URLs (ones the user kept) back into Media1-4 slots
+        const existingMedia: string[] = body.existingMedia || [];
+
         // Prepare the data with the row index
         const updateData: AssessmentData = {
-            rowIndex: assessmentIndex + 2, // +2 because: +1 for header row, +1 for 1-based indexing
+            rowIndex: assessmentIndex + 2, // +2: +1 header row, +1 for 1-based indexing
             Date: body.date,
             PatientName: body.name,
             Age: body.age,
@@ -116,35 +116,71 @@ export async function PUT(request: Request, context: RouteParams) {
             ImprovingStaticWorse: body.improvingStaticWorse || "",
             NewOrOldInjury: body.newOldInjury || "",
             SubmittedBy: "System (Updated)",
-            Timestamp: new Date().toISOString(),
+            Timestamp: new Intl.DateTimeFormat('en-GB', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                hour12: false, timeZone: 'Asia/Kolkata'
+            }).format(new Date()),
+
+            // Preserve existing media URLs
+            Media1: existingMedia[0] || "",
+            Media2: existingMedia[1] || "",
+            Media3: existingMedia[2] || "",
+            Media4: existingMedia[3] || "",
         };
 
-        // Send update request to Apps Script
+        // Include new file uploads if any
+        const payload: any = {
+            action: 'update',
+            ...updateData,
+        };
+
+        if (body.files && body.files.length > 0) {
+            payload.files = body.files;
+        }
+
+        // Send update request to Apps Script with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
         const response = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                action: 'update',
-                ...updateData
-            }),
+            body: JSON.stringify(payload),
             redirect: 'follow',
+            signal: controller.signal,
         });
 
+        clearTimeout(timeoutId);
+        const text = await response.text();
+
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Failed to update in Google Sheet: ${errorText}`);
+            throw new Error(`Failed to update in Google Sheet: ${text.substring(0, 200)}`);
         }
 
-        const result = await response.json();
-        return NextResponse.json({ success: true, data: result });
+        // Safe JSON parsing
+        try {
+            const result = JSON.parse(text);
+            return NextResponse.json({ success: true, data: result });
+        } catch {
+            console.error('Non-JSON response from Apps Script (update):', text.substring(0, 300));
+            return NextResponse.json({ success: true, message: 'Update sent but response was not JSON' });
+        }
 
     } catch (error) {
         console.error("Error updating assessment:", error);
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            return NextResponse.json(
+                { error: "Request to Google Apps Script timed out (30s)" },
+                { status: 504 }
+            );
+        }
         return NextResponse.json(
             { error: error instanceof Error ? error.message : "Failed to update assessment" },
             { status: 500 }
         );
     }
 }
+
