@@ -113,21 +113,33 @@ export async function saveToGoogleSheet(data: AssessmentData) {
         throw new Error('GOOGLE_APPS_SCRIPT_URL is not configured');
     }
 
-    const response = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-        redirect: 'follow',
-    });
+    try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+            redirect: 'follow',
+        });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to save to Google Sheet: ${errorText}`);
+        const text = await response.text();
+
+        if (!response.ok) {
+            throw new Error(`Failed to save to Google Sheet: ${text.substring(0, 200)}`);
+        }
+
+        // Safely parse JSON - Google might return HTML instead
+        try {
+            return JSON.parse(text);
+        } catch {
+            console.error('Non-JSON response from Apps Script (save):', text.substring(0, 300));
+            throw new Error('Google Apps Script returned invalid response. Check script deployment.');
+        }
+    } catch (error) {
+        if (error instanceof Error) throw error;
+        throw new Error('Network error connecting to Google Apps Script');
     }
-
-    return await response.json();
 }
 
 export async function getFromGoogleSheet() {
@@ -135,22 +147,36 @@ export async function getFromGoogleSheet() {
         throw new Error('GOOGLE_APPS_SCRIPT_URL is not configured');
     }
 
-    const response = await fetch(APPS_SCRIPT_URL, {
-        method: 'GET',
-        redirect: 'follow',
-    });
+    try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'GET',
+            redirect: 'follow',
+            next: { revalidate: 0 },
+        });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to fetch from Google Sheet: ${errorText}`);
+        const text = await response.text();
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch from Google Sheet: ${text.substring(0, 200)}`);
+        }
+
+        // Safely parse JSON - Google might return HTML (auth page) instead
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch {
+            console.error('Non-JSON response from Apps Script (get):', text.substring(0, 300));
+            throw new Error('Google Apps Script returned HTML instead of JSON. Redeploy your script as "Anyone" access.');
+        }
+
+        // Handle both formats: direct array or { data: [...] }
+        if (Array.isArray(result)) {
+            return result;
+        }
+
+        return result.data || [];
+    } catch (error) {
+        if (error instanceof Error) throw error;
+        throw new Error('Network error connecting to Google Apps Script');
     }
-
-    const result = await response.json();
-
-    // Handle both formats: direct array or { data: [...] }
-    if (Array.isArray(result)) {
-        return result;
-    }
-
-    return result.data || [];
 }
