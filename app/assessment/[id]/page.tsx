@@ -316,25 +316,29 @@ export default async function AssessmentDetailPage(props: PageProps) {
                     </CardHeader>
                     <CardContent>
                         {(() => {
-                            // Universal Scanner: Look for any field that contains a URL
+                            // Universal Scanner: Very broad check to find any potential media links
                             const mediaUrls = Object.entries(assessment)
                                 .filter(([key, value]) => {
-                                    if (typeof value !== 'string') return false;
+                                    if (!value || typeof value !== 'string') return false;
                                     const val = value.trim();
                                     const lowerVal = val.toLowerCase();
                                     const lowerKey = key.toLowerCase();
 
-                                    return (lowerVal.startsWith('http') || lowerVal.includes('drive.google.com')) &&
-                                           !lowerKey.includes('name') && 
-                                           !lowerKey.includes('date') &&
-                                           val.length > 10; // Ignore tiny non-URL strings
+                                    // 1. Must be a link OR a long Drive-like ID
+                                    const isUrl = lowerVal.startsWith('http') || lowerVal.includes('drive.google.com');
+                                    const isID = val.length >= 25 && !val.includes(' ') && !val.includes('/') && !val.includes(':');
+
+                                    // 2. Filter out non-media fields (like Patient Name)
+                                    const isMetadata = lowerKey.includes('name') || lowerKey.includes('date') || lowerKey.includes('age');
+
+                                    return (isUrl || isID) && !isMetadata;
                                 })
                                 .map(([_, value]) => (value as string).trim());
 
                             if (mediaUrls.length === 0) {
                                 return (
                                     <div className="flex flex-col items-center justify-center py-12 text-muted-foreground bg-muted/30 rounded-lg border-2 border-dashed">
-                                        <p>No media attachments (photos or videos) found for this assessment.</p>
+                                        <p className="text-sm">No media attachments found for this assessment.</p>
                                     </div>
                                 );
                             }

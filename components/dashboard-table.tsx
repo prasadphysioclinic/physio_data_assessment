@@ -125,13 +125,9 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex flex-col">
-                                                    <Link 
-                                                        href={`/patient/${slug}`}
-                                                        className="font-bold text-sm hover:text-primary hover:underline flex items-center gap-1 group/link"
-                                                    >
+                                                    <span className="font-bold text-sm">
                                                         {assessment.PatientName || 'Unknown'}
-                                                        <UserCircle className="h-3 w-3 opacity-0 group-hover/link:opacity-100 transition-opacity" />
-                                                    </Link>
+                                                    </span>
                                                     <span className="text-[10px] text-muted-foreground">{assessment.Age ? `${assessment.Age} yrs` : 'Age N/A'} • {assessment.Sex || '-'}</span>
                                                 </div>
                                             </TableCell>
@@ -145,12 +141,18 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                                 {assessment.DailyNotes || '-'}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <Button variant="ghost" size="sm" asChild className="h-8 w-8 p-0 rounded-full hover:bg-primary/10 hover:text-primary">
-                                                    <Link href={`/assessment/${originalIndex}`}>
-                                                        <ExternalLink className="h-4 w-4" />
-                                                        <span className="sr-only">View</span>
-                                                    </Link>
-                                                </Button>
+                                                <div className="flex justify-end gap-2">
+                                                    <Button variant="outline" size="sm" asChild className="h-8 rounded-lg text-xs font-bold px-3">
+                                                        <Link href={`/assessment/${originalIndex}`}>
+                                                            View
+                                                        </Link>
+                                                    </Button>
+                                                    <Button variant="secondary" size="sm" asChild className="h-8 rounded-lg text-xs font-bold px-3">
+                                                        <Link href={`/assessment/${originalIndex}/edit`}>
+                                                            Edit
+                                                        </Link>
+                                                    </Button>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     );
@@ -160,11 +162,9 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                     </Table>
                 </div>
             </div>
-            {filteredAssessments.length > 0 && (
-                <p className="text-[10px] text-muted-foreground text-center italic">
-                    💡 Click a patient name to view their recovery history and progress graph.
-                </p>
-            )}
+            <p className="text-[10px] text-muted-foreground text-center italic">
+                💡 View mode includes patient history, clinical findings, and media attachments.
+            </p>
         </div>
     );
 }

@@ -50,32 +50,35 @@ export function validateFileSize(file: File): { valid: boolean; error?: string }
 export function convertDriveUrl(url: string | undefined | null): string {
     if (!url || typeof url !== 'string') return '';
 
+    const val = url.trim();
+    
     // Already a direct preview link
-    if (url.includes('uc?export=view')) return url;
+    if (val.includes('uc?export=view') || val.includes('drive.usercontent.google.com')) return val;
 
     // Standard /file/d/ID/view or /file/d/ID/edit format
-    const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    const fileMatch = val.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
     if (fileMatch) {
         return `https://drive.google.com/uc?export=view&id=${fileMatch[1]}`;
     }
 
     // /open?id=ID format
-    const openMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    const openMatch = val.match(/[?&]id=([a-zA-Z0-9_-]+)/);
     if (openMatch) {
         return `https://drive.google.com/uc?export=view&id=${openMatch[1]}`;
     }
 
-    // Return as-is if not a Drive URL
-    return url;
+    // fallback for naked IDs if they look like Drive IDs (28-33 chars typical)
+    if (val.length >= 25 && !val.includes('/') && !val.includes(':')) {
+        return `https://drive.google.com/uc?export=view&id=${val}`;
+    }
+
+    return val;
 }
 
-/**
- * Check if a URL is a video based on its content or filename
- */
 export function isVideoUrl(url: string): boolean {
     if (!url || typeof url !== 'string') return false;
     const lower = url.toLowerCase();
-    return lower.includes('mp4') || lower.includes('mov') || lower.includes('video') || lower.includes('webm');
+    return lower.includes('.mp4') || lower.includes('.mov') || lower.includes('.webm') || lower.includes('video');
 }
 
 // ─── Duplicate Detection ─────────────────────────────────────────────
