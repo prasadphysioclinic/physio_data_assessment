@@ -316,17 +316,20 @@ export default async function AssessmentDetailPage(props: PageProps) {
                     </CardHeader>
                     <CardContent>
                         {(() => {
-                            const mediaUrls = [
-                                assessment.Media1 || assessment.Media_1,
-                                assessment.Media2 || assessment.Media_2,
-                                assessment.Media3 || assessment.Media_3,
-                                assessment.Media4 || assessment.Media_4
-                            ].filter(url => typeof url === 'string' && url.startsWith('http'));
+                            // Universal Scanner: Look for any field that contains a URL
+                            const mediaUrls = Object.entries(assessment)
+                                .filter(([key, value]) => {
+                                    return typeof value === 'string' && 
+                                           (value.startsWith('http') || value.includes('drive.google.com')) &&
+                                           !key.toLowerCase().includes('name') && // Ignore patient name if it's a URL
+                                           !key.toLowerCase().includes('date');   // Ignore date fields
+                                })
+                                .map(([_, value]) => value as string);
 
                             if (mediaUrls.length === 0) {
                                 return (
                                     <div className="flex flex-col items-center justify-center py-12 text-muted-foreground bg-muted/30 rounded-lg border-2 border-dashed">
-                                        <p>No media attachments (photos or videos) for this assessment.</p>
+                                        <p>No media attachments (photos or videos) found for this assessment.</p>
                                     </div>
                                 );
                             }
