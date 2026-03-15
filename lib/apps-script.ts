@@ -114,7 +114,7 @@ export interface AssessmentData {
 
 export async function saveToGoogleSheet(data: AssessmentData) {
     if (!APPS_SCRIPT_URL) {
-        throw new Error('GOOGLE_APPS_SCRIPT_URL is not configured. Add it in Vercel Environment Variables.');
+        throw new Error('NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL is not configured. Add it in Vercel Environment Variables.');
     }
 
     // Timeout to prevent infinite server waits
@@ -163,7 +163,7 @@ export async function saveToGoogleSheet(data: AssessmentData) {
 
 export async function getFromGoogleSheet() {
     if (!APPS_SCRIPT_URL) {
-        throw new Error('GOOGLE_APPS_SCRIPT_URL is not configured. Add it in Vercel Environment Variables.');
+        throw new Error('NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL is not configured. Add it in Vercel Environment Variables.');
     }
 
     // Timeout to prevent infinite server waits

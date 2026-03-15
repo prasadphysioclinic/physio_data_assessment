@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getFromGoogleSheet, AssessmentData } from "@/lib/apps-script";
+import { getFromGoogleSheet, saveToGoogleSheet, AssessmentData } from "@/lib/apps-script";
 
 export const dynamic = 'force-dynamic';
 
@@ -25,11 +25,7 @@ export async function PUT(request: Request, context: RouteParams) {
             );
         }
 
-        const APPS_SCRIPT_URL = process.env.GOOGLE_APPS_SCRIPT_URL;
-
-        if (!APPS_SCRIPT_URL) {
-            throw new Error('GOOGLE_APPS_SCRIPT_URL is not configured');
-        }
+        // The library function saveToGoogleSheet now handles the fetch and URL check
 
         // Map existing media URLs (ones the user kept) back into Media1-4 slots
         const existingMedia: string[] = body.existingMedia || [];
@@ -139,35 +135,8 @@ export async function PUT(request: Request, context: RouteParams) {
             payload.files = body.files;
         }
 
-        // Send update request to Apps Script with timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-            redirect: 'follow',
-            signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-        const text = await response.text();
-
-        if (!response.ok) {
-            throw new Error(`Failed to update in Google Sheet: ${text.substring(0, 200)}`);
-        }
-
-        // Safe JSON parsing
-        try {
-            const result = JSON.parse(text);
-            return NextResponse.json({ success: true, data: result });
-        } catch {
-            console.error('Non-JSON response from Apps Script (update):', text.substring(0, 300));
-            return NextResponse.json({ success: true, message: 'Update sent but response was not JSON' });
-        }
+        const result = await saveToGoogleSheet(payload);
+        return NextResponse.json({ success: true, data: result });
 
     } catch (error) {
         console.error("Error updating assessment:", error);
