@@ -21,7 +21,10 @@ export default async function AssessmentDetailPage(props: PageProps) {
     
     try {
         const data = await getFromGoogleSheet();
-        assessments = Array.isArray(data) ? data : [];
+        // Sanity filter: remove corrupted rows
+        assessments = Array.isArray(data)
+            ? data.filter((a: any) => a && typeof a === 'object' && !Array.isArray(a) && a.PatientName)
+            : [];
     } catch (error) {
         console.error("Failed to fetch assessment details:", error);
         return (
@@ -47,7 +50,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
         );
     }
 
-    const assessmentIndex = parseInt(params.id);
+    const assessmentIndex = Number(params.id);
 
     if (isNaN(assessmentIndex) || assessmentIndex < 0 || assessmentIndex >= assessments.length) {
         notFound();
@@ -75,7 +78,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
             <div className="space-y-2">
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Assessment Details</h1>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                    Patient: {assessment.PatientName} | Date: {formatDate(assessment.Date)}
+                    Patient: {assessment.PatientName || 'N/A'} | Date: {assessment.Date ? formatDate(assessment.Date) : 'N/A'}
                 </p>
             </div>
 
@@ -100,7 +103,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
                         </div>
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">Date</p>
-                            <p className="text-base">{formatDate(assessment.Date)}</p>
+                            <p className="text-base">{assessment.Date ? formatDate(assessment.Date) : 'N/A'}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -310,12 +313,10 @@ export default async function AssessmentDetailPage(props: PageProps) {
                         <CardContent>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {[assessment.Media1, assessment.Media2, assessment.Media3, assessment.Media4].map((url, index) => {
-                                    if (!url) return null;
+                                    if (!url || typeof url !== 'string') return null;
 
-                                    // Check if it's likely a video (Apps Script will tag it or we can check extension in URL)
-                                    // For now, we'll try to infer or just provide a link if unsure.
-                                    // Drive URLs for videos often contain 'video' in the name or we can check the file name if we stored it.
-                                    const isVideo = url.toLowerCase().includes('mp4') || url.toLowerCase().includes('mov') || url.toLowerCase().includes('video');
+                                    const lower = url.toLowerCase();
+                                    const isVideo = lower.includes('mp4') || lower.includes('mov') || lower.includes('video');
 
                                     return (
                                         <div key={index} className="space-y-2">
@@ -371,7 +372,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
                         </div>
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">Timestamp</p>
-                            <p className="text-base">{formatDateTime(assessment.Timestamp)}</p>
+                            <p className="text-base">{assessment.Timestamp ? formatDateTime(assessment.Timestamp) : 'N/A'}</p>
                         </div>
                     </CardContent>
                 </Card>

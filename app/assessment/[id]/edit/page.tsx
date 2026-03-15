@@ -18,7 +18,10 @@ export default async function EditAssessmentPage(props: PageProps) {
     
     try {
         const data = await getFromGoogleSheet();
-        assessments = Array.isArray(data) ? data : [];
+        // Sanity filter: remove corrupted rows
+        assessments = Array.isArray(data)
+            ? data.filter((a: any) => a && typeof a === 'object' && !Array.isArray(a) && a.PatientName)
+            : [];
     } catch (error) {
         console.error("Failed to fetch assessment for editing:", error);
         return (
@@ -30,7 +33,7 @@ export default async function EditAssessmentPage(props: PageProps) {
         );
     }
 
-    const assessmentIndex = parseInt(params.id);
+    const assessmentIndex = Number(params.id);
 
     if (isNaN(assessmentIndex) || assessmentIndex < 0 || assessmentIndex >= assessments.length) {
         notFound();

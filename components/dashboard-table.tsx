@@ -36,26 +36,34 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
 
     // Sort assessments by Date and Timestamp descending (latest first)
     const sortedAssessments = [...assessments].sort((a, b) => {
-        // Try to sort by Timestamp if available (most reliable for "last entry")
-        if (a.Timestamp && b.Timestamp) {
-            // "08/03/2026, 11:51:03" format from Intl.DateTimeFormat 'en-GB'
-            // We can compare them as strings if they are formatted consistently,
-            // or convert them to sortable dates.
-            try {
-                const parseDate = (ts: string) => {
-                    const [datePart, timePart] = ts.split(', ');
-                    const [day, month, year] = datePart.split('/');
-                    return new Date(`${year}-${month}-${day}T${timePart}`).getTime();
-                };
-                return parseDate(b.Timestamp) - parseDate(a.Timestamp);
-            } catch (e) {
-                // Fallback to string comparison if parsing fails
-                return b.Timestamp.localeCompare(a.Timestamp);
+        try {
+            // Try to sort by Timestamp if available (most reliable for "last entry")
+            if (a.Timestamp && b.Timestamp) {
+                try {
+                    const parseDate = (ts: string) => {
+                        if (!ts || typeof ts !== 'string') return 0;
+                        const parts = ts.split(', ');
+                        if (parts.length < 2) return 0;
+                        const [datePart, timePart] = parts;
+                        const dateParts = datePart.split('/');
+                        if (dateParts.length < 3) return 0;
+                        const [day, month, year] = dateParts;
+                        return new Date(`${year}-${month}-${day}T${timePart}`).getTime() || 0;
+                    };
+                    return parseDate(b.Timestamp) - parseDate(a.Timestamp);
+                } catch {
+                    return 0; // If parsing fails, treat as equal
+                }
             }
+            // Fallback to Date if Timestamp is missing
+            const dateA = a.Date ? new Date(a.Date).getTime() : 0;
+            const dateB = b.Date ? new Date(b.Date).getTime() : 0;
+            return (dateB || 0) - (dateA || 0);
+        } catch {
+            return 0; // If anything fails, treat as equal
         }
-        // Fallback to Date if Timestamp is missing
-        return new Date(b.Date).getTime() - new Date(a.Date).getTime();
     });
+
 
     // Filter assessments based on search query
     const filteredAssessments = sortedAssessments.filter((assessment) => {
@@ -138,12 +146,12 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                     <TableRow key={originalIndex}>
                                         <TableCell>{formatDateShort(assessment.Date)}</TableCell>
                                         <TableCell className="font-medium">
-                                            {assessment.PatientName}
+                                            {assessment.PatientName || 'N/A'}
                                         </TableCell>
-                                        <TableCell>{assessment.Age}</TableCell>
-                                        <TableCell>{assessment.Occupation}</TableCell>
+                                        <TableCell>{assessment.Age || '-'}</TableCell>
+                                        <TableCell>{assessment.Occupation || '-'}</TableCell>
                                         <TableCell className="max-w-[150px] truncate">
-                                            {assessment.Diagnosis || assessment.ChiefComplaint || assessment.PastHistory}
+                                            {assessment.Diagnosis || assessment.ChiefComplaint || assessment.PastHistory || '-'}
                                         </TableCell>
                                         <TableCell className="max-w-[150px] truncate italic text-muted-foreground">
                                             {assessment.DailyNotes || "-"}

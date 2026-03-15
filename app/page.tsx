@@ -13,7 +13,10 @@ export default async function Home() {
   
   try {
     const data = await getFromGoogleSheet();
-    assessments = Array.isArray(data) ? data : [];
+    // Sanity filter: remove null, undefined, arrays, or non-object rows
+    assessments = Array.isArray(data)
+      ? data.filter((a: any) => a && typeof a === 'object' && !Array.isArray(a) && a.PatientName)
+      : [];
   } catch (err) {
     console.error("Failed to fetch assessments:", err);
     error = err instanceof Error ? err.message : "Could not connect to Google Sheets";
