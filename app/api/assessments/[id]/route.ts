@@ -117,11 +117,21 @@ export async function PUT(request: Request, context: RouteParams) {
                 hour12: false, timeZone: 'Asia/Kolkata'
             }).format(new Date()),
 
-            // Preserve current selection from form (mapped to match Apps Script headers)
-            Media_1: existingMedia[0] || "",
-            Media_2: existingMedia[1] || "",
-            Media_3: existingMedia[2] || "",
-            Media_4: existingMedia[3] || "",
+            // ─── MEDIA PRESERVATION LOGIC ─────────────────────────────────────
+            // We only update Media columns if we have explicit values from the form.
+            // This prevents accidental deletion of images stored in non-standard columns.
+            
+            // Map the current state of existing media back to standard slots
+            Media_1: existingMedia.length > 0 ? existingMedia[0] : (existingRow.Media_1 || existingRow.Media1 || ""),
+            Media_2: existingMedia.length > 1 ? existingMedia[1] : (existingRow.Media_2 || existingRow.Media2 || ""),
+            Media_3: existingMedia.length > 2 ? existingMedia[2] : (existingRow.Media_3 || existingRow.Media3 || ""),
+            Media_4: existingMedia.length > 3 ? existingMedia[3] : (existingRow.Media_4 || existingRow.Media4 || ""),
+            
+            // Also update non-underscored versions for legacy compatibility
+            Media1: existingMedia.length > 0 ? existingMedia[0] : (existingRow.Media1 || existingRow.Media_1 || ""),
+            Media2: existingMedia.length > 1 ? existingMedia[1] : (existingRow.Media2 || existingRow.Media_2 || ""),
+            Media3: existingMedia.length > 2 ? existingMedia[2] : (existingRow.Media3 || existingRow.Media_3 || ""),
+            Media4: existingMedia.length > 3 ? existingMedia[3] : (existingRow.Media4 || existingRow.Media_4 || ""),
         };
 
         const payload: any = {

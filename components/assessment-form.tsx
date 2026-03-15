@@ -72,7 +72,7 @@ const formSchema = z.object({
     aggravatingFactors: z.string().optional(),
     easingFactors: z.string().optional(),
     painDescription: z.string().optional(),
-    painVas: z.number().min(0).max(10),
+    painVas: z.coerce.number().min(0).max(10),
     symptomsLocation: z.string().optional(),
 
     // V. Diagnosis & Treatment Plan

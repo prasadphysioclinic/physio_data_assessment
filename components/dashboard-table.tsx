@@ -112,11 +112,11 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                 </TableRow>
                             ) : (
                                 filteredAssessments.map((assessment) => {
-                                    const originalIndex = assessments.findIndex(a => a === assessment);
+                                    const targetId = assessment.id;
                                     const slug = getSlug(assessment.PatientName);
 
                                     return (
-                                        <TableRow key={`${originalIndex}-${assessment.Date}`} className="group hover:bg-muted/30 transition-colors">
+                                        <TableRow key={`${targetId}-${assessment.Date}`} className="group hover:bg-muted/30 transition-colors">
                                             <TableCell className="font-medium">
                                                 <div className="flex flex-col">
                                                     <span className="text-sm">{formatDateShort(assessment.Date)}</span>
@@ -143,12 +143,12 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Button variant="outline" size="sm" asChild className="h-8 rounded-lg text-xs font-bold px-3">
-                                                        <Link href={`/assessment/${originalIndex}`}>
+                                                        <Link href={`/assessment/${targetId}`}>
                                                             View
                                                         </Link>
                                                     </Button>
                                                     <Button variant="secondary" size="sm" asChild className="h-8 rounded-lg text-xs font-bold px-3">
-                                                        <Link href={`/assessment/${originalIndex}/edit`}>
+                                                        <Link href={`/assessment/${targetId}/edit`}>
                                                             Edit
                                                         </Link>
                                                     </Button>

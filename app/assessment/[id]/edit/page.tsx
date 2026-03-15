@@ -18,10 +18,7 @@ export default async function EditAssessmentPage(props: PageProps) {
     
     try {
         const data = await getFromGoogleSheet();
-        // Sanity filter: remove corrupted rows
-        assessments = Array.isArray(data)
-            ? data.filter((a: any) => a && typeof a === 'object' && !Array.isArray(a) && a.PatientName)
-            : [];
+        assessments = data; // use the raw array with preserved indices
     } catch (error) {
         console.error("Failed to fetch assessment for editing:", error);
         return (

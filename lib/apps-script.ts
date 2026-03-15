@@ -94,11 +94,15 @@ export interface AssessmentData {
     SubmittedBy?: string;
     Timestamp?: string;
 
-    // Media fields (Google Drive URLs)
+    // Media fields (Google Drive URLs) - Supports both underscore and non-underscore for compatibility
     Media_1?: string;
     Media_2?: string;
     Media_3?: string;
     Media_4?: string;
+    Media1?: string;
+    Media2?: string;
+    Media3?: string;
+    Media4?: string;
 
     // Temporary storage for files being uploaded
     files?: {
@@ -197,11 +201,18 @@ export async function getFromGoogleSheet() {
 
         // Validate and normalize the response structure
         if (Array.isArray(result)) {
-            return result;
+            // Inject row index as 'id' for stable referencing
+            return result.map((item, index) => ({
+                ...item,
+                id: index
+            }));
         }
 
         if (result && typeof result === 'object' && Array.isArray(result.data)) {
-            return result.data;
+            return result.data.map((item: any, index: number) => ({
+                ...item,
+                id: index
+            }));
         }
 
         // If result is an object but not the expected format, return empty array

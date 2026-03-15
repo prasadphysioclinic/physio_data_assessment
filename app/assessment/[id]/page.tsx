@@ -23,10 +23,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
     
     try {
         const data = await getFromGoogleSheet();
-        // Sanity filter: remove corrupted rows
-        assessments = Array.isArray(data)
-            ? data.filter((a: any) => a && typeof a === 'object' && !Array.isArray(a) && a.PatientName)
-            : [];
+        assessments = data; 
     } catch (error) {
         console.error("Failed to fetch assessment details:", error);
         return (
