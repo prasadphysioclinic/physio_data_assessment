@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -21,7 +23,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { Camera, Video, X, Upload, FileVideo, FileImage, Plus } from "lucide-react";
-import { useRef, useEffect } from "react";
 import { sanitizeFormData, validateFileSize, checkDuplicate } from "@/lib/utils-data";
 import { getFromGoogleSheet } from "@/lib/apps-script";
 
@@ -98,7 +99,6 @@ const formSchema = z.object({
 });
 
 export function AssessmentForm() {
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -163,10 +163,13 @@ export function AssessmentForm() {
     });
 
     const [mediaFiles, setMediaFiles] = useState<{ file: File; base64: string; type: 'image' | 'video' }[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isStreaming, setIsStreaming] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('environment');
     const [isInitializing, setIsInitializing] = useState(false);
+    const router = useRouter();
+
     const videoRef = useRef<HTMLVideoElement>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -394,7 +397,8 @@ export function AssessmentForm() {
             console.log('Success response:', result);
 
             alert("Assessment saved successfully!");
-            form.reset();
+            router.push('/');
+            router.refresh();
         } catch (error) {
             console.error('Form submission error:', error);
             const errorMessage = error instanceof Error ? error.message : "Error saving assessment";
@@ -1394,7 +1398,10 @@ export function AssessmentForm() {
                     </CardContent>
                 </Card>
 
-                <div className="flex justify-end pt-10">
+                <div className="flex justify-end gap-4 pt-10">
+                    <Button type="button" variant="outline" asChild>
+                        <Link href="/">Cancel</Link>
+                    </Button>
                     <Button type="submit" size="lg" disabled={isSubmitting}>
                         {isSubmitting ? "Saving..." : "Save Assessment"}
                     </Button>

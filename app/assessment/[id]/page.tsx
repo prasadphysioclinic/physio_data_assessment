@@ -316,8 +316,12 @@ export default async function AssessmentDetailPage(props: PageProps) {
                     </CardHeader>
                     <CardContent>
                         {(() => {
-                            const mediaUrls = [assessment.Media1, assessment.Media2, assessment.Media3, assessment.Media4]
-                                .filter(url => typeof url === 'string' && url.startsWith('http'));
+                            const mediaUrls = [
+                                assessment.Media1 || assessment.Media_1,
+                                assessment.Media2 || assessment.Media_2,
+                                assessment.Media3 || assessment.Media_3,
+                                assessment.Media4 || assessment.Media_4
+                            ].filter(url => typeof url === 'string' && url.startsWith('http'));
 
                             if (mediaUrls.length === 0) {
                                 return (
