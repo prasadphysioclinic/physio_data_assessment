@@ -1,6 +1,10 @@
 // Google Apps Script integration
 const APPS_SCRIPT_URL = process.env.GOOGLE_APPS_SCRIPT_URL;
 
+// Timeout constants (Google Apps Script can hang)
+const GET_TIMEOUT_MS = 15000;  // 15 seconds for reads
+const POST_TIMEOUT_MS = 30000; // 30 seconds for writes (media uploads can be large)
+
 export interface AssessmentData {
     // I. Patient Demographics
     Date: string;
@@ -110,8 +114,12 @@ export interface AssessmentData {
 
 export async function saveToGoogleSheet(data: AssessmentData) {
     if (!APPS_SCRIPT_URL) {
-        throw new Error('GOOGLE_APPS_SCRIPT_URL is not configured');
+        throw new Error('GOOGLE_APPS_SCRIPT_URL is not configured. Add it in Vercel Environment Variables.');
     }
+
+    // Timeout to prevent infinite server waits
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), POST_TIMEOUT_MS);
 
     try {
         const response = await fetch(APPS_SCRIPT_URL, {
@@ -121,22 +129,33 @@ export async function saveToGoogleSheet(data: AssessmentData) {
             },
             body: JSON.stringify(data),
             redirect: 'follow',
+            signal: controller.signal,
         });
 
+        clearTimeout(timeoutId);
         const text = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to save to Google Sheet: ${text.substring(0, 200)}`);
+            throw new Error(`Failed to save to Google Sheet (HTTP ${response.status}): ${text.substring(0, 200)}`);
         }
 
-        // Safely parse JSON - Google might return HTML instead
+        // Safely parse JSON — Google might return HTML instead
         try {
-            return JSON.parse(text);
-        } catch {
+            const result = JSON.parse(text);
+            // Validate response structure
+            if (typeof result !== 'object' || result === null) {
+                throw new Error('Invalid response structure from Apps Script');
+            }
+            return result;
+        } catch (parseErr) {
             console.error('Non-JSON response from Apps Script (save):', text.substring(0, 300));
-            throw new Error('Google Apps Script returned invalid response. Check script deployment.');
+            throw new Error('Google Apps Script returned invalid response. Check script deployment permissions.');
         }
     } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            throw new Error('Google Apps Script request timed out (30s). The script may be overloaded.');
+        }
         if (error instanceof Error) throw error;
         throw new Error('Network error connecting to Google Apps Script');
     }
@@ -144,39 +163,56 @@ export async function saveToGoogleSheet(data: AssessmentData) {
 
 export async function getFromGoogleSheet() {
     if (!APPS_SCRIPT_URL) {
-        throw new Error('GOOGLE_APPS_SCRIPT_URL is not configured');
+        throw new Error('GOOGLE_APPS_SCRIPT_URL is not configured. Add it in Vercel Environment Variables.');
     }
+
+    // Timeout to prevent infinite server waits
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), GET_TIMEOUT_MS);
 
     try {
         const response = await fetch(APPS_SCRIPT_URL, {
             method: 'GET',
             redirect: 'follow',
-            next: { revalidate: 0 },
+            signal: controller.signal,
+            cache: 'no-store', // Always fresh data from Google Sheets
         });
 
+        clearTimeout(timeoutId);
         const text = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to fetch from Google Sheet: ${text.substring(0, 200)}`);
+            throw new Error(`Failed to fetch from Google Sheet (HTTP ${response.status}): ${text.substring(0, 200)}`);
         }
 
-        // Safely parse JSON - Google might return HTML (auth page) instead
+        // Safely parse JSON — Google might return HTML (auth page) instead
         let result;
         try {
             result = JSON.parse(text);
         } catch {
             console.error('Non-JSON response from Apps Script (get):', text.substring(0, 300));
-            throw new Error('Google Apps Script returned HTML instead of JSON. Redeploy your script as "Anyone" access.');
+            throw new Error('Google Apps Script returned HTML instead of JSON. Redeploy your script with "Anyone" access.');
         }
 
-        // Handle both formats: direct array or { data: [...] }
+        // Validate and normalize the response structure
         if (Array.isArray(result)) {
             return result;
         }
 
-        return result.data || [];
+        if (result && typeof result === 'object' && Array.isArray(result.data)) {
+            return result.data;
+        }
+
+        // If result is an object but not the expected format, return empty array
+        console.warn('Unexpected response format from Apps Script:', JSON.stringify(result).substring(0, 200));
+        return [];
     } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            throw new Error('Google Apps Script request timed out (15s). Check your internet connection.');
+        }
         if (error instanceof Error) throw error;
         throw new Error('Network error connecting to Google Apps Script');
     }
 }
+
