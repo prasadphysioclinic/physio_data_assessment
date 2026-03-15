@@ -132,38 +132,40 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
     const streamRef = useRef<MediaStream | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Load existing media URLs (Hyper-Scanner)
+    // Load existing media URLs (Industrial Grade Scanner)
     useEffect(() => {
-        // 1. Explicit check for common media keys
-        const explicitMedia: string[] = [];
-        for (let i = 1; i <= 8; i++) {
-            const val = assessment[`Media_${i}`] || assessment[`Media${i}`] || assessment[`Media ${i}`] || assessment[`Evidence${i}`] || assessment[`Evidence ${i}`];
-            if (val && typeof val === 'string' && (val.trim().startsWith('http') || val.trim().length > 25)) {
-                explicitMedia.push(val.trim());
+        const allMedia: string[] = [];
+        const seenUrls = new Set<string>();
+        const urlRegex = /(https?:\/\/[^\s]+|drive\.google\.com[^\s]+)/gi;
+
+        Object.entries(assessment).forEach(([key, value]) => {
+            if (!value) return;
+            
+            const valStr = String(value).trim();
+            const lowerKey = key.toLowerCase().replace(/[\s_-]/g, '');
+            
+            // Skip known non-media metadata
+            const systemBlacklist = ['patientname', 'date', 'timestamp', 'age', 'sex', 'occupation', 'phonenumber', 'action', 'rowindex', 'submittedby'];
+            if (systemBlacklist.includes(lowerKey)) return;
+
+            // Pattern Match
+            const matches = valStr.match(urlRegex);
+            if (matches) {
+                matches.forEach(m => {
+                    if (!seenUrls.has(m)) {
+                        allMedia.push(m);
+                        seenUrls.add(m);
+                    }
+                });
+            } else if (valStr.length >= 25 && valStr.length <= 50 && !valStr.includes(' ') && !valStr.includes('/') && !valStr.includes(':')) {
+               if (!seenUrls.has(valStr)) {
+                   allMedia.push(valStr);
+                   seenUrls.add(valStr);
+               }
             }
-        }
-
-        // 2. Universal Scanner for any other URL/ID
-        const scannedMedia = Object.entries(assessment)
-            .filter(([key, value]) => {
-                if (!value || typeof value !== 'string') return false;
-                const val = value.trim();
-                const lowerVal = val.toLowerCase();
-                const lowerKey = key.toLowerCase();
-
-                if (explicitMedia.includes(val)) return false;
-
-                const isUrl = lowerVal.startsWith('http') || lowerVal.includes('drive.google.com');
-                const isID = val.length >= 25 && !val.includes(' ') && !val.includes('/') && !val.includes(':');
-
-                const systemKeys = ['patientname', 'date', 'timestamp', 'age', 'sex', 'occupation', 'phonenumber', 'action', 'rowindex', 'submittedby'];
-                const isSystemField = systemKeys.some(sk => lowerKey === sk || lowerKey.replace(/\s+/g, '') === sk);
-
-                return (isUrl || isID) && !isSystemField;
-            })
-            .map(([_, value]) => (value as string).trim());
+        });
         
-        setExistingMedia([...explicitMedia, ...scannedMedia]);
+        setExistingMedia(allMedia);
     }, [assessment]);
 
     // Camera stream management

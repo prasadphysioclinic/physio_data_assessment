@@ -316,45 +316,59 @@ export default async function AssessmentDetailPage(props: PageProps) {
                     </CardHeader>
                     <CardContent>
                         {(() => {
-                            // 1. Explicit check for common media keys (Media_1, Media1, etc.)
-                            const explicitMedia: string[] = [];
-                            for (let i = 1; i <= 8; i++) {
-                                const val = assessment[`Media_${i}`] || assessment[`Media${i}`] || assessment[`Media ${i}`] || assessment[`Evidence${i}`] || assessment[`Evidence ${i}`];
-                                if (val && typeof val === 'string' && (val.trim().startsWith('http') || val.trim().length > 25)) {
-                                    explicitMedia.push(val.trim());
+                            /**
+                             * ADVANCED MEDIA DISCOVERY ENGINE (Industrial Grade)
+                             * Scans 100% of the dataset to find clinical evidence regardless of column naming.
+                             */
+                            const allMedia: string[] = [];
+                            const seenUrls = new Set<string>();
+
+                            // 1. Recursive Value Scanner: Deep scan for any URL-like patterns
+                            const urlRegex = /(https?:\/\/[^\s]+|drive\.google\.com[^\s]+)/gi;
+                            
+                            Object.entries(assessment).forEach(([key, value]) => {
+                                if (!value) return;
+                                
+                                const valStr = String(value).trim();
+                                const lowerKey = key.toLowerCase().replace(/[\s_-]/g, '');
+                                
+                                // Skip fields we are absolutely certain are non-media metadata
+                                const systemBlacklist = ['patientname', 'date', 'timestamp', 'age', 'sex', 'occupation', 'phonenumber', 'action', 'rowindex', 'submittedby'];
+                                if (systemBlacklist.includes(lowerKey)) return;
+
+                                // Layer A: Regex Detection (Finds full URLs)
+                                const matches = valStr.match(urlRegex);
+                                if (matches) {
+                                    matches.forEach(m => {
+                                        if (!seenUrls.has(m)) {
+                                            allMedia.push(m);
+                                            seenUrls.add(m);
+                                        }
+                                    });
+                                } 
+                                // Layer B: Drive ID Detection (Handles naked 33-character Drive IDs)
+                                else if (valStr.length >= 25 && valStr.length <= 50 && !valStr.includes(' ') && !valStr.includes('/') && !valStr.includes(':')) {
+                                   if (!seenUrls.has(valStr)) {
+                                       allMedia.push(valStr);
+                                       seenUrls.add(valStr);
+                                   }
                                 }
-                            }
-
-                            // 2. Universal Scanner: Find any other field that contains a URL/ID
-                            const scannedMedia = Object.entries(assessment)
-                                .filter(([key, value]) => {
-                                    if (!value || typeof value !== 'string') return false;
-                                    const val = value.trim();
-                                    const lowerVal = val.toLowerCase();
-                                    const lowerKey = key.toLowerCase();
-
-                                    // Skip if already found in explicit check
-                                    if (explicitMedia.includes(val)) return false;
-
-                                    // Must be a link OR a long Drive-like ID
-                                    const isUrl = lowerVal.startsWith('http') || lowerVal.includes('drive.google.com');
-                                    const isID = val.length >= 25 && !val.includes(' ') && !val.includes('/') && !val.includes(':');
-
-                                    // Filter out known non-media system fields ONLY
-                                    const systemKeys = ['patientname', 'date', 'timestamp', 'age', 'sex', 'occupation', 'phonenumber', 'action', 'rowindex', 'submittedby'];
-                                    const isSystemField = systemKeys.some(sk => lowerKey === sk || lowerKey.replace(/\s+/g, '') === sk);
-
-                                    return (isUrl || isID) && !isSystemField;
-                                })
-                                .map(([_, value]) => (value as string).trim());
-
-                            const allMedia = [...explicitMedia, ...scannedMedia];
+                            });
 
                             if (allMedia.length === 0) {
                                 return (
-                                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground bg-muted/30 rounded-lg border-2 border-dashed">
-                                        <p className="text-sm">No media attachments found in the patient record.</p>
-                                        <p className="text-[10px] mt-2 opacity-50">Checked Media_1 to Media_8 and all spreadsheet columns.</p>
+                                    <div className="flex flex-col items-center justify-center py-16 text-muted-foreground bg-muted/20 rounded-2xl border-2 border-dashed border-muted-foreground/20">
+                                        <div className="bg-muted/40 p-4 rounded-full mb-4">
+                                            <ArrowLeft className="h-8 w-8 opacity-20 rotate-180" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-foreground/70">No Media Detected</h3>
+                                        <p className="text-sm max-w-[280px] text-center mt-2">
+                                            The system scanned all columns in the patient record but found no clinical photos or videos.
+                                        </p>
+                                        <div className="mt-6 flex flex-wrap justify-center gap-2">
+                                            <span className="text-[10px] px-2 py-1 bg-muted rounded-md lowercase">Checked: {Object.keys(assessment).length} Fields</span>
+                                            <span className="text-[10px] px-2 py-1 bg-muted rounded-md lowercase">Pattern: Regex + ID Sweep</span>
+                                        </div>
                                     </div>
                                 );
                             }
