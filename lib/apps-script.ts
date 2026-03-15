@@ -95,10 +95,10 @@ export interface AssessmentData {
     Timestamp?: string;
 
     // Media fields (Google Drive URLs)
-    Media1?: string;
-    Media2?: string;
-    Media3?: string;
-    Media4?: string;
+    Media_1?: string;
+    Media_2?: string;
+    Media_3?: string;
+    Media_4?: string;
 
     // Temporary storage for files being uploaded
     files?: {

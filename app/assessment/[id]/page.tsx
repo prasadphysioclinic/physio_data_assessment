@@ -316,19 +316,31 @@ export default async function AssessmentDetailPage(props: PageProps) {
                     </CardHeader>
                     <CardContent>
                         {(() => {
-                            // Universal Scanner: Very broad check to find any potential media links
-                            const mediaUrls = Object.entries(assessment)
+                            // 1. Explicit check for common media keys (Media_1, Media1, etc.)
+                            const explicitMedia: string[] = [];
+                            for (let i = 1; i <= 8; i++) {
+                                const val = assessment[`Media_${i}`] || assessment[`Media${i}`] || assessment[`Media ${i}`] || assessment[`Evidence${i}`] || assessment[`Evidence ${i}`];
+                                if (val && typeof val === 'string' && (val.trim().startsWith('http') || val.trim().length > 25)) {
+                                    explicitMedia.push(val.trim());
+                                }
+                            }
+
+                            // 2. Universal Scanner: Find any other field that contains a URL/ID
+                            const scannedMedia = Object.entries(assessment)
                                 .filter(([key, value]) => {
                                     if (!value || typeof value !== 'string') return false;
                                     const val = value.trim();
                                     const lowerVal = val.toLowerCase();
                                     const lowerKey = key.toLowerCase();
 
-                                    // 1. Must be a link OR a long Drive-like ID
+                                    // Skip if already found in explicit check
+                                    if (explicitMedia.includes(val)) return false;
+
+                                    // Must be a link OR a long Drive-like ID
                                     const isUrl = lowerVal.startsWith('http') || lowerVal.includes('drive.google.com');
                                     const isID = val.length >= 25 && !val.includes(' ') && !val.includes('/') && !val.includes(':');
 
-                                    // 2. Filter out known non-media system fields ONLY
+                                    // Filter out known non-media system fields ONLY
                                     const systemKeys = ['patientname', 'date', 'timestamp', 'age', 'sex', 'occupation', 'phonenumber', 'action', 'rowindex', 'submittedby'];
                                     const isSystemField = systemKeys.some(sk => lowerKey === sk || lowerKey.replace(/\s+/g, '') === sk);
 
@@ -336,24 +348,27 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                 })
                                 .map(([_, value]) => (value as string).trim());
 
-                            if (mediaUrls.length === 0) {
+                            const allMedia = [...explicitMedia, ...scannedMedia];
+
+                            if (allMedia.length === 0) {
                                 return (
                                     <div className="flex flex-col items-center justify-center py-12 text-muted-foreground bg-muted/30 rounded-lg border-2 border-dashed">
-                                        <p className="text-sm">No media attachments found for this assessment.</p>
+                                        <p className="text-sm">No media attachments found in the patient record.</p>
+                                        <p className="text-[10px] mt-2 opacity-50">Checked Media_1 to Media_8 and all spreadsheet columns.</p>
                                     </div>
                                 );
                             }
 
                             return (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    {mediaUrls.map((url, i) => {
+                                    {allMedia.map((url, i) => {
                                         const directUrl = convertDriveUrl(url);
-                                        const isVideo = isVideoUrl(url);
+                                        const isVideoCode = isVideoUrl(url);
 
                                         return (
                                             <div key={i} className="space-y-2">
                                                 <div className="group relative aspect-video sm:aspect-square rounded-xl overflow-hidden bg-black border shadow-sm">
-                                                    {isVideo ? (
+                                                    {isVideoCode ? (
                                                         <video
                                                             src={directUrl}
                                                             controls

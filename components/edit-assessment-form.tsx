@@ -132,20 +132,30 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
     const streamRef = useRef<MediaStream | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Load existing media URLs (Universal Loader)
+    // Load existing media URLs (Hyper-Scanner)
     useEffect(() => {
-        const media: string[] = Object.entries(assessment)
+        // 1. Explicit check for common media keys
+        const explicitMedia: string[] = [];
+        for (let i = 1; i <= 8; i++) {
+            const val = assessment[`Media_${i}`] || assessment[`Media${i}`] || assessment[`Media ${i}`] || assessment[`Evidence${i}`] || assessment[`Evidence ${i}`];
+            if (val && typeof val === 'string' && (val.trim().startsWith('http') || val.trim().length > 25)) {
+                explicitMedia.push(val.trim());
+            }
+        }
+
+        // 2. Universal Scanner for any other URL/ID
+        const scannedMedia = Object.entries(assessment)
             .filter(([key, value]) => {
                 if (!value || typeof value !== 'string') return false;
                 const val = value.trim();
                 const lowerVal = val.toLowerCase();
                 const lowerKey = key.toLowerCase();
 
-                // 1. Must be a link OR a long Drive-like ID
+                if (explicitMedia.includes(val)) return false;
+
                 const isUrl = lowerVal.startsWith('http') || lowerVal.includes('drive.google.com');
                 const isID = val.length >= 25 && !val.includes(' ') && !val.includes('/') && !val.includes(':');
 
-                // 2. Filter out known non-media system fields ONLY
                 const systemKeys = ['patientname', 'date', 'timestamp', 'age', 'sex', 'occupation', 'phonenumber', 'action', 'rowindex', 'submittedby'];
                 const isSystemField = systemKeys.some(sk => lowerKey === sk || lowerKey.replace(/\s+/g, '') === sk);
 
@@ -153,7 +163,7 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
             })
             .map(([_, value]) => (value as string).trim());
         
-        setExistingMedia(media);
+        setExistingMedia([...explicitMedia, ...scannedMedia]);
     }, [assessment]);
 
     // Camera stream management

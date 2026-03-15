@@ -52,25 +52,28 @@ export function convertDriveUrl(url: string | undefined | null): string {
 
     const val = url.trim();
     
-    // Already a direct preview link
-    if (val.includes('uc?export=view') || val.includes('drive.usercontent.google.com')) return val;
+    // 1. If it's already a direct usercontent link, keep it
+    if (val.includes('drive.usercontent.google.com') || val.includes('googleusercontent.com/d/')) return val;
 
-    // Standard /file/d/ID/view or /file/d/ID/edit format
-    const fileMatch = val.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-    if (fileMatch) {
-        // Use thumbnail endpoint for better reliability in browser previews
-        return `https://drive.google.com/thumbnail?id=${fileMatch[1]}&sz=w800`;
+    // 2. Extract ID from various formats
+    let id = '';
+    const fileMatch = val.match(/\/file\/d\/([a-zA-Z0-9_-]{25,})/);
+    const openMatch = val.match(/[?&]id=([a-zA-Z0-9_-]{25,})/);
+    const thumbMatch = val.match(/thumbnail\?id=([a-zA-Z0-9_-]{25,})/);
+    
+    if (fileMatch) id = fileMatch[1];
+    else if (openMatch) id = openMatch[1];
+    else if (thumbMatch) id = thumbMatch[1];
+    else if (val.length >= 25 && !val.includes('/') && !val.includes(':')) id = val;
+
+    if (id) {
+        // This is often more reliable than the /thumbnail endpoint for some Drive configurations
+        return `https://lh3.googleusercontent.com/d/${id}`;
     }
 
-    // /open?id=ID format
-    const openMatch = val.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-    if (openMatch) {
-        return `https://drive.google.com/thumbnail?id=${openMatch[1]}&sz=w800`;
-    }
-
-    // fallback for naked IDs
-    if (val.length >= 25 && !val.includes('/') && !val.includes(':')) {
-        return `https://drive.google.com/thumbnail?id=${val}&sz=w800`;
+    // 3. Last fallback: Check if it's a URL we missed but can preview
+    if (val.startsWith('http') && (val.includes('drive.google.com') || val.includes('google.com/file'))) {
+        return val.replace('/view', '/preview').replace('/edit', '/preview');
     }
 
     return val;

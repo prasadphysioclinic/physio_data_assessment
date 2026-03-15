@@ -117,11 +117,11 @@ export async function PUT(request: Request, context: RouteParams) {
                 hour12: false, timeZone: 'Asia/Kolkata'
             }).format(new Date()),
 
-            // Preserve current selection from form
-            Media1: existingMedia[0] || "",
-            Media2: existingMedia[1] || "",
-            Media3: existingMedia[2] || "",
-            Media4: existingMedia[3] || "",
+            // Preserve current selection from form (mapped to match Apps Script headers)
+            Media_1: existingMedia[0] || "",
+            Media_2: existingMedia[1] || "",
+            Media_3: existingMedia[2] || "",
+            Media_4: existingMedia[3] || "",
         };
 
         const payload: any = {
