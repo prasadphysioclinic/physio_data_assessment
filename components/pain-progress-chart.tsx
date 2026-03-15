@@ -75,8 +75,8 @@ export function PainProgressChart({ data, patientName }: PainProgressChartProps)
                                     borderRadius: '8px',
                                     fontSize: '12px',
                                 }}
-                                formatter={(value: number) => [`${value}/10`, 'Pain']}
-                                labelFormatter={(label: string) => `Visit: ${label}`}
+                                formatter={(value: any) => [`${value}/10`, 'Pain']}
+                                labelFormatter={(label: any) => `Visit: ${label}`}
                             />
                             <Area
                                 type="monotone"
