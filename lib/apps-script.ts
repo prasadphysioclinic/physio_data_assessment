@@ -1,5 +1,5 @@
 // Google Apps Script integration
-const APPS_SCRIPT_URL = process.env.GOOGLE_APPS_SCRIPT_URL;
+const APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL;
 
 // Timeout constants (Google Apps Script can hang)
 const GET_TIMEOUT_MS = 15000;  // 15 seconds for reads
