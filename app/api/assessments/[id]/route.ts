@@ -9,29 +9,30 @@ interface RouteParams {
     }>;
 }
 
+/**
+ * PUT /api/assessments/[id]
+ * Handles record updates. 
+ * Implements "Merge & Preserve" strategy for the 65 clinical columns.
+ */
 export async function PUT(request: Request, context: RouteParams) {
     try {
         const params = await context.params;
         const assessmentIndex = Number(params.id);
         const body = await request.json();
 
-        // Get all assessments from Google Sheet
+        // Fetch state to merge
         const assessments = await getFromGoogleSheet();
 
         if (isNaN(assessmentIndex) || assessmentIndex < 0 || assessmentIndex >= assessments.length) {
-            return NextResponse.json(
-                { error: "Assessment not found" },
-                { status: 404 }
-            );
+            return NextResponse.json({ error: "Record not found" }, { status: 404 });
         }
 
         const existingRow = assessments[assessmentIndex];
         const existingMedia: string[] = body.existingMedia || [];
 
-        // Prepare the data with the row index, merging with existing row data to PRESERVE OTHER COLUMNS
-        const updateData: any = {
-            ...existingRow, // Spread everything first (preserves unknown columns)
-            rowIndex: assessmentIndex + 2,
+        // 65-Column Mapping Strategy (UPDATE PHASE)
+        const updateData: AssessmentData = {
+            // 1-13
             Date: body.date,
             PatientName: body.name,
             Age: body.age,
@@ -46,12 +47,14 @@ export async function PUT(request: Request, context: RouteParams) {
             SleepingHistory: body.sleepingHistory || "",
             MenstruationHistory: body.menstruationHistory || "",
 
+            // 14-18
             ChiefComplaint: body.chiefComplaint || "",
             PresentHistory: body.presentHistory || "",
             PastHistory: body.pastHistory || "",
             DiagnosticImaging: body.diagnosticImaging || "",
             RedFlags: body.redFlags || "",
 
+            // 19-34
             Observation: body.observation || "",
             ActiveROM: body.activeROM || "",
             PassiveROM: body.passiveROM || "",
@@ -69,6 +72,7 @@ export async function PUT(request: Request, context: RouteParams) {
             JointPlayMovements: body.jointPlayMovements || "",
             Comments: body.comments || "",
 
+            // 35-40
             PainHistory: body.painHistory || "",
             AggravatingFactors: body.aggravatingFactors || "",
             EasingFactors: body.easingFactors || "",
@@ -76,6 +80,7 @@ export async function PUT(request: Request, context: RouteParams) {
             PainIntensity_VAS: body.painVas || 0,
             SymptomsLocation: body.symptomsLocation || "",
 
+            // 41-48
             Diagnosis: body.diagnosis || "",
             TreatmentPlan: body.treatmentPlan || "",
             ManualTherapy: body.manualTherapy || "",
@@ -85,43 +90,39 @@ export async function PUT(request: Request, context: RouteParams) {
             HomeFollowups: body.homeFollowups || "",
             WhatTreatment: body.whatTreatment || "",
 
+            // 49-52
             PatientSummary: body.patientSummary || "",
             Review1: body.review1 || "",
             Review2: body.review2 || "",
             Review3: body.review3 || "",
+            DailyNote: body.dailyNote || "",
 
+            // 53-56
             TwentyFourHourHistory: body.twentyFourHourHistory || "",
             ImprovingStaticWorse: body.improvingStaticWorse || "",
             NewOrOldInjury: body.newOldInjury || "",
-            SubmittedBy: "System (Updated)",
+            SubmittedBy: body.submittedBy || "System (Updated)",
+
+            // 57-60 (PRESERVE MEDIA)
+            Media1: existingMedia.length > 0 ? existingMedia[0] : (existingRow.Media1 || ""),
+            Media2: existingMedia.length > 1 ? existingMedia[1] : (existingRow.Media2 || ""),
+            Media3: existingMedia.length > 2 ? existingMedia[2] : (existingRow.Media3 || ""),
+            Media4: existingMedia.length > 3 ? existingMedia[3] : (existingRow.Media4 || ""),
+
+            // 61
             Timestamp: new Intl.DateTimeFormat('en-GB', {
                 year: 'numeric', month: '2-digit', day: '2-digit',
                 hour: '2-digit', minute: '2-digit', second: '2-digit',
                 hour12: false, timeZone: 'Asia/Kolkata'
             }).format(new Date()),
 
-            // ─── MEDIA PRESERVATION LOGIC ─────────────────────────────────────
-            // We only update Media columns if we have explicit values from the form.
-            // This prevents accidental deletion of images stored in non-standard columns.
-            
-            // Map the current state of existing media back to standard slots
-            Media_1: existingMedia.length > 0 ? existingMedia[0] : (existingRow.Media_1 || existingRow.Media1 || ""),
-            Media_2: existingMedia.length > 1 ? existingMedia[1] : (existingRow.Media_2 || existingRow.Media2 || ""),
-            Media_3: existingMedia.length > 2 ? existingMedia[2] : (existingRow.Media_3 || existingRow.Media3 || ""),
-            Media_4: existingMedia.length > 3 ? existingMedia[3] : (existingRow.Media_4 || existingRow.Media4 || ""),
-            
-            // Also update non-underscored versions for legacy compatibility
-            Media1: existingMedia.length > 0 ? existingMedia[0] : (existingRow.Media1 || existingRow.Media_1 || ""),
-            Media2: existingMedia.length > 1 ? existingMedia[1] : (existingRow.Media2 || existingRow.Media_2 || ""),
-            Media3: existingMedia.length > 2 ? existingMedia[2] : (existingRow.Media3 || existingRow.Media_3 || ""),
-            Media4: existingMedia.length > 3 ? existingMedia[3] : (existingRow.Media4 || existingRow.Media_4 || ""),
+            // Update Metadata
+            id: assessmentIndex,
+            rowIndex: assessmentIndex + 2,
+            action: 'update'
         };
 
-        const payload: any = {
-            action: 'update',
-            ...updateData,
-        };
-
+        const payload: any = { ...updateData };
         if (body.files && body.files.length > 0) {
             payload.files = body.files;
         }
@@ -130,17 +131,10 @@ export async function PUT(request: Request, context: RouteParams) {
         return NextResponse.json({ success: true, data: result });
 
     } catch (error) {
-        console.error("Error updating assessment:", error);
-        if (error instanceof DOMException && error.name === 'AbortError') {
-            return NextResponse.json(
-                { error: "Request to Google Apps Script timed out (30s)" },
-                { status: 504 }
-            );
-        }
+        console.error("Update Error:", error);
         return NextResponse.json(
-            { error: error instanceof Error ? error.message : "Failed to update assessment" },
+            { error: error instanceof Error ? error.message : "Sync failure" },
             { status: 500 }
         );
     }
 }
-

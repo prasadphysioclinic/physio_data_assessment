@@ -21,13 +21,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
-import { Camera, Video, X, Upload, FileVideo, FileImage, Plus } from "lucide-react";
+import { Camera, Video, X, Upload, FileVideo, FileImage, Plus, User, ClipboardList, Activity, Stethoscope, FileText, ArrowLeft } from "lucide-react";
 import { sanitizeFormData, validateFileSize, checkDuplicate, compressImage } from "@/lib/utils-data";
 import { getFromGoogleSheet } from "@/lib/apps-script";
 
 const formSchema = z.object({
-    // I. Patient Demographics
+    // I. Patient Demographics (1-13)
     date: z.string(),
     name: z.string().min(2, "Name is required"),
     age: z.string(),
@@ -42,14 +43,14 @@ const formSchema = z.object({
     sleepingHistory: z.string().optional(),
     menstruationHistory: z.string().optional(),
 
-    // II. Clinical History
+    // II. Clinical History (14-18)
     chiefComplaint: z.string().optional(),
     presentHistory: z.string().optional(),
     pastHistory: z.string().optional(),
     diagnosticImaging: z.string().optional(),
     redFlags: z.string().optional(),
 
-    // III. Observation & Physical Examination
+    // III. Observation & Physical Examination (19-34)
     observation: z.string().optional(),
     activeROM: z.string().optional(),
     passiveROM: z.string().optional(),
@@ -67,7 +68,7 @@ const formSchema = z.object({
     jointPlayMovements: z.string().optional(),
     comments: z.string().optional(),
 
-    // IV. Pain Assessment
+    // IV. Pain Assessment (35-40)
     painHistory: z.string().optional(),
     aggravatingFactors: z.string().optional(),
     easingFactors: z.string().optional(),
@@ -75,7 +76,7 @@ const formSchema = z.object({
     painVas: z.number().min(0).max(10),
     symptomsLocation: z.string().optional(),
 
-    // V. Diagnosis & Treatment Plan
+    // V. Diagnosis & Treatment Plan (41-48)
     diagnosis: z.string().optional(),
     treatmentPlan: z.string().optional(),
     manualTherapy: z.string().optional(),
@@ -85,20 +86,32 @@ const formSchema = z.object({
     homeFollowups: z.string().optional(),
     whatTreatment: z.string().optional(),
 
-    // VI. Summary & Follow-up
+    // VI. Summary & Follow-up (49-56)
     patientSummary: z.string().optional(),
     review1: z.string().optional(),
     review2: z.string().optional(),
     review3: z.string().optional(),
-
-
-    // Legacy/Mixed
+    dailyNote: z.string().optional(),
     twentyFourHourHistory: z.string().optional(),
     improvingStaticWorse: z.string().optional(),
     newOldInjury: z.string().optional(),
+    submittedBy: z.string().optional(),
 });
 
 export function AssessmentForm() {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const router = useRouter();
+
+    // Media upload state
+    const [mediaFiles, setMediaFiles] = useState<{ file: File; base64: string; type: 'image' | 'video' }[]>([]);
+    const [isStreaming, setIsStreaming] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('environment');
+    const [isInitializing, setIsInitializing] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const chunksRef = useRef<Blob[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -155,216 +168,20 @@ export function AssessmentForm() {
             review1: "",
             review2: "",
             review3: "",
-
+            dailyNote: "",
             twentyFourHourHistory: "",
             improvingStaticWorse: "Static",
             newOldInjury: "New",
+            submittedBy: "",
         },
     });
 
-    const [mediaFiles, setMediaFiles] = useState<{ file: File; base64: string; type: 'image' | 'video' }[]>([]);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isStreaming, setIsStreaming] = useState(false);
-    const [isRecording, setIsRecording] = useState(false);
-    const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('environment');
-    const [isInitializing, setIsInitializing] = useState(false);
-    const router = useRouter();
-
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-    const streamRef = useRef<MediaStream | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    // Visibility Fix: Attach stream to video element only after mounting
-    useEffect(() => {
-        if (isStreaming && videoRef.current && streamRef.current) {
-            const v = videoRef.current;
-            if (v.srcObject !== streamRef.current) {
-                v.srcObject = streamRef.current;
-                v.play().catch(e => console.error("Playback error:", e));
-            }
-        }
-    }, [isStreaming, cameraFacing]); // Re-run if streaming starts or camera toggles
-
-    useEffect(() => {
-        return () => {
-            stopCamera();
-        };
-    }, []);
-
-    const startCamera = async () => {
-        setIsInitializing(true);
-        try {
-            if (streamRef.current) {
-                stopCamera();
-            }
-
-            let stream: MediaStream;
-            try {
-                // Try video and audio first
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: cameraFacing },
-                    audio: true
-                });
-            } catch (aErr) {
-                console.warn("Audio access failed, falling back to video only:", aErr);
-                // Fallback to video only
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: cameraFacing },
-                    audio: false
-                });
-            }
-
-            streamRef.current = stream;
-            setIsStreaming(true);
-        } catch (err) {
-            console.error("Camera access failed completely:", err);
-            alert("Could not access camera. Please check camera permissions in your browser.");
-        } finally {
-            setIsInitializing(false);
-        }
-    };
-
-    const stopCamera = () => {
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
-            streamRef.current = null;
-        }
-        if (videoRef.current) {
-            videoRef.current.srcObject = null;
-        }
-        setIsStreaming(false);
-    };
-
-    const toggleCamera = () => {
-        setCameraFacing(prev => prev === 'user' ? 'environment' : 'user');
-        if (isStreaming) {
-            startCamera();
-        }
-    };
-
-    const takePhoto = () => {
-        if (!videoRef.current || mediaFiles.length >= 4) return;
-
-        const video = videoRef.current;
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-            ctx.drawImage(video, 0, 0);
-            const base64 = canvas.toDataURL('image/jpeg');
-
-            // Create a fake file object for compatibility
-            const blob = dataURLToBlob(base64);
-            const rawFile = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
-            
-            compressImage(rawFile).then(({ base64: compressedBase64, compressedFile }) => {
-                setMediaFiles(prev => [...prev, { 
-                    file: compressedFile, 
-                    base64: compressedBase64, 
-                    type: 'image' 
-                }]);
-            });
-        }
-    };
-
-    const startRecording = () => {
-        if (!streamRef.current || mediaFiles.length >= 4) return;
-
-        const chunks: BlobPart[] = [];
-        const recorder = new MediaRecorder(streamRef.current);
-
-        recorder.ondataavailable = (e) => {
-            if (e.data.size > 0) chunks.push(e.data);
-        };
-
-        recorder.onstop = async () => {
-            const blob = new Blob(chunks, { type: 'video/mp4' });
-            const base64 = await toBase64(new File([blob], "video.mp4"));
-            const file = new File([blob], `video_${Date.now()}.mp4`, { type: 'video/mp4' });
-
-            setMediaFiles(prev => [...prev, { file, base64: base64 as string, type: 'video' }]);
-        };
-
-        recorder.start();
-        mediaRecorderRef.current = recorder;
-        setIsRecording(true);
-    };
-
-    const stopRecording = () => {
-        if (mediaRecorderRef.current && isRecording) {
-            mediaRecorderRef.current.stop();
-            setIsRecording(false);
-        }
-    };
-
-    const dataURLToBlob = (dataurl: string) => {
-        const arr = dataurl.split(',');
-        const mime = arr[0].match(/:(.*?);/)![1];
-        const bstr = atob(arr[1]);
-        let n = bstr.length;
-        const u8arr = new Uint8Array(n);
-        while (n--) {
-            u8arr[n] = bstr.charCodeAt(n);
-        }
-        return new Blob([u8arr], { type: mime });
-    };
-
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (!files) return;
-
-        const newFiles = Array.from(files);
-        if (mediaFiles.length + newFiles.length > 4) {
-            alert("Maximum 4 attachments allowed");
-            return;
-        }
-
-        const validFiles: File[] = [];
-        for (const file of newFiles) {
-            const validation = validateFileSize(file);
-            if (!validation.valid) {
-                alert(validation.error);
-                continue;
-            }
-            validFiles.push(file);
-        }
-
-        const processedFiles = await Promise.all(
-            validFiles.map(async (file) => {
-                const { base64, compressedFile } = await compressImage(file);
-                return {
-                    file: compressedFile,
-                    base64: base64,
-                    type: (file.type.startsWith('video/') ? 'video' : 'image') as 'image' | 'video'
-                };
-            })
-        );
-
-        setMediaFiles([...mediaFiles, ...processedFiles]);
-        if (fileInputRef.current) fileInputRef.current.value = '';
-    };
-
-    const toBase64 = (file: File) => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-    });
-
-    const removeFile = (index: number) => {
-        setMediaFiles(mediaFiles.filter((_, i) => i !== index));
-    };
-
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log('Form submission started');
         setIsSubmitting(true);
         try {
-            // 1. Sanitize
             const sanitizedValues = sanitizeFormData(values);
-
-            // 2. Duplicate Check
+            
+            // Check for duplicates
             const allData = await getFromGoogleSheet();
             const assessments = Array.isArray(allData) ? allData : [];
             if (checkDuplicate(assessments, sanitizedValues.name, sanitizedValues.date)) {
@@ -374,14 +191,14 @@ export function AssessmentForm() {
                 }
             }
 
-            // Include media files in the submission
             const payload = {
                 ...sanitizedValues,
-                files: mediaFiles.map(mf => ({
-                    name: mf.file.name,
-                    type: mf.file.type,
-                    data: mf.base64.split(',')[1] // Just the bytes
-                }))
+                files: mediaFiles.map(m => ({
+                    name: `clinical_media_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${m.type === 'video' ? 'webm' : 'jpg'}`,
+                    type: m.type === 'video' ? 'video/webm' : 'image/jpeg',
+                    data: m.base64
+                })),
+                action: 'create'
             };
 
             const response = await fetch('/api/assessments', {
@@ -390,1037 +207,484 @@ export function AssessmentForm() {
                 body: JSON.stringify(payload),
             });
 
-            console.log('Response status:', response.status);
-            console.log('Response ok:', response.ok);
+            if (!response.ok) throw new Error("Database sync failed");
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                console.error('Server error:', errorData);
-                throw new Error(errorData.error || "Failed to submit assessment");
-            }
-
-            const result = await response.json();
-            console.log('Success response:', result);
-
-            alert("Assessment saved successfully!");
+            alert("New assessment recorded successfully!");
             router.push('/');
             router.refresh();
         } catch (error) {
-            console.error('Form submission error:', error);
-            const errorMessage = error instanceof Error ? error.message : "Error saving assessment";
-            alert(`Error: ${errorMessage}`);
+            console.error('Save Error:', error);
+            alert("Connection error. Could not reach server.");
         } finally {
             setIsSubmitting(false);
-            console.log('Form submission completed');
         }
     }
+
+    // Camera & File logic
+    const startCamera = async () => {
+        setIsInitializing(true);
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: cameraFacing },
+                audio: true
+            });
+            if (videoRef.current) videoRef.current.srcObject = stream;
+            setIsStreaming(true);
+        } catch (err) { alert("Camera access denied"); }
+        setIsInitializing(false);
+    };
+
+    const stopCamera = () => {
+        if (videoRef.current?.srcObject) {
+            (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
+            videoRef.current.srcObject = null;
+        }
+        setIsStreaming(false);
+    };
+
+    const toggleCamera = () => {
+        setCameraFacing(prev => prev === 'user' ? 'environment' : 'user');
+        if (isStreaming) { stopCamera(); setTimeout(startCamera, 100); }
+    };
+
+    const takePhoto = () => {
+        if (!videoRef.current || mediaFiles.length >= 4) return;
+        const canvas = document.createElement("canvas");
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = videoRef.current.videoHeight;
+        canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
+        const base64 = canvas.toDataURL("image/jpeg", 0.8);
+        setMediaFiles(prev => [...prev.slice(0, 3), { file: new File([], "cam.jpg"), base64, type: 'image' }]);
+    };
+
+    const startRecording = () => {
+        if (!videoRef.current?.srcObject || mediaFiles.length >= 4) return;
+        chunksRef.current = [];
+        const recorder = new MediaRecorder(videoRef.current.srcObject as MediaStream, { mimeType: 'video/webm' });
+        recorder.ondataavailable = (e) => chunksRef.current.push(e.data);
+        recorder.onstop = async () => {
+            const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setMediaFiles(prev => [...prev.slice(0, 3), { file: new File([], "vid.webm"), base64: reader.result as string, type: 'video' }]);
+            };
+            reader.readAsDataURL(blob);
+        };
+        recorder.start();
+        mediaRecorderRef.current = recorder;
+        setIsRecording(true);
+    };
+
+    const stopRecording = () => {
+        mediaRecorderRef.current?.stop();
+        setIsRecording(false);
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        for (const file of files) {
+            if (mediaFiles.length >= 4) break;
+            const validation = validateFileSize(file);
+            if (!validation.valid) {
+                alert(validation.error);
+                continue;
+            }
+
+            if (file.type.startsWith('image/')) {
+                const { base64 } = await compressImage(file);
+                setMediaFiles(prev => [...prev.slice(0, 3), { file, base64, type: 'image' }]);
+            } else {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setMediaFiles(prev => [...prev.slice(0, 3), { file, base64: reader.result as string, type: 'video' }]);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    };
+
+    const removeFile = (i: number) => setMediaFiles(prev => prev.filter((_, idx) => idx !== i));
 
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Left Column */}
+                    {/* Column 1 */}
                     <div className="space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Patient Details</CardTitle>
+                        <Card className="rounded-2xl shadow-lg border-primary/10 overflow-hidden">
+                            <CardHeader className="bg-primary/5 border-b py-4">
+                                <CardTitle className="text-lg flex items-center gap-2"><User className="h-5 w-5 text-primary" /> Patient Demographics</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                <FormField
-                                    control={form.control}
-                                    name="date"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Date</FormLabel>
-                                            <FormControl>
-                                                <Input type="date" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="name"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Name</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Patient Name" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                            <CardContent className="p-6 space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="age"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Age</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Age" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="occupation"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Occupation</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Occupation" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                                    <FormField control={form.control} name="date" render={({ field }) => (
+                                        <FormItem><FormLabel>Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="name" render={({ field }) => (
+                                        <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="Patient Name" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                </div>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <FormField control={form.control} name="age" render={({ field }) => (
+                                        <FormItem><FormLabel>Age</FormLabel><FormControl><Input placeholder="Yrs" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="sex" render={({ field }) => (
+                                        <FormItem><FormLabel>Sex</FormLabel><FormControl><Input placeholder="M/F/O" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="occupation" render={({ field }) => (
+                                        <FormItem><FormLabel>Occupation</FormLabel><FormControl><Input placeholder="Job" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                </div>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <FormField control={form.control} name="phoneNumber" render={({ field }) => (
+                                        <FormItem><FormLabel>Contact</FormLabel><FormControl><Input placeholder="Phone" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="height" render={({ field }) => (
+                                        <FormItem><FormLabel>Height (cm)</FormLabel><FormControl><Input placeholder="cm" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="weight" render={({ field }) => (
+                                        <FormItem><FormLabel>Weight (kg)</FormLabel><FormControl><Input placeholder="kg" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="bloodPressure"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Blood Pressure</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="e.g., 120/80" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="diabeticMellitus"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Diabetic Mellitus</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Sugar Level" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                                    <FormField control={form.control} name="bloodPressure" render={({ field }) => (
+                                        <FormItem><FormLabel>BP</FormLabel><FormControl><Input placeholder="120/80" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="diabeticMellitus" render={({ field }) => (
+                                        <FormItem><FormLabel>Diabetic History</FormLabel><FormControl><Input placeholder="DM status" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
                                 </div>
+                                <FormField control={form.control} name="dietHabit" render={({ field }) => (
+                                    <FormItem><FormLabel>Diet Habit</FormLabel><FormControl><Input placeholder="Dietary notes" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
                                 <div className="grid grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="dietHabit"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Diet Habit</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Diet" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="sleepingHistory"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Sleeping History</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Sleep pattern" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                                    <FormField control={form.control} name="sleepingHistory" render={({ field }) => (
+                                        <FormItem><FormLabel>Sleep History</FormLabel><FormControl><Input placeholder="Rest patterns" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="menstruationHistory" render={({ field }) => (
+                                        <FormItem><FormLabel>Menstruation</FormLabel><FormControl><Input placeholder="History" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
                                 </div>
-                                <FormField
-                                    control={form.control}
-                                    name="menstruationHistory"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Menstruation History</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="History" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
                             </CardContent>
                         </Card>
 
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>History</CardTitle>
+                        <Card className="rounded-2xl shadow-lg border-primary/10 overflow-hidden">
+                            <CardHeader className="bg-primary/5 border-b py-4">
+                                <CardTitle className="text-lg flex items-center gap-2"><ClipboardList className="h-5 w-5 text-primary" /> Clinical History</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                <FormField
-                                    control={form.control}
-                                    name="chiefComplaint"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Chief Complaint</FormLabel>
-                                            <FormControl>
-                                                <Textarea placeholder="Current issues..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="presentHistory"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>History of Present Illness</FormLabel>
-                                            <FormControl>
-                                                <Textarea placeholder="Onset, progression..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="pastHistory"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Past Medical History</FormLabel>
-                                            <FormControl>
-                                                <Textarea placeholder="Surgeries, other conditions..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="diagnosticImaging"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Diagnostic Imaging / Reports</FormLabel>
-                                            <FormControl>
-                                                <Textarea placeholder="X-ray, MRI, Blood tests..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="redFlags"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Red Flags</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Any warning signs..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <div className="grid grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="improvingStaticWorse"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Progress Status</FormLabel>
-                                                <FormControl>
-                                                    <RadioGroup
-                                                        onValueChange={field.onChange}
-                                                        defaultValue={field.value}
-                                                        className="flex flex-col space-y-1"
-                                                    >
-                                                        <FormItem className="flex items-center space-x-3 space-y-0">
-                                                            <FormControl>
-                                                                <RadioGroupItem value="Improving" />
-                                                            </FormControl>
-                                                            <FormLabel className="font-normal">Improving</FormLabel>
-                                                        </FormItem>
-                                                        <FormItem className="flex items-center space-x-3 space-y-0">
-                                                            <FormControl>
-                                                                <RadioGroupItem value="Static" />
-                                                            </FormControl>
-                                                            <FormLabel className="font-normal">Static</FormLabel>
-                                                        </FormItem>
-                                                        <FormItem className="flex items-center space-x-3 space-y-0">
-                                                            <FormControl>
-                                                                <RadioGroupItem value="Worse" />
-                                                            </FormControl>
-                                                            <FormLabel className="font-normal">Worse</FormLabel>
-                                                        </FormItem>
-                                                    </RadioGroup>
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="newOldInjury"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Injury Type</FormLabel>
-                                                <FormControl>
-                                                    <RadioGroup
-                                                        onValueChange={field.onChange}
-                                                        defaultValue={field.value}
-                                                        className="flex flex-col space-y-1"
-                                                    >
-                                                        <FormItem className="flex items-center space-x-3 space-y-0">
-                                                            <FormControl>
-                                                                <RadioGroupItem value="New" />
-                                                            </FormControl>
-                                                            <FormLabel className="font-normal">New</FormLabel>
-                                                        </FormItem>
-                                                        <FormItem className="flex items-center space-x-3 space-y-0">
-                                                            <FormControl>
-                                                                <RadioGroupItem value="Old" />
-                                                            </FormControl>
-                                                            <FormLabel className="font-normal">Old</FormLabel>
-                                                        </FormItem>
-                                                    </RadioGroup>
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                                <FormField
-                                    control={form.control}
-                                    name="twentyFourHourHistory"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>24-Hour Severity/Symptoms</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Morning/Night patterns..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="pastHistory"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Past History</FormLabel>
-                                            <FormControl>
-                                                <Textarea {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="diagnosticImaging"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Diagnostic Imaging</FormLabel>
-                                            <FormControl>
-                                                <Input {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Observation (Posture)</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <FormField
-                                    control={form.control}
-                                    name="observation"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormControl>
-                                                <Textarea className="min-h-[100px]" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Examination Results</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="activeROM"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Active ROM</FormLabel>
-                                                <FormControl>
-                                                    <Textarea placeholder="L/R Ext/Flex" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="passiveROM"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Passive ROM</FormLabel>
-                                                <FormControl>
-                                                    <Textarea placeholder="L/R Ext/Flex" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="musclePower"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Muscle Power (MMT)</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="MMT Grade..." {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="gait"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Gait</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Normal, Antalgic..." {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="sensation"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Sensation</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Normal, Impaired..." {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="reflexes"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Reflexes</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Grades..." {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                                <FormField
-                                    control={form.control}
-                                    name="palpation"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Palpation</FormLabel>
-                                            <FormControl>
-                                                <Textarea placeholder="Tenderness, swelling..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="comments"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Additional Comments</FormLabel>
-                                            <FormControl>
-                                                <Input {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <div className="grid grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="endFeel"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>End Feel</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="capsularPattern"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Capsular Pattern</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
+                            <CardContent className="p-6 space-y-4">
+                                <FormField control={form.control} name="chiefComplaint" render={({ field }) => (
+                                    <FormItem><FormLabel>Chief Complaint</FormLabel><FormControl><Textarea className="min-h-[80px]" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="presentHistory" render={({ field }) => (
+                                    <FormItem><FormLabel>History of Present Illness</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="pastHistory" render={({ field }) => (
+                                    <FormItem><FormLabel>Past Medical History</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="diagnosticImaging" render={({ field }) => (
+                                    <FormItem><FormLabel>Diagnostic Imaging Results</FormLabel><FormControl><Textarea placeholder="MRI, X-Ray, etc." {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="redFlags" render={({ field }) => (
+                                    <FormItem><FormLabel className="text-red-500">Red Flags / Contraindications</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
                             </CardContent>
                         </Card>
                     </div>
 
-                    {/* Right Column */}
+                    {/* Column 2 */}
                     <div className="space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Pain & Symptoms</CardTitle>
+                        <Card className="rounded-2xl shadow-lg border-primary/10 overflow-hidden">
+                            <CardHeader className="bg-primary/5 border-b py-4">
+                                <CardTitle className="text-lg flex items-center gap-2"><Activity className="h-5 w-5 text-primary" /> Physical Examination</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-6">
-                                <div className="flex justify-center border p-4 rounded-md">
-                                    <div className="relative w-[300px] h-[400px]">
-                                        <Image
-                                            src="/body-chart.png"
-                                            alt="Body Chart"
-                                            fill
-                                            className="object-contain"
-                                        />
-                                    </div>
+                            <CardContent className="p-6 space-y-4">
+                                <FormField control={form.control} name="observation" render={({ field }) => (
+                                    <FormItem><FormLabel>Posture & Observation</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField control={form.control} name="activeROM" render={({ field }) => (
+                                        <FormItem><FormLabel>Active ROM</FormLabel><FormControl><Input placeholder="Full/Limited" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="passiveROM" render={({ field }) => (
+                                        <FormItem><FormLabel>Passive ROM</FormLabel><FormControl><Input placeholder="End-feel" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
                                 </div>
-                                <FormField
-                                    control={form.control}
-                                    name="symptomsLocation"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Symptoms Location (Describe)</FormLabel>
-                                            <FormControl>
-                                                <Textarea placeholder="Describe where the symptoms are..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="painVas"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>VAS: Intensity of Pain (0-10)</FormLabel>
-                                            <div className="flex items-center gap-4">
-                                                <span className="w-8 text-center">{field.value}</span>
-                                                <FormControl>
-                                                    <Slider
-                                                        min={0}
-                                                        max={10}
-                                                        step={1}
-                                                        value={[field.value]}
-                                                        onValueChange={(vals) => field.onChange(vals[0])}
-                                                    />
-                                                </FormControl>
-                                            </div>
-                                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                                                <span>No Pain</span>
-                                                <span>Worst Pain</span>
-                                            </div>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="painDescription"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Pain Type</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Constant, periodic, episodic, occasional" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField control={form.control} name="musclePower" render={({ field }) => (
+                                        <FormItem><FormLabel>Muscle Power (MMT)</FormLabel><FormControl><Input placeholder="Grade 0-5" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="gait" render={({ field }) => (
+                                        <FormItem><FormLabel>Gait Analysis</FormLabel><FormControl><Input placeholder="Limp, etc." {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                </div>
+                                <FormField control={form.control} name="palpation" render={({ field }) => (
+                                    <FormItem><FormLabel>Palpation (Tenderness/Effusion)</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
                             </CardContent>
                         </Card>
 
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Tests</CardTitle>
+                        <Card className="rounded-2xl shadow-lg border-primary/10 overflow-hidden">
+                            <CardHeader className="bg-primary/5 border-b py-4">
+                                <CardTitle className="text-lg flex items-center gap-2"><Stethoscope className="h-5 w-5 text-primary" /> Specialized Assessments</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                <FormField
-                                    control={form.control}
-                                    name="resistedIsometrics"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Resisted Isometrics</FormLabel>
-                                            <FormControl>
-                                                <Textarea {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="functionalTesting"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Functional Testing</FormLabel>
-                                            <FormControl>
-                                                <Textarea {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="neurologicalTests"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Neurological Tests</FormLabel>
-                                            <FormControl>
-                                                <Textarea placeholder="Reflexes, coordination..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="sensation"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Sensation</FormLabel>
-                                            <FormControl>
-                                                <Textarea placeholder="Sensory testing results..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="reflexes"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Reflexes</FormLabel>
-                                            <FormControl>
-                                                <Textarea placeholder="Deep tendon reflexes..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="specialTests"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Special Tests</FormLabel>
-                                            <FormControl>
-                                                <Textarea {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="jointPlayMovements"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Joint Play Movements</FormLabel>
-                                            <FormControl>
-                                                <Textarea {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="palpation"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Palpation (Tenderness, Effusion)</FormLabel>
-                                            <FormControl>
-                                                <Textarea {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Treatment Plan</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <FormField
-                                    control={form.control}
-                                    name="diagnosis"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Physiotherapy Diagnosis</FormLabel>
-                                            <FormControl>
-                                                <Textarea placeholder="Based on assessment..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="manualTherapy"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Manual Therapy</FormLabel>
-                                            <FormControl>
-                                                <Textarea placeholder="Techniques used..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="electrotherapy"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Electrotherapy</FormLabel>
-                                            <FormControl>
-                                                <Textarea placeholder="Modalities used..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="exercisePrescription"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Exercise Prescription</FormLabel>
-                                            <FormControl>
-                                                <Textarea placeholder="Home exercise program..." {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Reviews & Summary</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <FormField
-                                    control={form.control}
-                                    name="review1"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Review 1</FormLabel>
-                                            <FormControl>
-                                                <Input {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="review2"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Review 2</FormLabel>
-                                            <FormControl>
-                                                <Input {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="review3"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Review 3</FormLabel>
-                                            <FormControl>
-                                                <Input {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="patientSummary"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Overall Patient Summary</FormLabel>
-                                            <FormControl>
-                                                <Textarea {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
+                            <CardContent className="p-6 space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField control={form.control} name="neurologicalTests" render={({ field }) => (
+                                        <FormItem><FormLabel>Neuro Tests</FormLabel><FormControl><Input placeholder="Myotomes, etc." {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="sensation" render={({ field }) => (
+                                        <FormItem><FormLabel>Sensation</FormLabel><FormControl><Input placeholder="Dermatomes" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField control={form.control} name="reflexes" render={({ field }) => (
+                                        <FormItem><FormLabel>Reflexes</FormLabel><FormControl><Input placeholder="DTRs" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="specialTests" render={({ field }) => (
+                                        <FormItem><FormLabel>Special Tests</FormLabel><FormControl><Input placeholder="Orthopedic tests" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField control={form.control} name="endFeel" render={({ field }) => (
+                                        <FormItem><FormLabel>End Feel</FormLabel><FormControl><Input placeholder="Bony/Springy" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="capsularPattern" render={({ field }) => (
+                                        <FormItem><FormLabel>Capsular Pattern</FormLabel><FormControl><Input placeholder="Present/Absent" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField control={form.control} name="resistedIsometrics" render={({ field }) => (
+                                        <FormItem><FormLabel>Resisted Isometrics</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="jointPlayMovements" render={({ field }) => (
+                                        <FormItem><FormLabel>Joint Play</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                </div>
+                                <FormField control={form.control} name="comments" render={({ field }) => (
+                                    <FormItem><FormLabel>Clinical Comments</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
                             </CardContent>
                         </Card>
                     </div>
                 </div>
 
-                {/* Live Media Capture Section */}
-                <Card className="mt-8 overflow-hidden border-2 border-primary/20 bg-secondary/5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card className="rounded-2xl shadow-lg border-primary/10 overflow-hidden">
+                        <CardHeader className="bg-primary/5 border-b py-4">
+                            <CardTitle className="text-lg flex items-center gap-2"><Activity className="h-5 w-5 text-primary" /> Pain Assessment</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-6 space-y-6">
+                            <FormField control={form.control} name="painVas" render={({ field }) => (
+                                <FormItem className="space-y-4">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <FormLabel className="text-primary font-bold">Pain Intensity (VAS)</FormLabel>
+                                        <Badge variant="secondary" className="px-3 py-1 text-lg font-black bg-primary/10 text-primary border-primary/20">{field.value / 10}</Badge>
+                                    </div>
+                                    <FormControl>
+                                        <Slider min={0} max={100} step={1} value={[field.value]} onValueChange={(val) => field.onChange(val[0])} className="py-4" />
+                                    </FormControl>
+                                    <div className="flex justify-between text-[10px] text-muted-foreground font-black px-1"><span>NO PAIN</span><span>MODERATE</span><span>SEVERE</span></div>
+                                </FormItem>
+                            )} />
+                            <FormField control={form.control} name="painHistory" render={({ field }) => (
+                                <FormItem><FormLabel>Pain History</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="painDescription" render={({ field }) => (
+                                <FormItem><FormLabel>Pain Description</FormLabel><FormControl><Textarea placeholder="Burning, Sharp, etc." {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="symptomsLocation" render={({ field }) => (
+                                <FormItem><FormLabel>Symptoms Location</FormLabel><FormControl><Input placeholder="Left leg, etc." {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField control={form.control} name="aggravatingFactors" render={({ field }) => (
+                                    <FormItem><FormLabel>Aggravating</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="easingFactors" render={({ field }) => (
+                                    <FormItem><FormLabel>Easing</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <div className="space-y-6">
+                        <Card className="rounded-2xl shadow-lg border-primary/10 overflow-hidden">
+                            <CardHeader className="bg-primary/5 border-b py-4">
+                                <CardTitle className="text-lg flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> Treatment Plan</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6 space-y-4">
+                                <FormField control={form.control} name="diagnosis" render={({ field }) => (
+                                    <FormItem><FormLabel>Clinical Diagnosis</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="treatmentPlan" render={({ field }) => (
+                                    <FormItem><FormLabel>Treatment Strategy</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField control={form.control} name="manualTherapy" render={({ field }) => (
+                                        <FormItem><FormLabel>Manual Therapy</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="electrotherapy" render={({ field }) => (
+                                        <FormItem><FormLabel>Electrotherapy</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                </div>
+                                <FormField control={form.control} name="exercisePrescription" render={({ field }) => (
+                                    <FormItem><FormLabel>Exercise Prescription</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField control={form.control} name="patientEducation" render={({ field }) => (
+                                        <FormItem><FormLabel>Education</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="homeFollowups" render={({ field }) => (
+                                        <FormItem><FormLabel>Follow-ups</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                </div>
+                                <FormField control={form.control} name="whatTreatment" render={({ field }) => (
+                                    <FormItem><FormLabel>Specific Interventions</FormLabel><FormControl><Input placeholder="Modalities used today" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                            </CardContent>
+                        </Card>
+
+                        <Card className="rounded-2xl shadow-lg border-primary/10 overflow-hidden">
+                            <CardHeader className="bg-primary/5 border-b py-4">
+                                <CardTitle className="text-lg flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> Summary & Reviews</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6 space-y-4">
+                                <FormField control={form.control} name="patientSummary" render={({ field }) => (
+                                    <FormItem><FormLabel>Clinical Summary</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="dailyNote" render={({ field }) => (
+                                    <FormItem><FormLabel className="text-primary font-bold">Daily Consultation Note</FormLabel><FormControl><Textarea className="min-h-[120px] bg-white" placeholder="Progress notes for today..." {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <div className="grid grid-cols-3 gap-3">
+                                    <FormField control={form.control} name="review1" render={({ field }) => (
+                                        <FormItem><FormLabel>Review 1</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="review2" render={({ field }) => (
+                                        <FormItem><FormLabel>Review 2</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="review3" render={({ field }) => (
+                                        <FormItem><FormLabel>Review 3</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                </div>
+                                <FormField control={form.control} name="twentyFourHourHistory" render={({ field }) => (
+                                    <FormItem><FormLabel>24-hour Response</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField control={form.control} name="improvingStaticWorse" render={({ field }) => (
+                                        <FormItem><FormLabel>Status</FormLabel><FormControl><Input placeholder="Improving/Static/Worse" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="newOldInjury" render={({ field }) => (
+                                        <FormItem><FormLabel>Injury Type</FormLabel><FormControl><Input placeholder="New/Old" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                </div>
+                                <FormField control={form.control} name="submittedBy" render={({ field }) => (
+                                    <FormItem><FormLabel>Authenticated By</FormLabel><FormControl><Input placeholder="Doctor Name" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+
+                <Card className="overflow-hidden border-2 border-primary/10 bg-muted/5 rounded-3xl">
                     <CardHeader className="bg-primary/5 flex flex-row items-center justify-between py-5 border-b">
                         <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                <Camera className="h-5 w-5 text-primary" />
-                            </div>
+                            <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center shadow-inner"><Camera className="h-5 w-5 text-primary" /></div>
                             <div>
-                                <CardTitle className="text-xl font-bold">Clinical Evidence Capture</CardTitle>
-                                <p className="text-xs text-muted-foreground mt-0.5">Capture up to 4 photos or videos of the patient</p>
+                                <CardTitle className="text-xl font-black tracking-tight">Clinical Evidence Capture</CardTitle>
+                                <p className="text-xs text-muted-foreground font-medium">Add up to 4 clinical status captures</p>
                             </div>
                         </div>
                         <div className="flex gap-2">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => fileInputRef.current?.click()}
-                                className="text-xs h-9"
-                            >
-                                <Upload className="h-4 w-4 mr-2" />
-                                Import Files
+                             <Button type="button" variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()} className="text-xs h-10 rounded-xl hover:bg-white shadow-sm border border-transparent hover:border-slate-100 transition-all font-bold">
+                                <Upload className="h-4 w-4 mr-2" /> Import Files
                             </Button>
                         </div>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            className="hidden"
-                            accept="image/*,video/*"
-                            multiple
-                            onChange={handleFileChange}
-                        />
+                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*,video/*" multiple onChange={handleFileChange} />
                     </CardHeader>
                     <CardContent className="p-0">
-                        <div className="flex flex-col lg:flex-row min-h-[400px]">
-                            {/* Camera Viewport */}
-                            <div className="flex-1 bg-black relative flex items-center justify-center overflow-hidden min-h-[300px]">
+                        <div className="flex flex-col lg:flex-row min-h-[450px]">
+                            <div className="flex-1 bg-slate-950 relative flex items-center justify-center overflow-hidden min-h-[350px]">
                                 {isInitializing && (
-                                    <div className="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center gap-4">
-                                        <div className="h-12 w-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-                                        <p className="text-white text-xs font-semibold tracking-widest uppercase">Initializing Camera...</p>
+                                    <div className="absolute inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center gap-4">
+                                        <div className="h-14 w-14 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                                        <p className="text-white text-[10px] font-black tracking-[0.2em] uppercase opacity-60">Initializing Optics...</p>
                                     </div>
                                 )}
-
                                 {isStreaming ? (
                                     <>
-                                        <video
-                                            ref={videoRef}
-                                            autoPlay
-                                            playsInline
-                                            muted
-                                            onCanPlay={(e) => e.currentTarget.play()}
-                                            className="w-full h-full object-contain"
-                                        />
-
-                                        {/* HUD Overlay */}
-                                        <div className="absolute top-4 left-4 flex gap-2">
-                                            <div className="flex items-center gap-1.5 bg-black/60 px-2.5 py-1 rounded-md border border-white/20">
-                                                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                                                <span className="text-[10px] text-white font-bold tracking-widest uppercase">LIVE</span>
+                                        <video ref={videoRef} autoPlay playsInline muted onCanPlay={(e) => e.currentTarget.play()} className="w-full h-full object-contain" />
+                                        <div className="absolute top-6 left-6 flex gap-3">
+                                            <div className="flex items-center gap-2 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 shadow-2xl">
+                                                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.8)]" />
+                                                <span className="text-[10px] text-white font-black tracking-widest uppercase">LIVE FEED</span>
                                             </div>
                                             {isRecording && (
-                                                <div className="flex items-center gap-1.5 bg-red-600 px-2.5 py-1 rounded-md border border-red-400">
-                                                    <div className="h-2 w-2 rounded-full bg-white animate-ping" />
-                                                    <span className="text-[10px] text-white font-bold tracking-widest uppercase">RECORDING</span>
+                                                <div className="flex items-center gap-2 bg-red-600 px-3 py-1.5 rounded-full border border-red-400 shadow-[0_0_20px_rgba(220,38,38,0.5)]">
+                                                    <div className="h-2.5 w-2.5 rounded-full bg-white animate-ping" />
+                                                    <span className="text-[10px] text-white font-black tracking-widest uppercase">CAPTURING</span>
                                                 </div>
                                             )}
                                         </div>
-
-                                        <div className="absolute top-4 right-4">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="icon"
-                                                className="h-8 w-8 bg-black/40 border-white/20 text-white hover:bg-black/60"
-                                                onClick={toggleCamera}
-                                            >
-                                                <Plus className="h-4 w-4 rotate-45" />
-                                            </Button>
+                                        <div className="absolute top-6 right-6 flex flex-col gap-3">
+                                            <Button type="button" variant="outline" size="icon" className="h-10 w-10 bg-black/60 backdrop-blur-md border-white/20 text-white hover:bg-white hover:text-black rounded-full transition-all" onClick={toggleCamera}><Plus className="h-5 w-5 rotate-45" /></Button>
                                         </div>
-
-                                        {/* Main Action Bar */}
-                                        <div className="absolute inset-x-0 bottom-6 flex justify-center items-center gap-6 px-4">
-                                            <div className="flex flex-col items-center gap-2">
-                                                <Button
-                                                    type="button"
-                                                    size="lg"
-                                                    className="h-16 w-16 rounded-full bg-white hover:bg-gray-200 text-primary border-[4px] border-primary/20 shadow-xl"
-                                                    onClick={takePhoto}
-                                                    disabled={mediaFiles.length >= 4}
-                                                >
-                                                    <Camera className="h-6 w-6" />
-                                                </Button>
-                                                <span className="text-[10px] text-white font-bold drop-shadow-md">SNAP PHOTO</span>
+                                        <div className="absolute inset-x-0 bottom-8 flex justify-center items-center gap-8 px-4">
+                                            <div className="flex flex-col items-center gap-2 group">
+                                                <Button type="button" size="lg" className="h-20 w-20 rounded-full bg-white hover:scale-105 active:scale-95 text-primary border-[6px] border-primary/10 shadow-[0_0_40px_rgba(255,255,255,0.3)] transition-all flex items-center justify-center" onClick={takePhoto} disabled={mediaFiles.length >= 4}><Camera className="h-8 w-8" /></Button>
+                                                <span className="text-[10px] text-white font-black tracking-tighter drop-shadow-lg scale-90 group-hover:scale-100 transition-transform">SNAPSHOT</span>
                                             </div>
-
-                                            <div className="flex flex-col items-center gap-2">
+                                            <div className="flex flex-col items-center gap-2 group">
                                                 {!isRecording ? (
-                                                    <Button
-                                                        type="button"
-                                                        size="lg"
-                                                        className="h-16 w-16 rounded-full bg-red-600 hover:bg-red-700 text-white border-[4px] border-red-200 shadow-xl"
-                                                        onClick={startRecording}
-                                                        disabled={mediaFiles.length >= 4}
-                                                    >
-                                                        <Video className="h-6 w-6" />
-                                                    </Button>
+                                                    <Button type="button" size="lg" className="h-20 w-20 rounded-full bg-red-600 hover:bg-red-500 hover:scale-105 active:scale-95 text-white border-[6px] border-red-200/20 shadow-[0_0_40px_rgba(220,38,38,0.3)] transition-all flex items-center justify-center p-0" onClick={startRecording} disabled={mediaFiles.length >= 4}><Video className="h-8 w-8" /></Button>
                                                 ) : (
-                                                    <Button
-                                                        type="button"
-                                                        size="lg"
-                                                        className="h-16 w-16 rounded-full bg-red-600 animate-pulse text-white border-[4px] border-white shadow-xl flex items-center justify-center p-0"
-                                                        onClick={stopRecording}
-                                                    >
-                                                        <div className="h-6 w-6 rounded-sm bg-white" />
-                                                    </Button>
+                                                    <Button type="button" size="lg" className="h-20 w-20 rounded-full bg-red-600 animate-pulse text-white border-[6px] border-white shadow-2xl flex items-center justify-center p-0" onClick={stopRecording}><div className="h-7 w-7 rounded-sm bg-white" /></Button>
                                                 )}
-                                                <span className="text-[10px] text-white font-bold drop-shadow-md uppercase">
-                                                    {isRecording ? "Stop Video" : "Record Video"}
-                                                </span>
+                                                <span className="text-[10px] text-white font-black tracking-tighter drop-shadow-lg scale-90 group-hover:scale-100 transition-transform uppercase">{isRecording ? "Finish Capture" : "Capture Motion"}</span>
                                             </div>
                                         </div>
                                     </>
                                 ) : (
                                     <div className="text-center p-12 max-w-sm">
-                                        <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
-                                            <Camera className="h-10 w-10 text-primary/40" />
-                                        </div>
-                                        <h4 className="text-white font-semibold mb-2">Camera Ready</h4>
-                                        <p className="text-white/40 text-sm mb-8">Click below to enable your camera and capture patient media live.</p>
-                                        <Button
-                                            type="button"
-                                            onClick={startCamera}
-                                            className="w-full h-12 text-sm font-bold tracking-wide"
-                                        >
-                                            ENABLE CAMERA VIEW
-                                        </Button>
+                                        <div className="h-24 w-24 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-8 shadow-inner border border-primary/5"><Camera className="h-10 w-10 text-primary/40" /></div>
+                                        <h4 className="text-white text-xl font-black mb-3 tracking-tight">Lens Ready</h4>
+                                        <p className="text-white/40 text-sm mb-10 font-medium leading-relaxed">Activate camera to document physical indicators or limitations.</p>
+                                        <Button type="button" onClick={startCamera} className="w-full h-14 rounded-2xl text-sm font-black tracking-widest bg-primary hover:bg-primary/90 shadow-[0_10px_30px_rgba(var(--primary),0.3)]">ACTIVATE SENSORS</Button>
                                     </div>
                                 )}
                             </div>
-
-                            {/* Evidence Sidebar */}
-                            <div className="w-full lg:w-[320px] bg-background p-5 border-l">
-                                <div className="flex items-center justify-between mb-5">
-                                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                        Captured ({mediaFiles.length}/4)
-                                    </h3>
-                                    {isStreaming && (
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={stopCamera}
-                                            className="text-[10px] h-7 px-2"
-                                        >
-                                            Turn Off
-                                        </Button>
-                                    )}
-                                </div>
-
-                                {mediaFiles.length === 0 ? (
-                                    <div className="h-[250px] flex flex-col items-center justify-center border-2 border-dashed rounded-xl bg-muted/30">
-                                        <Plus className="h-10 w-10 mb-3 text-muted-foreground/30" />
-                                        <p className="text-xs text-center px-6 text-muted-foreground">Captured photos or videos will appear here.</p>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {mediaFiles.map((mf, index) => (
-                                            <div key={index} className="relative aspect-square rounded-xl overflow-hidden border shadow-sm group bg-black">
-                                                {mf.type === 'image' ? (
-                                                    <img src={mf.base64} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-                                                        <FileVideo className="h-8 w-8 text-primary" />
-                                                        <span className="text-[8px] font-bold text-white bg-red-600 px-1.5 py-0.5 rounded uppercase">Video</span>
-                                                    </div>
-                                                )}
-                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                    <Button
-                                                        type="button"
-                                                        variant="destructive"
-                                                        size="icon"
-                                                        onClick={() => removeFile(index)}
-                                                        className="h-8 w-8 rounded-full shadow-lg"
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </Button>
+                            <div className="w-full lg:w-[350px] bg-white p-6 border-l shadow-2xl z-10">
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-3 mb-6">Database Queue <div className="h-1 flex-1 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-primary transition-all duration-500" style={{ width: `${(mediaFiles.length / 4) * 100}%` }}></div></div></h3>
+                                <div className="space-y-6">
+                                    <div className="space-y-3">
+                                        <p className="text-[10px] font-black text-primary">NEW TO BE UPLOADED ({mediaFiles.length})</p>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {mediaFiles.map((mf, index) => (
+                                                <div key={index} className="relative aspect-square rounded-2xl overflow-hidden border-2 border-primary/20 shadow-md group bg-black animate-in fade-in zoom-in duration-300">
+                                                    {mf.type === 'image' ? ( <img src={mf.base64} className="w-full h-full object-cover" /> ) : ( <div className="w-full h-full flex flex-col items-center justify-center gap-2"><FileVideo className="h-8 w-8 text-primary" /><span className="text-[8px] font-bold text-white bg-red-600 px-1.5 py-0.5 rounded uppercase">VIDEO</span></div> )}
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><Button type="button" variant="destructive" size="icon" onClick={() => removeFile(index)} className="h-8 w-8 rounded-full shadow-lg"><X className="h-4 w-4" /></Button></div>
                                                 </div>
-                                            </div>
-                                        ))}
-                                        {mediaFiles.length < 4 && (
-                                            <div className="aspect-square rounded-xl border-2 border-dashed flex items-center justify-center bg-muted/20">
-                                                <Plus className="h-6 w-6 text-muted-foreground/30" />
-                                            </div>
-                                        )}
+                                            ))}
+                                            {[...Array(Math.max(0, 4 - mediaFiles.length))].map((_, i) => (
+                                                <div key={i} className="aspect-square rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center bg-slate-50/50 group hover:border-primary/30 transition-colors"><div className="h-8 w-8 rounded-full bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover:scale-110 transition-transform"><Plus className="h-4 w-4 text-slate-300 group-hover:text-primary/50" /></div></div>
+                                            ))}
+                                        </div>
                                     </div>
-                                )}
-
-                                <div className="mt-8 p-4 bg-primary/5 rounded-lg border border-primary/10">
-                                    <p className="text-[10px] leading-relaxed text-muted-foreground font-medium">
-                                        <span className="text-primary font-bold">INFO:</span> All media is automatically saved to your practice's Secure Google Drive folder upon form submission.
-                                    </p>
+                                </div>
+                                <div className="mt-10 p-5 bg-primary/5 rounded-3xl border border-primary/10 shadow-inner">
+                                    <p className="text-[10px] leading-relaxed text-slate-500 font-bold uppercase tracking-tight"><span className="text-primary tracking-widest">Protocol:</span> Media is synced to clinical Drive upon submission.</p>
                                 </div>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <div className="flex justify-end gap-4 pt-10">
-                    <Button type="button" variant="outline" asChild>
-                        <Link href="/">Cancel</Link>
-                    </Button>
-                    <Button type="submit" size="lg" disabled={isSubmitting}>
-                        {isSubmitting ? "Saving..." : "Save Assessment"}
-                    </Button>
+                <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
+                    <Button type="button" variant="ghost" asChild className="rounded-xl h-12 px-6 font-bold text-slate-500 hover:text-slate-900"><Link href="/"><ArrowLeft className="h-4 w-4 mr-2" /> Cancel</Link></Button>
+                    <div className="flex gap-4">
+                        <Button type="submit" disabled={isSubmitting} className="h-14 px-10 rounded-2xl font-black tracking-widest shadow-[0_10px_30px_rgba(var(--primary),0.3)] disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                            {isSubmitting ? ( <><div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-3" /> SAVING...</> ) : "COMPLETE ASSESSMENT"}
+                        </Button>
+                    </div>
                 </div>
             </form>
         </Form>

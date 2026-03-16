@@ -5,8 +5,12 @@ const APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL;
 const GET_TIMEOUT_MS = 15000;  // 15 seconds for reads
 const POST_TIMEOUT_MS = 30000; // 30 seconds for writes (media uploads can be large)
 
+/**
+ * AssessmentData interface strictly follows the 65-column structure 
+ * specified by the user to ensure 1:1 mapping with Google Sheets.
+ */
 export interface AssessmentData {
-    // I. Patient Demographics
+    // 1-13: Patient Demographics & Basics
     Date: string;
     PatientName: string;
     Age: string;
@@ -21,14 +25,14 @@ export interface AssessmentData {
     SleepingHistory?: string;
     MenstruationHistory?: string;
 
-    // II. Clinical History
+    // 14-18: Clinical History
     ChiefComplaint?: string;
     PresentHistory?: string;
     PastHistory?: string;
     DiagnosticImaging?: string;
     RedFlags?: string;
 
-    // III. Observation & Physical Examination
+    // 19-34: Physical Examination & Findings
     Observation?: string;
     ActiveROM?: string;
     PassiveROM?: string;
@@ -46,7 +50,7 @@ export interface AssessmentData {
     JointPlayMovements?: string;
     Comments?: string;
 
-    // IV. Pain Assessment
+    // 35-40: Pain Assessment
     PainHistory?: string;
     AggravatingFactors?: string;
     EasingFactors?: string;
@@ -54,7 +58,7 @@ export interface AssessmentData {
     PainIntensity_VAS?: number | string;
     SymptomsLocation?: string;
 
-    // V. Diagnosis & Treatment Plan
+    // 41-48: Diagnosis & Treatment Plan
     Diagnosis?: string;
     TreatmentPlan?: string;
     ManualTherapy?: string;
@@ -64,57 +68,52 @@ export interface AssessmentData {
     HomeFollowups?: string;
     WhatTreatment?: string;
 
-    // VI. Summary & Follow-up
+    // 49-52: Summary & Reviews
     PatientSummary?: string;
     Review1?: string;
     Review2?: string;
     Review3?: string;
+    DailyNote?: string;
 
-    // Legacy & System
+    // 53-56: Disposition & Submission
     TwentyFourHourHistory?: string;
     ImprovingStaticWorse?: string;
     NewOrOldInjury?: string;
     SubmittedBy?: string;
-    Timestamp?: string;
 
-    // Media fields (Google Drive URLs)
-    Media_1?: string;
-    Media_2?: string;
-    Media_3?: string;
-    Media_4?: string;
+    // 57-60: Media Suite A
     Media1?: string;
     Media2?: string;
     Media3?: string;
     Media4?: string;
 
-    // Temporary storage for files being uploaded
+    // 61: System Data
+    Timestamp?: string;
+
+    // System/Helper fields (not in Sheets columns)
     files?: {
         name: string;
         type: string;
         data: string; // base64
     }[];
-
-    // Action for updates
     action?: 'create' | 'update';
     rowIndex?: number;
+    id?: number | string; // Used for UI identification
     [key: string]: any;
 }
 
 export async function saveToGoogleSheet(data: AssessmentData) {
     if (!APPS_SCRIPT_URL) {
-        throw new Error('NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL is not configured. Add it in Vercel Environment Variables.');
+        throw new Error('NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL is not configured.');
     }
 
-    // Timeout to prevent infinite server waits
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), POST_TIMEOUT_MS);
 
     try {
         const response = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
             redirect: 'follow',
             signal: controller.signal,
@@ -124,37 +123,27 @@ export async function saveToGoogleSheet(data: AssessmentData) {
         const text = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to save to Google Sheet (HTTP ${response.status}): ${text.substring(0, 200)}`);
+            throw new Error(`Failed to save (HTTP ${response.status})`);
         }
 
-        // Safely parse JSON — Google might return HTML instead
         try {
-            const result = JSON.parse(text);
-            // Validate response structure
-            if (typeof result !== 'object' || result === null) {
-                throw new Error('Invalid response structure from Apps Script');
-            }
-            return result;
+            return JSON.parse(text);
         } catch (parseErr) {
-            console.error('Non-JSON response from Apps Script (save):', text.substring(0, 300));
-            throw new Error('Google Apps Script returned invalid response. Check script deployment permissions.');
+            console.error('Non-JSON response:', text.substring(0, 300));
+            throw new Error('Invalid server response format.');
         }
     } catch (error) {
         clearTimeout(timeoutId);
-        if (error instanceof DOMException && error.name === 'AbortError') {
-            throw new Error('Google Apps Script request timed out (30s). The script may be overloaded.');
-        }
         if (error instanceof Error) throw error;
-        throw new Error('Network error connecting to Google Apps Script');
+        throw new Error('Connection error.');
     }
 }
 
 export async function getFromGoogleSheet() {
     if (!APPS_SCRIPT_URL) {
-        throw new Error('NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL is not configured. Add it in Vercel Environment Variables.');
+        throw new Error('NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL is not configured.');
     }
 
-    // Timeout to prevent infinite server waits
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), GET_TIMEOUT_MS);
 
@@ -163,28 +152,24 @@ export async function getFromGoogleSheet() {
             method: 'GET',
             redirect: 'follow',
             signal: controller.signal,
-            cache: 'no-store', // Always fresh data from Google Sheets
+            cache: 'no-store',
         });
 
         clearTimeout(timeoutId);
         const text = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to fetch from Google Sheet (HTTP ${response.status}): ${text.substring(0, 200)}`);
+            throw new Error(`Failed to fetch (HTTP ${response.status})`);
         }
 
-        // Safely parse JSON — Google might return HTML (auth page) instead
         let result;
         try {
             result = JSON.parse(text);
         } catch {
-            console.error('Non-JSON response from Apps Script (get):', text.substring(0, 300));
-            throw new Error('Google Apps Script returned HTML instead of JSON. Redeploy your script with "Anyone" access.');
+            throw new Error('Invalid JSON format from server.');
         }
 
-        // Validate and normalize the response structure
         if (Array.isArray(result)) {
-            // Inject row index as 'id' for stable referencing
             return result.map((item, index) => ({
                 ...item,
                 id: index
@@ -198,16 +183,10 @@ export async function getFromGoogleSheet() {
             }));
         }
 
-        // If result is an object but not the expected format, return empty array
-        console.warn('Unexpected response format from Apps Script:', JSON.stringify(result).substring(0, 200));
         return [];
     } catch (error) {
         clearTimeout(timeoutId);
-        if (error instanceof DOMException && error.name === 'AbortError') {
-            throw new Error('Google Apps Script request timed out (15s). Check your internet connection.');
-        }
         if (error instanceof Error) throw error;
-        throw new Error('Network error connecting to Google Apps Script');
+        throw new Error('Data retrieval error.');
     }
 }
-

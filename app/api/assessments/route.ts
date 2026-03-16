@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
 import { saveToGoogleSheet, getFromGoogleSheet, AssessmentData } from "@/lib/apps-script";
 
+/**
+ * POST /api/assessments
+ * Handles clinical record creation. 
+ * Maps frontend fields to strict Google Sheet column names.
+ */
 export async function POST(request: Request) {
     try {
         const body = await request.json();
 
-        // Map form data to exact Google Sheet column names from restructured Apps Script
+        // 65-Column Mapping Strategy (STRICT ALIGNMENT)
         const rowData: AssessmentData = {
+            // 1-13
             Date: body.date || new Date().toISOString().split('T')[0],
             PatientName: body.name,
             Age: String(body.age),
@@ -21,11 +27,14 @@ export async function POST(request: Request) {
             SleepingHistory: body.sleepingHistory || "",
             MenstruationHistory: body.menstruationHistory || "",
 
+            // 14-18
             ChiefComplaint: body.chiefComplaint || "",
             PresentHistory: body.presentHistory || "",
             PastHistory: body.pastHistory || "",
             DiagnosticImaging: body.diagnosticImaging || "",
             RedFlags: body.redFlags || "",
+
+            // 19-34
             Observation: body.observation || "",
             ActiveROM: body.activeROM || "",
             PassiveROM: body.passiveROM || "",
@@ -43,6 +52,7 @@ export async function POST(request: Request) {
             JointPlayMovements: body.jointPlayMovements || "",
             Comments: body.comments || "",
 
+            // 35-40
             PainHistory: body.painHistory || "",
             AggravatingFactors: body.aggravatingFactors || "",
             EasingFactors: body.easingFactors || "",
@@ -50,6 +60,7 @@ export async function POST(request: Request) {
             PainIntensity_VAS: body.painVas || 0,
             SymptomsLocation: body.symptomsLocation || "",
 
+            // 41-48
             Diagnosis: body.diagnosis || "",
             TreatmentPlan: body.treatmentPlan || "",
             ManualTherapy: body.manualTherapy || "",
@@ -58,15 +69,25 @@ export async function POST(request: Request) {
             PatientEducation: body.patientEducation || "",
             HomeFollowups: body.homeFollowups || "",
             WhatTreatment: body.whatTreatment || "",
+
+            // 49-52
             PatientSummary: body.patientSummary || "",
             Review1: body.review1 || "",
             Review2: body.review2 || "",
             Review3: body.review3 || "",
+            DailyNote: body.dailyNote || "",
 
+            // 53-56
             TwentyFourHourHistory: body.twentyFourHourHistory || "",
             ImprovingStaticWorse: body.improvingStaticWorse || "",
             NewOrOldInjury: body.newOldInjury || "",
             SubmittedBy: body.submittedBy || "System",
+
+            // 57-60 (Handled by Apps Script on initial upload, but passed here for safety)
+            Media1: "",
+            Media2: "",
+            Media3: "",
+            Media4: "",
 
             Timestamp: new Intl.DateTimeFormat('en-GB', {
                 dateStyle: 'short',
@@ -74,20 +95,18 @@ export async function POST(request: Request) {
                 timeZone: 'Asia/Kolkata',
             }).format(new Date()),
 
-            // Media file data for upload
+            // Payload metadata
             files: body.files || [],
-
             action: body.action || 'create',
             rowIndex: body.rowIndex
         };
 
         const result = await saveToGoogleSheet(rowData);
-
         return NextResponse.json({ success: true, data: result });
     } catch (error) {
-        console.error("Error saving assessment:", error);
+        console.error("Save Error:", error);
         return NextResponse.json(
-            { error: error instanceof Error ? error.message : "Failed to save assessment" },
+            { error: error instanceof Error ? error.message : "Persistence failure" },
             { status: 500 }
         );
     }
@@ -98,9 +117,9 @@ export async function GET() {
         const assessments = await getFromGoogleSheet();
         return NextResponse.json(assessments);
     } catch (error) {
-        console.error("Error fetching assessments:", error);
+        console.error("Fetch Error:", error);
         return NextResponse.json(
-            { error: error instanceof Error ? error.message : "Failed to fetch assessments" },
+            { error: error instanceof Error ? error.message : "Retrieval failure" },
             { status: 500 }
         );
     }

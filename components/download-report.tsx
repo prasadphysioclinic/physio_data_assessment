@@ -133,6 +133,7 @@ export function DownloadReportButton({ assessment }: ReportProps) {
 
             // ── Conclusion ──
             addTitle('VI. ADMINISTRATIVE SUMMARY');
+            addField('Daily Progress Note', assessment.DailyNote);
             addField('Clinical Summary', assessment.PatientSummary);
             addField('Review Schedule', `R1: ${assessment.Review1 || '-'} | R2: ${assessment.Review2 || '-'} | R3: ${assessment.Review3 || '-'}`);
             addField('Digital Signature', assessment.SubmittedBy || 'Authenticated User');
