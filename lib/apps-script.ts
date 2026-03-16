@@ -24,35 +24,21 @@ export interface AssessmentData {
     // II. Clinical History
     ChiefComplaint?: string;
     PresentHistory?: string;
-    MechanismOfInjury?: string;
-    AggravatingEasingFactors?: string;
     PastHistory?: string;
     DiagnosticImaging?: string;
     RedFlags?: string;
 
     // III. Observation & Physical Examination
     Observation?: string;
-    ObservationPosture?: string;
     ActiveROM?: string;
-    Active_L_Flex?: string;
-    Active_R_Flex?: string;
-    Active_L_Ext?: string;
-    Active_R_Ext?: string;
     PassiveROM?: string;
-    Passive_L_Flex?: string;
-    Passive_R_Flex?: string;
-    Passive_L_Ext?: string;
-    Passive_R_Ext?: string;
     MusclePower?: string;
     Palpation?: string;
-    Palpation_Tenderness?: string;
-    Palpation_Effusion?: string;
     Gait?: string;
     NeurologicalTests?: string;
-    SensoryScan?: string;
+    Sensation?: string;
     Reflexes?: string;
     SpecialTests?: string;
-    NeuroSpecialTests?: string;
     EndFeel?: string;
     CapsularPattern?: string;
     ResistedIsometrics?: string;
@@ -65,9 +51,7 @@ export interface AssessmentData {
     AggravatingFactors?: string;
     EasingFactors?: string;
     PainDescription?: string;
-    PainPattern?: string;
     PainIntensity_VAS?: number | string;
-    PainLocation?: string;
     SymptomsLocation?: string;
 
     // V. Diagnosis & Treatment Plan
@@ -85,7 +69,6 @@ export interface AssessmentData {
     Review1?: string;
     Review2?: string;
     Review3?: string;
-    DailyNotes?: string;
 
     // Legacy & System
     TwentyFourHourHistory?: string;
@@ -94,7 +77,7 @@ export interface AssessmentData {
     SubmittedBy?: string;
     Timestamp?: string;
 
-    // Media fields (Google Drive URLs) - Supports both underscore and non-underscore for compatibility
+    // Media fields (Google Drive URLs)
     Media_1?: string;
     Media_2?: string;
     Media_3?: string;

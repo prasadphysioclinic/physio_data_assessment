@@ -99,7 +99,7 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                 <TableHead>Patient</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="hidden md:table-cell">Diagnosis</TableHead>
-                                <TableHead className="hidden lg:table-cell">Daily Notes</TableHead>
+
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -137,9 +137,7 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                             <TableCell className="hidden md:table-cell max-w-[200px] truncate text-sm">
                                                 {assessment.Diagnosis || assessment.ChiefComplaint || '-'}
                                             </TableCell>
-                                            <TableCell className="hidden lg:table-cell max-w-[200px] truncate text-sm italic text-muted-foreground">
-                                                {assessment.DailyNotes || '-'}
-                                            </TableCell>
+
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Button variant="outline" size="sm" asChild className="h-8 rounded-lg text-xs font-bold px-3">

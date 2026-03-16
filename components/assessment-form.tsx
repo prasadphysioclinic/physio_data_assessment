@@ -90,7 +90,7 @@ const formSchema = z.object({
     review1: z.string().optional(),
     review2: z.string().optional(),
     review3: z.string().optional(),
-    dailyNotes: z.string().optional(),
+
 
     // Legacy/Mixed
     twentyFourHourHistory: z.string().optional(),
@@ -155,7 +155,7 @@ export function AssessmentForm() {
             review1: "",
             review2: "",
             review3: "",
-            dailyNotes: "",
+
             twentyFourHourHistory: "",
             improvingStaticWorse: "Static",
             newOldInjury: "New",
@@ -1007,9 +1007,35 @@ export function AssessmentForm() {
                                     name="neurologicalTests"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Neurological Tests (Sensory, Reflexes)</FormLabel>
+                                            <FormLabel>Neurological Tests</FormLabel>
                                             <FormControl>
-                                                <Textarea {...field} />
+                                                <Textarea placeholder="Reflexes, coordination..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="sensation"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Sensation</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="Sensory testing results..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="reflexes"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Reflexes</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="Deep tendon reflexes..." {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -1174,23 +1200,7 @@ export function AssessmentForm() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
-                                    control={form.control}
-                                    name="dailyNotes"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-primary font-bold">Daily Notes</FormLabel>
-                                            <FormControl>
-                                                <Textarea 
-                                                    placeholder="Add daily progress notes here..." 
-                                                    className="min-h-[120px] bg-primary/5 border-primary/20 focus:border-primary"
-                                                    {...field} 
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+
                             </CardContent>
                         </Card>
                     </div>

@@ -23,33 +23,19 @@ export async function POST(request: Request) {
 
             ChiefComplaint: body.chiefComplaint || "",
             PresentHistory: body.presentHistory || "",
-            MechanismOfInjury: body.mechanismOfInjury || "", // Adding for compatibility
-            AggravatingEasingFactors: body.aggravatingFactors || "", // Adding for compatibility
             PastHistory: body.pastHistory || "",
             DiagnosticImaging: body.diagnosticImaging || "",
             RedFlags: body.redFlags || "",
             Observation: body.observation || "",
-            ObservationPosture: body.observation || "", // Mapping both
             ActiveROM: body.activeROM || "",
-            Active_L_Flex: body.active_L_Flex || "",
-            Active_R_Flex: body.active_R_Flex || "",
-            Active_L_Ext: body.active_L_Ext || "",
-            Active_R_Ext: body.active_R_Ext || "",
             PassiveROM: body.passiveROM || "",
-            Passive_L_Flex: body.passive_L_Flex || "",
-            Passive_R_Flex: body.passive_R_Flex || "",
-            Passive_L_Ext: body.passive_L_Ext || "",
-            Passive_R_Ext: body.passive_R_Ext || "",
             MusclePower: body.musclePower || "",
             Palpation: body.palpation || "",
-            Palpation_Tenderness: body.palpation_Tenderness || "",
-            Palpation_Effusion: body.palpation_Effusion || "",
             Gait: body.gait || "",
             NeurologicalTests: body.neurologicalTests || "",
-            SensoryScan: body.sensoryScan || "",
+            Sensation: body.sensation || "",
             Reflexes: body.reflexes || "",
             SpecialTests: body.specialTests || "",
-            NeuroSpecialTests: body.neuroSpecialTests || "",
             EndFeel: body.endFeel || "",
             CapsularPattern: body.capsularPattern || "",
             ResistedIsometrics: body.resistedIsometrics || "",
@@ -61,9 +47,7 @@ export async function POST(request: Request) {
             AggravatingFactors: body.aggravatingFactors || "",
             EasingFactors: body.easingFactors || "",
             PainDescription: body.painDescription || "",
-            PainPattern: body.painDescription || "", // Mapping both
             PainIntensity_VAS: body.painVas || 0,
-            PainLocation: body.painLocation || "",
             SymptomsLocation: body.symptomsLocation || "",
 
             Diagnosis: body.diagnosis || "",
@@ -78,7 +62,6 @@ export async function POST(request: Request) {
             Review1: body.review1 || "",
             Review2: body.review2 || "",
             Review3: body.review3 || "",
-            DailyNotes: body.dailyNotes || "",
 
             TwentyFourHourHistory: body.twentyFourHourHistory || "",
             ImprovingStaticWorse: body.improvingStaticWorse || "",
