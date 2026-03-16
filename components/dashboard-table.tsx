@@ -39,6 +39,10 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
     // Create a mapping for patient slugs
     const getSlug = (name: string) => (name || '').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
+    // Button and Row performance optimization: instant feedback
+    const btnClass = "transition-none active:scale-[0.98]";
+    const rowClass = "group hover:bg-slate-50 transition-none cursor-default";
+
     // Sort assessments by Date descending (latest first)
     const sortedAssessments = [...assessments].sort((a, b) => {
         const dateA = a.Date ? new Date(a.Date).getTime() : 0;
@@ -116,7 +120,7 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                     const slug = getSlug(assessment.PatientName);
 
                                     return (
-                                        <TableRow key={`${targetId}-${assessment.Date}`} className="group hover:bg-muted/30 transition-colors">
+                                        <TableRow key={`${targetId}-${assessment.Date}`} className={rowClass}>
                                             <TableCell className="font-medium">
                                                 <div className="flex flex-col">
                                                     <span className="text-sm">{formatDateShort(assessment.Date)}</span>
@@ -140,12 +144,12 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
 
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
-                                                    <Button variant="outline" size="sm" asChild className="h-8 rounded-lg text-xs font-bold px-3">
+                                                    <Button variant="outline" size="sm" asChild className={`h-8 rounded-lg text-xs font-bold px-3 ${btnClass}`}>
                                                         <Link href={`/assessment/${targetId}`}>
                                                             View
                                                         </Link>
                                                     </Button>
-                                                    <Button variant="secondary" size="sm" asChild className="h-8 rounded-lg text-xs font-bold px-3">
+                                                    <Button variant="secondary" size="sm" asChild className={`h-8 rounded-lg text-xs font-bold px-3 ${btnClass}`}>
                                                         <Link href={`/assessment/${targetId}/edit`}>
                                                             Edit
                                                         </Link>
