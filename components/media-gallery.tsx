@@ -63,19 +63,31 @@ export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
 
                     <div className="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden flex flex-col items-center justify-center">
                         {isVideoUrl(selectedMedia) ? (
-                            <iframe 
-                                src={convertDriveUrl(selectedMedia, 'preview')} 
-                                className="w-full h-full border-none"
-                                allow="autoplay"
-                                title="Clinical Review"
-                            />
+                            <div className="w-full h-full relative">
+                                <video 
+                                    src={convertDriveUrl(selectedMedia, 'download')} 
+                                    className="w-full h-full object-contain"
+                                    poster={convertDriveUrl(selectedMedia, 'thumbnail')}
+                                    controls
+                                    autoPlay
+                                    muted
+                                    loop
+                                    playsInline
+                                />
+                                <div className="absolute top-4 left-4">
+                                    <Button variant="secondary" size="sm" asChild className="bg-white/10 backdrop-blur-md text-white border-white/20 hover:bg-white/20">
+                                        <a href={convertDriveUrl(selectedMedia, 'download')} target="_blank" rel="noopener noreferrer">
+                                            Ultra-Speed Source Link
+                                        </a>
+                                    </Button>
+                                </div>
+                            </div>
                         ) : (
                             <img src={convertDriveUrl(selectedMedia, 'download')} alt="" className="max-w-full max-h-full object-contain" />
                         )}
                         
-                        <div className="absolute bottom-6 left-6 right-6 flex justify-between items-center text-white/40 text-[10px] uppercase font-bold tracking-widest pointer-events-none">
-                            <p>Certified Clinical Review</p>
-                            {isVideoUrl(selectedMedia) && <p>Official Playback Engine</p>}
+                        <div className="absolute bottom-6 right-6 text-white/40 text-[10px] uppercase font-bold tracking-widest pointer-events-none">
+                            <p>Certified Clinical Review • Direct-Stream Mode</p>
                         </div>
                     </div>
                 </div>
