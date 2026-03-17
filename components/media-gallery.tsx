@@ -1,7 +1,5 @@
-"use client";
-
 import { useState } from "react";
-import { X, Play, Maximize2, FileVideo, FileImage } from "lucide-react";
+import { X, Play } from "lucide-react";
 import { convertDriveUrl, isVideoUrl } from "@/lib/utils-data";
 import { Button } from "@/components/ui/button";
 
@@ -11,6 +9,7 @@ interface MediaGalleryProps {
 
 export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
     const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
+    const [videoError, setVideoError] = useState<string | null>(null);
 
     if (urls.length === 0) {
         return (
@@ -62,37 +61,19 @@ export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
 
                     <div className="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden flex flex-col items-center justify-center">
                         {isVideoUrl(selectedMedia) ? (
-                            <>
-                                {videoError ? (
-                                    <div className="text-center p-10 space-y-4">
-                                        <p className="text-red-400 font-bold">Error Playing Video: {videoError}</p>
-                                        <p className="text-white/60 text-sm">This usually means your Google Drive folder is PRIVATE. Ensure it is shared as "Anyone with the link can view".</p>
-                                        <Button asChild variant="secondary">
-                                            <a href={convertDriveUrl(selectedMedia, 'download')} target="_blank" rel="noopener noreferrer">
-                                                Open Direct Source To Fix
-                                            </a>
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <video 
-                                        src={convertDriveUrl(selectedMedia, 'download')} 
-                                        className="w-full h-full"
-                                        controls
-                                        autoPlay
-                                        onError={(e) => {
-                                            const video = e.currentTarget;
-                                            setVideoError(video.error ? video.error.message || `Code: ${video.error.code}` : "Unknown Format Error");
-                                        }}
-                                    />
-                                )}
-                            </>
+                            <iframe 
+                                src={convertDriveUrl(selectedMedia, 'preview')} 
+                                className="w-full h-full border-none"
+                                allow="autoplay"
+                                title="Clinical Review"
+                            />
                         ) : (
                             <img src={convertDriveUrl(selectedMedia, 'download')} alt="" className="max-w-full max-h-full object-contain" />
                         )}
                         
-                        <div className="absolute bottom-6 left-6 right-6 flex justify-between items-center text-white/40 text-[10px] uppercase font-bold tracking-widest">
-                            <p>Diagnostic Media Review</p>
-                            {isVideoUrl(selectedMedia) && <p>Direct Stream Mode</p>}
+                        <div className="absolute bottom-6 left-6 right-6 flex justify-between items-center text-white/40 text-[10px] uppercase font-bold tracking-widest pointer-events-none">
+                            <p>Certified Clinical Review</p>
+                            {isVideoUrl(selectedMedia) && <p>Official Playback Engine</p>}
                         </div>
                     </div>
                 </div>
