@@ -217,9 +217,9 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
     function onInvalid(errors: any) {
         console.error('❌ Update Validation Errors:', errors);
         const errorDetails = Object.entries(errors)
-            .map(([field, err]: [string, any]) => `${field.toUpperCase()}: ${err.message || 'Invalid format'}`)
+            .map(([field, err]: [string, any]) => `• ${field.toUpperCase()}: ${err.message || 'Required field'}`)
             .join("\n");
-        alert(`Cannot Update Record:\n\n${errorDetails}`);
+        alert(`CANNOT UPDATE:\n\n${errorDetails}\n\nPlease check these fields.`);
     }
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -257,9 +257,10 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
             });
 
             const result = await response.json();
+            console.log("📥 UPDATE RESPONSE:", result);
 
             if (!response.ok || !result.success || result.data?.success === false) {
-                const errorMsg = result.data?.message || result.error || "Sync update failed";
+                const errorMsg = result.data?.message || result.data?.error || result.error || "Sync update failed (Check Apps Script)";
                 throw new Error(errorMsg);
             }
 

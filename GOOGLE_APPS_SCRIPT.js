@@ -105,12 +105,20 @@ function handleCreate(sheet, data) {
   }
 
   // Step 1: Handle Media Uploads to Google Drive
-  if (data.files && data.files.length > 0) {
-    const mediaUrls = uploadMediaToDrive(data.PatientName, data.Date, data.files);
-    data.Media1 = mediaUrls[0] || "";
-    data.Media2 = mediaUrls[1] || "";
-    data.Media3 = mediaUrls[2] || "";
-    data.Media4 = mediaUrls[3] || "";
+  try {
+    if (data.files && data.files.length > 0) {
+      const mediaUrls = uploadMediaToDrive(data.PatientName, data.Date, data.files);
+      data.Media1 = mediaUrls[0] || "";
+      data.Media2 = mediaUrls[1] || "";
+      data.Media3 = mediaUrls[2] || "";
+      data.Media4 = mediaUrls[3] || "";
+    }
+  } catch (mediaErr) {
+    return createJsonResponse({ 
+      success: false, 
+      message: "Media Upload Failed: " + mediaErr.toString(),
+      error: "media_failure" 
+    });
   }
 
   // Step 2: Map data to columns

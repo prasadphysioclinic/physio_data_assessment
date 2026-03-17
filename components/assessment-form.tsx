@@ -196,9 +196,9 @@ export function AssessmentForm() {
     function onInvalid(errors: any) {
         console.error('❌ Form Validation Errors:', errors);
         const errorDetails = Object.entries(errors)
-            .map(([field, err]: [string, any]) => `${field.toUpperCase()}: ${err.message || 'Invalid format'}`)
+            .map(([field, err]: [string, any]) => `• ${field.toUpperCase()}: ${err.message || 'Required field'}`)
             .join("\n");
-        alert(`Cannot Save Record:\n\n${errorDetails}`);
+        alert(`CANNOT SAVE:\n\n${errorDetails}\n\nPlease fill these to continue.`);
     }
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -234,9 +234,10 @@ export function AssessmentForm() {
             });
 
             const result = await response.json();
+            console.log("📥 SERVER RESPONSE:", result);
 
             if (!response.ok || !result.success || result.data?.success === false) {
-                const errorMsg = result.data?.message || result.error || "Database sync failed";
+                const errorMsg = result.data?.message || result.data?.error || result.error || "Database sync failed (Check Apps Script permissions)";
                 throw new Error(errorMsg);
             }
 
