@@ -24,7 +24,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { Camera, Video, X, Upload, FileVideo, FileImage, Plus, User, ClipboardList, Activity, Stethoscope, FileText, ArrowLeft } from "lucide-react";
-import { sanitizeFormData, validateFileSize, checkDuplicate, compressImage } from "@/lib/utils-data";
+import { sanitizeFormData, validateFileSize, checkDuplicate, compressImage, calculatePayloadSize, formatBytes } from "@/lib/utils-data";
 import { getFromGoogleSheet } from "@/lib/apps-script";
 
 const formSchema = z.object({
@@ -185,6 +185,14 @@ export function AssessmentForm() {
         },
     });
 
+    // Fix date format warnings by ensuring YYYY-MM-DD
+    const dateValue = form.watch("date");
+    useEffect(() => {
+        if (dateValue && dateValue.includes('T')) {
+            form.setValue("date", dateValue.split('T')[0]);
+        }
+    }, [dateValue, form]);
+
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true);
         try {
@@ -209,6 +217,16 @@ export function AssessmentForm() {
                 })),
                 action: 'create'
             };
+
+            // Vercel Payload Limit Protection (4.5MB)
+            const payloadSize = calculatePayloadSize(payload);
+            const MAX_PAYLOAD_SIZE = 4 * 1024 * 1024; // 4MB safety limit
+            
+            if (payloadSize > MAX_PAYLOAD_SIZE) {
+                alert(`Upload failed: Total size ${formatBytes(payloadSize)} exceeds 4MB limit. Please remove some photos or record a shorter video.`);
+                setIsSubmitting(false);
+                return;
+            }
 
             const response = await fetch('/api/assessments', {
                 method: 'POST',
@@ -267,8 +285,9 @@ export function AssessmentForm() {
         canvas.width = videoRef.current.videoWidth;
         canvas.height = videoRef.current.videoHeight;
         canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
-        const base64 = canvas.toDataURL("image/jpeg", 0.8);
-        setMediaFiles(prev => [...prev.slice(0, 3), { file: new File([], "cam.jpg"), base64, type: 'image' }]);
+        // Reduced quality for better payload speed
+        const base64 = canvas.toDataURL("image/jpeg", 0.6);
+        setMediaFiles(prev => [...prev, { file: new File([], "cam.jpg"), base64, type: 'image' }]);
     };
 
     const startRecording = () => {
@@ -280,13 +299,20 @@ export function AssessmentForm() {
             const blob = new Blob(chunksRef.current, { type: 'video/webm' });
             const reader = new FileReader();
             reader.onloadend = () => {
-                setMediaFiles(prev => [...prev.slice(0, 3), { file: new File([], "vid.webm"), base64: reader.result as string, type: 'video' }]);
+                setMediaFiles(prev => [...prev, { file: new File([], "vid.webm"), base64: reader.result as string, type: 'video' }]);
             };
             reader.readAsDataURL(blob);
         };
         recorder.start();
         mediaRecorderRef.current = recorder;
         setIsRecording(true);
+
+        // Auto-stop at 15s to keep payload manageable
+        setTimeout(() => {
+            if (mediaRecorderRef.current?.state === "recording") {
+                stopRecording();
+            }
+        }, 15000);
     };
 
     const stopRecording = () => {
@@ -698,8 +724,13 @@ export function AssessmentForm() {
                 <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
                     <Button type="button" variant="ghost" asChild className="rounded-xl h-12 px-6 font-bold text-slate-400 hover:text-slate-900 transition-all active:scale-[0.98]"><Link href="/"><ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard</Link></Button>
                     <div className="flex gap-4">
-                        <Button type="submit" disabled={isSubmitting} className="h-14 px-10 rounded-2xl font-black tracking-widest shadow-2xl transition-all active:scale-[0.98] disabled:opacity-50">
-                            {isSubmitting ? ( <><div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-3" /> SYNCHRONIZING...</> ) : "INITIALIZE RECORD"}
+                        <Button type="submit" disabled={isSubmitting} className="h-14 px-10 rounded-2xl font-black tracking-widest shadow-2xl transition-all active:scale-[0.98] disabled:opacity-50 min-w-[200px]">
+                            {isSubmitting ? (
+                                <span className="flex items-center gap-2">
+                                    <Activity className="h-5 w-5 animate-pulse" />
+                                    SYNCHRONIZING...
+                                </span>
+                            ) : "INITIALIZE RECORD"}
                         </Button>
                     </div>
                 </div>

@@ -229,8 +229,8 @@ export async function compressImage(file: File): Promise<{ base64: string; compr
                 const ctx = canvas.getContext('2d')!;
                 ctx.drawImage(img, 0, 0, width, height);
                 
-                // Get compressed base64 (0.7 quality)
-                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                // Get compressed base64 (0.6 quality for better speed/size balance)
+                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
                 
                 // Convert to File object
                 const byteString = atob(compressedBase64.split(',')[1]);
@@ -246,4 +246,20 @@ export async function compressImage(file: File): Promise<{ base64: string; compr
             };
         };
     });
+}
+
+/**
+ * Estimates the size of the payload in bytes
+ */
+export function calculatePayloadSize(payload: any): number {
+    const stringified = JSON.stringify(payload);
+    return new Blob([stringified]).size;
+}
+
+export function formatBytes(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }

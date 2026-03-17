@@ -23,7 +23,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Camera, Video, X, Upload, FileVideo, Plus, User, ClipboardList, Activity, Stethoscope, FileText } from "lucide-react";
-import { sanitizeFormData, validateFileSize, checkDuplicate, compressImage, convertDriveUrl, isVideoUrl } from "@/lib/utils-data";
+import { sanitizeFormData, validateFileSize, checkDuplicate, compressImage, convertDriveUrl, isVideoUrl, calculatePayloadSize, formatBytes } from "@/lib/utils-data";
 import { getFromGoogleSheet } from "@/lib/apps-script";
 
 const formSchema = z.object({
@@ -190,6 +190,14 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
         },
     });
 
+    // Fix date format warnings by ensuring YYYY-MM-DD
+    const dateValue = form.watch("date");
+    useEffect(() => {
+        if (dateValue && dateValue.includes('T')) {
+            form.setValue("date", dateValue.split('T')[0]);
+        }
+    }, [dateValue, form]);
+
     // Extract existing media on mount
     useEffect(() => {
         const media: string[] = [];
@@ -232,6 +240,16 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                 action: 'update',
                 rowIndex: assessmentIndex + 2
             };
+
+            // Vercel Payload Limit Protection (4.5MB)
+            const payloadSize = calculatePayloadSize(payload);
+            const MAX_PAYLOAD_SIZE = 4 * 1024 * 1024; // 4MB safety limit
+            
+            if (payloadSize > MAX_PAYLOAD_SIZE) {
+                alert(`Update failed: Total size ${formatBytes(payloadSize)} exceeds 4MB limit. Please remove some photos or record a shorter video.`);
+                setIsSubmitting(false);
+                return;
+            }
 
             const response = await fetch(`/api/assessments/${assessmentIndex}`, {
                 method: 'PUT',
@@ -290,7 +308,8 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
         canvas.width = videoRef.current.videoWidth;
         canvas.height = videoRef.current.videoHeight;
         canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
-        const base64 = canvas.toDataURL("image/jpeg", 0.8);
+        // Reduced quality for better payload speed
+        const base64 = canvas.toDataURL("image/jpeg", 0.6);
         setMediaFiles(prev => [...prev.slice(0, 3), { file: new File([], "cam.jpg"), base64, type: 'image' }]);
     };
 
@@ -310,6 +329,13 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
         recorder.start();
         mediaRecorderRef.current = recorder;
         setIsRecording(true);
+
+        // Auto-stop at 15s to keep payload manageable (Vercel limit)
+        setTimeout(() => {
+            if (mediaRecorderRef.current?.state === "recording") {
+                stopRecording();
+            }
+        }, 15000);
     };
 
     const stopRecording = () => {
@@ -739,8 +765,13 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                 <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
                     <Button type="button" variant="ghost" asChild className="rounded-xl h-12 px-6 font-bold text-slate-400 hover:text-slate-900 transition-all active:scale-[0.98]"><Link href={`/assessment/${assessmentIndex}`}><ArrowLeft className="h-4 w-4 mr-2" /> Discard Changes</Link></Button>
                     <div className="flex gap-4">
-                        <Button type="submit" disabled={isSubmitting} className="h-14 px-10 rounded-2xl font-black tracking-widest shadow-2xl transition-all active:scale-[0.98] disabled:opacity-50">
-                            {isSubmitting ? ( <><div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-3" /> SYNCHRONIZING...</> ) : "PUSH UPDATES TO CLOUD"}
+                        <Button type="submit" disabled={isSubmitting} className="h-14 px-10 rounded-2xl font-black tracking-widest shadow-2xl transition-all active:scale-[0.98] disabled:opacity-50 min-w-[220px]">
+                            {isSubmitting ? (
+                                <span className="flex items-center gap-2">
+                                    <Activity className="h-5 w-5 animate-pulse" />
+                                    SYNCHRONIZING...
+                                </span>
+                            ) : "PUSH UPDATES TO CLOUD"}
                         </Button>
                     </div>
                 </div>
