@@ -26,6 +26,7 @@ interface Assessment {
     ChiefComplaint?: string;
     PastHistory?: string;
     PainIntensity_VAS?: string | number;
+    DailyNote?: string;
     [key: string]: any;
 }
 
@@ -102,8 +103,9 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                 <TableHead className="w-[110px]">Date</TableHead>
                                 <TableHead>Patient</TableHead>
                                 <TableHead>Status</TableHead>
+                                <TableHead className="hidden md:table-cell">Occupation</TableHead>
                                 <TableHead className="hidden md:table-cell">Diagnosis</TableHead>
-
+                                <TableHead className="hidden lg:table-cell">Daily Note</TableHead>
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -138,8 +140,14 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                             <TableCell>
                                                 {getPainBadge(assessment.PainIntensity_VAS)}
                                             </TableCell>
-                                            <TableCell className="hidden md:table-cell max-w-[200px] truncate text-sm">
+                                            <TableCell className="hidden md:table-cell text-sm">
+                                                {assessment.Occupation || '-'}
+                                            </TableCell>
+                                            <TableCell className="hidden md:table-cell max-w-[150px] truncate text-sm">
                                                 {assessment.Diagnosis || assessment.ChiefComplaint || '-'}
+                                            </TableCell>
+                                            <TableCell className="hidden lg:table-cell max-w-[200px] truncate text-xs text-muted-foreground">
+                                                {assessment.DailyNote || '-'}
                                             </TableCell>
 
                                             <TableCell className="text-right">
