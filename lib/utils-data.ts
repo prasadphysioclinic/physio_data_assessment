@@ -83,7 +83,8 @@ export function convertDriveUrl(url: string | undefined | null, mode: 'download'
         // Default download/stream mode
         const isVideo = isVideoUrl(val);
         if (isVideo) {
-            return `https://drive.google.com/uc?export=download&id=${id}`;
+            // Use the export=media endpoint: most compatible for direct browser streaming
+            return `https://drive.google.com/uc?id=${id}&export=media`;
         }
         return `https://lh3.googleusercontent.com/d/${id}`;
     }
