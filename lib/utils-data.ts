@@ -49,48 +49,40 @@ export function validateFileSize(file: File): { valid: boolean; error?: string }
 
 // ─── Google Drive URL Conversion ─────────────────────────────────────
 /**
- * Converts Google Drive share URLs to embeddable preview URLs.
- * 
- * Input:  https://drive.google.com/file/d/FILE_ID/view
- * Output: https://drive.google.com/uc?export=view&id=FILE_ID
- * 
- * Also handles /open?id= format and direct uc? links.
+ * Converts Google Drive share URLs to various formats.
  */
-export function convertDriveUrl(url: string | undefined | null): string {
+export function convertDriveUrl(url: string | undefined | null, mode: 'download' | 'thumbnail' | 'preview' = 'download'): string {
     if (!url || typeof url !== 'string') return '';
 
     const val = url.trim();
     
-    // 1. If it's already a direct usercontent link, keep it
-    if (val.includes('drive.usercontent.google.com') || val.includes('googleusercontent.com/d/')) return val;
-
-    // 2. Extract ID from various formats
+    // Extract ID from various formats
     let id = '';
     const fileMatch = val.match(/\/file\/d\/([a-zA-Z0-9_-]{25,})/);
     const openMatch = val.match(/[?&]id=([a-zA-Z0-9_-]{25,})/);
     const thumbMatch = val.match(/thumbnail\?id=([a-zA-Z0-9_-]{25,})/);
+    const ucMatch = val.match(/uc\?.*id=([a-zA-Z0-9_-]{25,})/);
     
     if (fileMatch) id = fileMatch[1];
     else if (openMatch) id = openMatch[1];
     else if (thumbMatch) id = thumbMatch[1];
+    else if (ucMatch) id = ucMatch[1];
     else if (val.length >= 25 && !val.includes('/') && !val.includes(':')) id = val;
 
     if (id) {
-        // Correctly handle the MIME hints we added in Apps Script
-        const isVideo = isVideoUrl(val);
-        
-        if (isVideo) {
-            // Direct streaming for videos (uc?export=download)
-            return `https://drive.google.com/uc?export=download&id=${id}`;
+        if (mode === 'thumbnail') {
+            return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+        }
+        if (mode === 'preview') {
+            return `https://drive.google.com/file/d/${id}/preview`;
         }
         
-        // Optimized high-speed thumbnail engine for images
+        // Default download/stream mode
+        const isVideo = isVideoUrl(val);
+        if (isVideo) {
+            return `https://drive.google.com/uc?export=download&id=${id}`;
+        }
         return `https://lh3.googleusercontent.com/d/${id}`;
-    }
-
-    // 3. Last fallback: Check if it's a URL we missed but can preview
-    if (val.startsWith('http') && (val.includes('drive.google.com') || val.includes('google.com/file'))) {
-        return val.replace('/view', '/preview').replace('/edit', '/preview');
     }
 
     return val;
