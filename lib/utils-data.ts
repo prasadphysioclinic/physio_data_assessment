@@ -70,16 +70,22 @@ export function convertDriveUrl(url: string | undefined | null, mode: 'download'
     else if (val.length >= 25 && !val.includes('/') && !val.includes(':')) id = val;
 
     if (id) {
+        const isVideo = isVideoUrl(val);
+
         if (mode === 'thumbnail') {
-            // Use the ultra-reliable lh3 engine for ALL thumbnails (Photos & Videos)
+            // For videos, use the dedicated thumbnail endpoint (lh3 often fails for videos)
+            // For images, use the high-speed lh3 engine
+            if (isVideo) {
+                return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+            }
             return `https://lh3.googleusercontent.com/d/${id}`;
         }
+        
         if (mode === 'preview') {
             return `https://drive.google.com/file/d/${id}/preview`;
         }
         
         // Default download/stream mode
-        const isVideo = isVideoUrl(val);
         if (isVideo) {
             return `https://drive.google.com/uc?export=download&id=${id}`;
         }
