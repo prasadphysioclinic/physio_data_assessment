@@ -89,17 +89,15 @@ export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
                     <div className="relative w-full h-full max-w-[1400px] flex items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] bg-black">
                         {isVideoUrl(selectedMedia) ? (
                             <div className="w-full h-full relative flex items-center justify-center bg-black">
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="flex flex-col items-center gap-4">
-                                        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                                        <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Active Diagnostic Link...</p>
-                                    </div>
-                                </div>
-                                <iframe 
-                                    src={convertDriveUrl(selectedMedia, 'preview')} 
-                                    className="relative z-10 w-full h-[85vh] border-none scale-[1.05]"
-                                    allow="autoplay"
-                                    title="Certified Motion Review"
+                                <video 
+                                    src={convertDriveUrl(selectedMedia, 'download')} 
+                                    className="relative z-10 w-full h-full max-h-[85vh] object-contain shadow-2xl scale-[1.02]"
+                                    poster={convertDriveUrl(selectedMedia, 'thumbnail')}
+                                    controls
+                                    autoPlay
+                                    muted
+                                    loop
+                                    playsInline
                                 />
                             </div>
                         ) : (
@@ -130,9 +128,9 @@ export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
                                 
                                 {isVideoUrl(selectedMedia) && (
                                     <div className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md max-w-lg">
-                                        <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Playback Optimizer</p>
+                                        <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Observation Mode</p>
                                         <p className="text-white/40 text-[11px] font-medium leading-relaxed">
-                                            Motion captures are highly detailed. If playback delays, use the <span className="text-primary font-black">Emergency Review</span> button for instant high-speed access.
+                                            The motion is currently looping for continuous observation. Use the <span className="text-primary font-black">Open Original</span> button if you need to download.
                                         </p>
                                     </div>
                                 )}
@@ -147,7 +145,7 @@ export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
                                         className="h-16 rounded-2xl px-12 bg-primary hover:bg-primary/90 text-white font-black tracking-widest uppercase text-xs shadow-2xl shadow-primary/40 transition-all hover:scale-105 active:scale-95"
                                     >
                                         <a href={convertDriveUrl(selectedMedia, 'download')} target="_blank" rel="noopener noreferrer">
-                                            Emergency Review (Insta-Play)
+                                            Open Original Motion
                                         </a>
                                     </Button>
                                 )}
