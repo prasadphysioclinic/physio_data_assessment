@@ -113,10 +113,19 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
     const [isRecording, setIsRecording] = useState(false);
     const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('environment');
     const [isInitializing, setIsInitializing] = useState(false);
+    const [activeStream, setActiveStream] = useState<MediaStream | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const chunksRef = useRef<Blob[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Effect to bind stream to video element once it's mounted
+    useEffect(() => {
+        if (activeStream && videoRef.current) {
+            videoRef.current.srcObject = activeStream;
+            videoRef.current.play().catch(e => console.error("Camera playback failed:", e));
+        }
+    }, [activeStream]);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -247,39 +256,32 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
     const startCamera = async () => {
         setIsInitializing(true);
         try {
-            // Fixing camera detection: Simplified constraints (no audio) and explicit play()
-            const constraints = {
-                video: { 
-                    facingMode: cameraFacing,
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                },
-                audio: false
+            const constraints = { 
+                video: { facingMode: cameraFacing, width: { ideal: 1280 }, height: { ideal: 720 } }, 
+                audio: false 
             };
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-                try { await videoRef.current.play(); } catch(e) { console.error("Video play failed:", e); }
-            }
+            setActiveStream(stream);
             setIsStreaming(true);
         } catch (err) { 
             console.error("Camera Error:", err);
             alert("Camera not detected or lens permission denied."); 
+        } finally {
+            setIsInitializing(false);
         }
-        setIsInitializing(false);
     };
 
     const stopCamera = () => {
-        if (videoRef.current?.srcObject) {
-            (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
-            videoRef.current.srcObject = null;
+        if (activeStream) {
+            activeStream.getTracks().forEach(t => t.stop());
+            setActiveStream(null);
         }
         setIsStreaming(false);
     };
 
     const toggleCamera = () => {
         setCameraFacing(prev => prev === 'user' ? 'environment' : 'user');
-        if (isStreaming) { stopCamera(); setTimeout(startCamera, 100); }
+        if (isStreaming) { stopCamera(); setTimeout(startCamera, 150); }
     };
 
     const takePhoto = () => {
@@ -422,7 +424,7 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                                     <FormItem><FormLabel>Diagnostic Imaging Results</FormLabel><FormControl><Textarea placeholder="MRI, X-Ray, etc." {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
                                 <FormField control={form.control} name="redFlags" render={({ field }) => (
-                                    <FormItem><FormLabel className="text-red-500">Red Flags / Contraindications</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                                    <FormItem><FormLabel>Red Flags / Contraindications</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
                             </CardContent>
                         </Card>
@@ -648,7 +650,7 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                                 )}
                                 {isStreaming ? (
                                     <>
-                                        <video ref={videoRef} autoPlay playsInline muted onCanPlay={(e) => e.currentTarget.play()} className="w-full h-full object-contain" />
+                                        <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-contain" />
                                         <div className="absolute top-6 left-6 flex gap-3">
                                             <div className="flex items-center gap-2 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 shadow-2xl">
                                                 <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.8)]" />
