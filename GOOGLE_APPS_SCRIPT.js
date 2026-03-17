@@ -235,10 +235,10 @@ function uploadMediaToDrive(patientName, date, files) {
     // Enable public viewing so the web app can see them
     gFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     
-    // Use the 'uc' URL for direct browser previewing
-    // Append a MIME hint for the frontend to distinguish video vs image reliably
-    const mimeHint = "&mime=" + encodeURIComponent(file.type);
-    urls.push("https://drive.google.com/uc?export=download&id=" + gFile.getId() + mimeHint);
+    // Systemic Re-Architecture: Store explicit Ground Truth data
+    // Format: gId|mimeType|fileName
+    const dataString = [gFile.getId(), file.type, file.name].join('|');
+    urls.push(dataString);
   });
 
   return urls;

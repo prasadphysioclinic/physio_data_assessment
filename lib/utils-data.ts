@@ -47,59 +47,98 @@ export function validateFileSize(file: File): { valid: boolean; error?: string }
     return { valid: true };
 }
 
-// ─── Google Drive URL Conversion ─────────────────────────────────────
+// ─── Precision Media Parser (Systemic Re-Architecture) ────────────────
+export interface ClinicalMediaInfo {
+    id: string;
+    mimeType: string;
+    fileName: string;
+    isVideo: boolean;
+    thumbnailUrl: string;
+    downloadUrl: string;
+    previewUrl: string;
+}
+
 /**
- * Converts Google Drive share URLs to various formats.
+ * Parses a media value from the sheet (structured string or fuzzy URL).
+ * Precision: 100% for new structured data, high-effort fallback for legacy.
+ */
+export function parseClinicalMedia(val: string | undefined | null): ClinicalMediaInfo | null {
+    if (!val || typeof val !== 'string') return null;
+    const raw = val.trim();
+
+    let gId = '';
+    let mime = 'image/jpeg'; // Default assumption
+    let name = 'clinical_evidence';
+
+    // 1. New Structured Format: gId|mimeType|fileName
+    if (raw.includes('|')) {
+        const parts = raw.split('|');
+        if (parts.length >= 2) {
+            gId = parts[0];
+            mime = parts[1];
+            name = parts[2] || name;
+        }
+    } 
+    // 2. Legacy Fallback (Fuzzy extraction)
+    else {
+        gId = extractDriveId(raw) || '';
+        if (raw.toLowerCase().includes('mime=video') || isVideoUrl(raw)) {
+            mime = 'video/webm';
+        }
+    }
+
+    if (!gId) return null;
+
+    const isVideo = mime.startsWith('video/');
+    
+    return {
+        id: gId,
+        mimeType: mime,
+        fileName: name,
+        isVideo,
+        // Resilient Snapshot: Official thumbnail engine for grid visibility
+        thumbnailUrl: `https://drive.google.com/thumbnail?id=${gId}&sz=w1200`,
+        // High-Speed Direct Stream: Bypasses Google Drive "Processing" screens
+        downloadUrl: `https://lh3.googleusercontent.com/d/${gId}`,
+        // Official Preview: Bypasses CORB/Security blocks for motion playback
+        previewUrl: `https://drive.google.com/file/d/${gId}/preview`
+    };
+}
+
+function extractDriveId(url: string): string | null {
+    const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]{25,})/);
+    const openMatch = url.match(/[?&]id=([a-zA-Z0-9_-]{25,})/);
+    const thumbMatch = url.match(/thumbnail\?id=([a-zA-Z0-9_-]{25,})/);
+    const ucMatch = url.match(/uc\?.*id=([a-zA-Z0-9_-]{25,})/);
+    
+    if (fileMatch) return fileMatch[1];
+    if (openMatch) return openMatch[1];
+    if (thumbMatch) return thumbMatch[1];
+    if (ucMatch) return ucMatch[1];
+    if (url.length >= 25 && !url.includes('/') && !url.includes(':')) return url;
+    return null;
+}
+
+/**
+ * Legacy support for existing logic
  */
 export function convertDriveUrl(url: string | undefined | null, mode: 'download' | 'thumbnail' | 'preview' = 'download'): string {
-    if (!url || typeof url !== 'string') return '';
-
-    const val = url.trim();
-    
-    // Extract ID from various formats
-    let id = '';
-    const fileMatch = val.match(/\/file\/d\/([a-zA-Z0-9_-]{25,})/);
-    const openMatch = val.match(/[?&]id=([a-zA-Z0-9_-]{25,})/);
-    const thumbMatch = val.match(/thumbnail\?id=([a-zA-Z0-9_-]{25,})/);
-    const ucMatch = val.match(/uc\?.*id=([a-zA-Z0-9_-]{25,})/);
-    
-    if (fileMatch) id = fileMatch[1];
-    else if (openMatch) id = openMatch[1];
-    else if (thumbMatch) id = thumbMatch[1];
-    else if (ucMatch) id = ucMatch[1];
-    else if (val.length >= 25 && !val.includes('/') && !val.includes(':')) id = val;
-
-        if (id) {
-            if (mode === 'thumbnail') {
-                // Resilient Snapshot: The official thumbnail engine is best for grid previews
-                // This converts even "processing" videos into clear images for the grid.
-                return `https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
-            }
-            
-            // High-Speed Direct Stream: lh3 bypasses processing screens for instant playback
-            return `https://lh3.googleusercontent.com/d/${id}`;
-        }
-
-    return val;
+    const info = parseClinicalMedia(url);
+    if (!info) return url || '';
+    if (mode === 'thumbnail') return info.thumbnailUrl;
+    if (mode === 'preview') return info.previewUrl;
+    return info.downloadUrl;
 }
 
 export function isVideoUrl(url: string | undefined | null): boolean {
     if (!url || typeof url !== 'string') return false;
-    const lower = url.toLowerCase();
-    
-    // Explicit indicators (Highest Priority)
-    // We look for common video extensions or MIME type hints
-    const hasVideoIndicator = 
-        lower.includes('.mp4') || 
-        lower.includes('.mov') || 
-        lower.includes('.webm') || 
-        lower.includes('.mkv') ||
-        lower.includes('video/') || 
-        lower.includes('ext=.webm') || 
-        lower.includes('ext=.mp4') || 
-        lower.includes('mime=video');
+    const info = parseClinicalMedia(url);
+    if (info) return info.isVideo;
 
-    return hasVideoIndicator;
+    // Deep fallback if parser fails
+    const lower = url.toLowerCase();
+    return lower.includes('.mp4') || lower.includes('.mov') || lower.includes('.webm') || 
+           lower.includes('video/') || lower.includes('mime=video');
 }
 
 // ─── Duplicate Detection ─────────────────────────────────────────────
