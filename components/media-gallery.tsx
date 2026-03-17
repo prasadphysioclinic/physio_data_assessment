@@ -88,14 +88,16 @@ export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
 
                     <div className="relative w-full h-full max-w-[1400px] flex items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] bg-black">
                         {isVideoUrl(selectedMedia) ? (
-                            <div className="w-full h-full relative">
-                                <iframe 
-                                    src={convertDriveUrl(selectedMedia, 'preview')} 
-                                    className="w-full h-full border-none"
-                                    allow="autoplay"
-                                    title="Clinical Motion Review"
+                            <div className="w-full h-full relative flex items-center justify-center bg-black">
+                                <video 
+                                    src={convertDriveUrl(selectedMedia, 'download')} 
+                                    className="w-full h-full max-h-[90vh] object-contain shadow-2xl"
+                                    controls
+                                    autoPlay
+                                    muted
+                                    loop
+                                    playsInline
                                 />
-                                {/* Overlay to ensure clicks on the iframe don't lose the modal but allow interaction? Actually frames handle their own UI */}
                             </div>
                         ) : (
                             <div className="relative w-full h-full flex items-center justify-center bg-slate-900 group">

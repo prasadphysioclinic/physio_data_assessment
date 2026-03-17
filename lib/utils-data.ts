@@ -92,18 +92,16 @@ export function isVideoUrl(url: string | undefined | null): boolean {
     if (!url || typeof url !== 'string') return false;
     const lower = url.toLowerCase();
     
-    // Explicit indicators
-    if (lower.includes('.mp4') || lower.includes('.mov') || lower.includes('.webm') || lower.includes('video') || lower.includes('ext=.webm') || lower.includes('ext=.mp4') || lower.includes('mime=video')) {
-        return true;
-    }
-
-    // Heuristic: If it has a Google Drive ID but NO known image extension, treat as potential video for safer rendering
-    if (url.includes('id=') || url.includes('/d/')) {
-        const isImage = lower.includes('.jpg') || lower.includes('.jpeg') || lower.includes('.png') || lower.includes('.webp') || lower.includes('ext=.jpg');
-        if (!isImage) return true; // Default to video/motion player if image is not confirmed
-    }
-
-    return false;
+    // Explicit indicators only
+    return (
+        lower.includes('.mp4') || 
+        lower.includes('.mov') || 
+        lower.includes('.webm') || 
+        lower.includes('video/') || 
+        lower.includes('ext=.webm') || 
+        lower.includes('ext=.mp4') || 
+        lower.includes('mime=video')
+    );
 }
 
 // ─── Duplicate Detection ─────────────────────────────────────────────
