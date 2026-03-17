@@ -69,25 +69,11 @@ export function convertDriveUrl(url: string | undefined | null, mode: 'download'
     else if (ucMatch) id = ucMatch[1];
     else if (val.length >= 25 && !val.includes('/') && !val.includes(':')) id = val;
 
-    if (id) {
-        if (mode === 'thumbnail') {
-            // Absolute Mastery: Force high-speed, reliable lh3 engine for ALL snapshots
-            // This is the fastest engine for grid previews on both photos and videos.
+        if (id) {
+            // Universal Instant Engine: Use lh3 for ALL modes (thumbnail, preview, download)
+            // This is significantly faster for public files and bypasses Google Drive "Processing" screens.
             return `https://lh3.googleusercontent.com/d/${id}`;
         }
-        
-        if (mode === 'preview') {
-            return `https://drive.google.com/file/d/${id}/preview`;
-        }
-        
-        // Default download/stream mode
-        const isVideo = isVideoUrl(val);
-        if (isVideo) {
-            // Use the export=media endpoint: most compatible for direct browser streaming
-            return `https://drive.google.com/uc?id=${id}&export=media`;
-        }
-        return `https://lh3.googleusercontent.com/d/${id}`;
-    }
 
     return val;
 }

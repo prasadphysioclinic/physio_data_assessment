@@ -63,10 +63,10 @@ export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
 
                     <div className="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden flex flex-col items-center justify-center">
                         {isVideoUrl(selectedMedia) ? (
-                            <div className="w-full h-full relative">
+                            <div className="w-full h-full relative group">
                                 <video 
                                     src={convertDriveUrl(selectedMedia, 'download')} 
-                                    className="w-full h-full object-contain"
+                                    className="w-full h-full"
                                     poster={convertDriveUrl(selectedMedia, 'thumbnail')}
                                     controls
                                     autoPlay
@@ -74,20 +74,25 @@ export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
                                     loop
                                     playsInline
                                 />
-                                <div className="absolute top-4 left-4">
-                                    <Button variant="secondary" size="sm" asChild className="bg-white/10 backdrop-blur-md text-white border-white/20 hover:bg-white/20">
-                                        <a href={convertDriveUrl(selectedMedia, 'download')} target="_blank" rel="noopener noreferrer">
-                                            Ultra-Speed Source Link
-                                        </a>
-                                    </Button>
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 pointer-events-none">
+                                    <p className="text-white text-xs font-bold uppercase tracking-widest">Clinical Observation Mode</p>
                                 </div>
                             </div>
                         ) : (
                             <img src={convertDriveUrl(selectedMedia, 'download')} alt="" className="max-w-full max-h-full object-contain" />
                         )}
                         
-                        <div className="absolute bottom-6 right-6 text-white/40 text-[10px] uppercase font-bold tracking-widest pointer-events-none">
-                            <p>Certified Clinical Review • Direct-Stream Mode</p>
+                        <div className="absolute bottom-6 left-6 right-6 flex justify-between items-center text-white/40 text-[10px] uppercase font-bold tracking-widest pointer-events-none">
+                            <p>Direct Clinical Stream</p>
+                            {isVideoUrl(selectedMedia) && (
+                                <a 
+                                    href={convertDriveUrl(selectedMedia, 'download')} 
+                                    download 
+                                    className="pointer-events-auto text-primary hover:text-primary/80 underline decoration-primary/40 underline-offset-4"
+                                >
+                                    Force Download
+                                </a>
+                            )}
                         </div>
                     </div>
                 </div>
