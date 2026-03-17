@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { X, Play } from "lucide-react";
 import { convertDriveUrl, isVideoUrl } from "@/lib/utils-data";
