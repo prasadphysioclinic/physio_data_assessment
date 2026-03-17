@@ -41,9 +41,13 @@ function doPost(e) {
     const data = JSON.parse(e.postData.contents);
 
     // Route to update or create
-    if (data.action === 'update' && (data.rowIndex !== undefined && data.rowIndex !== null)) {
+    const action = (data.action || "").toLowerCase();
+    
+    if (action === "update") {
       return handleUpdate(sheet, data);
     }
+    
+    // Default to create
     return handleCreate(sheet, data);
 
   } catch (error) {
@@ -102,17 +106,57 @@ function handleCreate(sheet, data) {
 }
 
 /**
- * ✏️ Handle Updates (ATOMIC & ROBUST)
+ * ✏️ Handle Updates (SMART & SAFETY-LOCKED)
+ * This logic prevents duplication by verifying the record identity before writing.
  */
 function handleUpdate(sheet, data) {
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  const rowIndex = parseInt(data.rowIndex) + 1; // Convert 0-based to 1-based, +1 for header
-  
+  const totalRows = sheet.getLastRow();
+  let targetRow = -1;
+
+  // Strategy A: Try the designated rowIndex first (Fast Path)
+  if (data.rowIndex !== undefined && data.rowIndex !== null) {
+    const suggestedRow = parseInt(data.rowIndex) + 1; // Convert 0-based to 1-based, +1 for header
+    if (suggestedRow > 1 && suggestedRow <= totalRows) {
+      const checkRow = sheet.getRange(suggestedRow, 1, 1, 2).getValues()[0];
+      // Verify Patient Name (Col 2) and Date (Col 1) match
+      const nameMatch = String(checkRow[1]).trim() === String(data.PatientName).trim();
+      const dateStr = String(data.Date).split('T')[0];
+      const checkDateStr = checkRow[0] instanceof Date ? checkRow[0].toISOString().split('T')[0] : String(checkRow[0]).split('T')[0];
+      const dateMatch = checkDateStr === dateStr;
+
+      if (nameMatch && dateMatch) {
+        targetRow = suggestedRow;
+      }
+    }
+  }
+
+  // Strategy B: Identity Search (Fallback Path - Prevents Duplication)
+  if (targetRow === -1) {
+    const allNames = sheet.getRange(2, 2, totalRows - 1, 1).getValues();
+    const allDates = sheet.getRange(2, 1, totalRows - 1, 1).getValues();
+    const targetDateStr = String(data.Date).split('T')[0];
+
+    for (let i = 0; i < allNames.length; i++) {
+        const checkName = String(allNames[i][0]).trim();
+        const checkDate = allDates[i][0] instanceof Date ? allDates[i][0].toISOString().split('T')[0] : String(allDates[i][0]).split('T')[0];
+        
+        if (checkName === String(data.PatientName).trim() && checkDate === targetDateStr) {
+            targetRow = i + 2; // +1 for 0-index, +1 for header
+            break;
+        }
+    }
+  }
+
+  // If no record found, fallback to Create to ensure data isn't lost
+  if (targetRow === -1) {
+    Logger.log("⚠️ Update target not found for " + data.PatientName + ". Falling back to creation.");
+    return handleCreate(sheet, data);
+  }
+
   // Step 1: Handle NEW Media uploads during Update
   if (data.files && data.files.length > 0) {
     const newMediaUrls = uploadMediaToDrive(data.PatientName, data.Date, data.files);
-    
-    // Find first empty Media slot or append to existing
     let mediaPtr = 0;
     for (let i = 1; i <= 4; i++) {
       const key = "Media" + i;
@@ -122,11 +166,12 @@ function handleUpdate(sheet, data) {
     }
   }
 
-  // Step 2: Atomic Sheet Update (Read -> Merge -> Write)
-  const rowRange = sheet.getRange(rowIndex, 1, 1, headers.length);
+  // Step 2: Atomic Merge & Write
+  const rowRange = sheet.getRange(targetRow, 1, 1, headers.length);
   const rowValues = rowRange.getValues()[0];
 
   headers.forEach((header, index) => {
+    // Only update fields provided in the payload (partial updates supported)
     if (data[header] !== undefined && header !== 'rowIndex' && header !== 'action') {
       rowValues[index] = data[header];
     }
@@ -134,7 +179,12 @@ function handleUpdate(sheet, data) {
 
   rowRange.setValues([rowValues]);
 
-  return createJsonResponse({ success: true, message: "Record synchronized successfully", rowIndex: rowIndex });
+  return createJsonResponse({ 
+    success: true, 
+    message: "Record synchronized successfully at row " + targetRow,
+    status: "updated",
+    row: targetRow
+  });
 }
 
 /**
@@ -180,7 +230,7 @@ function getColumns() {
     "PainHistory", "AggravatingFactors", "EasingFactors", "PainDescription", "PainIntensity_VAS", "SymptomsLocation", 
     "Diagnosis", "TreatmentPlan", "ManualTherapy", "Electrotherapy", "ExercisePrescription", 
     "PatientEducation", "HomeFollowups", "WhatTreatment", "PatientSummary", 
-    "Review1", "Review2", "Review3", 
+    "Review1", "Review2", "Review3", "DailyNote",
     "TwentyFourHourHistory", "ImprovingStaticWorse", "NewOrOldInjury", "SubmittedBy",
     "Media1", "Media2", "Media3", "Media4",
     "Timestamp"

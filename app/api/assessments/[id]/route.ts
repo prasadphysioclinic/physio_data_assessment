@@ -111,10 +111,10 @@ export async function PUT(request: Request, context: RouteParams) {
 
             // 61
             Timestamp: new Intl.DateTimeFormat('en-GB', {
-                year: 'numeric', month: '2-digit', day: '2-digit',
+                day: '2-digit', month: '2-digit', year: 'numeric',
                 hour: '2-digit', minute: '2-digit', second: '2-digit',
-                hour12: false, timeZone: 'Asia/Kolkata'
-            }).format(new Date()),
+                hour12: true, timeZone: 'Asia/Kolkata'
+            }).format(new Date()).replace(', ', ', '),
 
             // Metadata for Synchronization
             id: assessmentIndex,
