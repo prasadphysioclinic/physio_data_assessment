@@ -76,11 +76,15 @@ export function convertDriveUrl(url: string | undefined | null): string {
     else if (val.length >= 25 && !val.includes('/') && !val.includes(':')) id = val;
 
     if (id) {
-        // Use direct usercontent for images (high-speed)
-        // Use uc?export=download for videos (enables playback)
-        if (isVideoUrl(val)) {
+        // Correctly handle the MIME hints we added in Apps Script
+        const isVideo = isVideoUrl(val);
+        
+        if (isVideo) {
+            // Direct streaming for videos (uc?export=download)
             return `https://drive.google.com/uc?export=download&id=${id}`;
         }
+        
+        // Optimized high-speed thumbnail engine for images
         return `https://lh3.googleusercontent.com/d/${id}`;
     }
 
@@ -95,7 +99,7 @@ export function convertDriveUrl(url: string | undefined | null): string {
 export function isVideoUrl(url: string): boolean {
     if (!url || typeof url !== 'string') return false;
     const lower = url.toLowerCase();
-    return lower.includes('.mp4') || lower.includes('.mov') || lower.includes('.webm') || lower.includes('video') || lower.includes('ext=.webm') || lower.includes('ext=.mp4');
+    return lower.includes('.mp4') || lower.includes('.mov') || lower.includes('.webm') || lower.includes('video') || lower.includes('ext=.webm') || lower.includes('ext=.mp4') || lower.includes('mime=video');
 }
 
 // ─── Duplicate Detection ─────────────────────────────────────────────
