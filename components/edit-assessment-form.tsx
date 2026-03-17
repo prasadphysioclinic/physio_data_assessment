@@ -23,7 +23,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Camera, Video, X, Upload, FileVideo, Plus, User, ClipboardList, Activity, Stethoscope, FileText } from "lucide-react";
-import { sanitizeFormData, validateFileSize, checkDuplicate, compressImage, convertDriveUrl, isVideoUrl, calculatePayloadSize, formatBytes } from "@/lib/utils-data";
+import { sanitizeFormData, validateFileSize, checkDuplicate, compressImage, convertDriveUrl, isVideoUrl, calculatePayloadSize, formatBytes, stripBase64Metadata } from "@/lib/utils-data";
 import { getFromGoogleSheet } from "@/lib/apps-script";
 
 const formSchema = z.object({
