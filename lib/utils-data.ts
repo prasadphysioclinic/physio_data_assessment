@@ -18,6 +18,15 @@ export function sanitizeFormData<T extends Record<string, any>>(data: T): T {
     ) as T;
 }
 
+/**
+ * Strips the Data URI prefix from a base64 string (e.g., 'data:image/jpeg;base64,')
+ * to provide raw base64 content to the backend.
+ */
+export function stripBase64Metadata(base64: string): string {
+    if (!base64 || !base64.includes(',')) return base64;
+    return base64.split(',')[1];
+}
+
 // ─── File Size Validation ────────────────────────────────────────────
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;   // 5 MB
 const MAX_VIDEO_SIZE = 20 * 1024 * 1024;  // 20 MB

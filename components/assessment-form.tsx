@@ -24,7 +24,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { Camera, Video, X, Upload, FileVideo, FileImage, Plus, User, ClipboardList, Activity, Stethoscope, FileText, ArrowLeft } from "lucide-react";
-import { sanitizeFormData, validateFileSize, checkDuplicate, compressImage, calculatePayloadSize, formatBytes } from "@/lib/utils-data";
+import { sanitizeFormData, validateFileSize, checkDuplicate, compressImage, calculatePayloadSize, formatBytes, stripBase64Metadata } from "@/lib/utils-data";
 import { getFromGoogleSheet } from "@/lib/apps-script";
 
 const formSchema = z.object({
@@ -212,7 +212,7 @@ export function AssessmentForm() {
                 files: mediaFiles.map(m => ({
                     name: `clinical_media_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${m.type === 'video' ? 'webm' : 'jpg'}`,
                     type: m.type === 'video' ? 'video/webm' : 'image/jpeg',
-                    data: m.base64
+                    data: stripBase64Metadata(m.base64)
                 })),
                 action: 'create'
             };

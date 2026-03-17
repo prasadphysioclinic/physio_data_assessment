@@ -234,7 +234,7 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                 files: mediaFiles.map(m => ({
                     name: `clinical_media_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${m.type === 'video' ? 'webm' : 'jpg'}`,
                     type: m.type === 'video' ? 'video/webm' : 'image/jpeg',
-                    data: m.base64
+                    data: stripBase64Metadata(m.base64)
                 })),
                 action: 'update',
                 rowIndex: assessmentIndex + 2
