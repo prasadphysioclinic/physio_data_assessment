@@ -30,17 +30,17 @@ const formSchema = z.object({
     // I. Patient Demographics (1-13)
     date: z.string(),
     name: z.string().min(2, "Name is required"),
-    age: z.string().optional(),
-    sex: z.string().optional(),
-    occupation: z.string().optional(),
-    phoneNumber: z.string().optional(),
-    height: z.string().optional(),
-    weight: z.string().optional(),
-    bloodPressure: z.string().optional(),
-    diabeticMellitus: z.string().optional(),
-    dietHabit: z.string().optional(),
-    sleepingHistory: z.string().optional(),
-    menstruationHistory: z.string().optional(),
+    age: z.any().optional(),
+    sex: z.any().optional(),
+    occupation: z.any().optional(),
+    phoneNumber: z.any().optional(),
+    height: z.any().optional(),
+    weight: z.any().optional(),
+    bloodPressure: z.any().optional(),
+    diabeticMellitus: z.any().optional(),
+    dietHabit: z.any().optional(),
+    sleepingHistory: z.any().optional(),
+    menstruationHistory: z.any().optional(),
 
     // II. Clinical History (14-18)
     chiefComplaint: z.string().optional(),
@@ -633,7 +633,7 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                             </div>
                         </div>
                         <div className="flex gap-2">
-                             <Button type="button" variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()} className="text-xs h-10 rounded-xl hover:bg-white shadow-sm border border-transparent hover:border-slate-100 transition-all font-bold">
+                             <Button type="button" variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()} className="text-xs h-10 rounded-xl hover:bg-white shadow-sm border border-transparent hover:border-slate-100 transition-none active:scale-[0.98] font-bold">
                                 <Upload className="h-4 w-4 mr-2" /> Import Files
                             </Button>
                         </div>
@@ -663,19 +663,22 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="absolute top-6 right-6 flex flex-col gap-3">
-                                            <Button type="button" variant="outline" size="icon" className="h-10 w-10 bg-black/60 backdrop-blur-md border-white/20 text-white hover:bg-white hover:text-black rounded-full transition-all" onClick={toggleCamera}><Plus className="h-5 w-5 rotate-45" /></Button>
+                                        <div className="absolute top-6 right-6 flex gap-3">
+                                            <Button type="button" variant="outline" size="icon" className="h-10 w-10 bg-black/60 backdrop-blur-md border-white/20 text-white hover:bg-white hover:text-black rounded-full transition-none active:scale-[0.98]" onClick={toggleCamera} title="Toggle Camera Side"><Plus className="h-5 w-5 rotate-45" /></Button>
+                                            <Button type="button" variant="outline" size="icon" className="h-10 w-10 bg-black/60 backdrop-blur-md border-white/20 text-white hover:bg-white hover:text-black rounded-full transition-none active:scale-[0.98]" onClick={stopCamera} title="Close Camera Feed">
+                                                <X className="h-5 w-5" />
+                                            </Button>
                                         </div>
                                         <div className="absolute inset-x-0 bottom-8 flex justify-center items-center gap-8 px-4">
                                             <div className="flex flex-col items-center gap-2 group">
-                                                <Button type="button" size="lg" className="h-20 w-20 rounded-full bg-white hover:scale-105 active:scale-95 text-primary border-[6px] border-primary/10 shadow-[0_0_40px_rgba(255,255,255,0.3)] transition-all flex items-center justify-center" onClick={takePhoto} disabled={mediaFiles.length >= 4 + existingMedia.length}><Camera className="h-8 w-8" /></Button>
+                                                <Button type="button" size="lg" className="h-20 w-20 rounded-full bg-white text-primary border-[6px] border-primary/10 shadow-2xl transition-none active:scale-[0.98] flex items-center justify-center p-0" onClick={takePhoto} disabled={mediaFiles.length >= 4 + existingMedia.length}><Camera className="h-8 w-8" /></Button>
                                                 <span className="text-[10px] text-white font-black tracking-tighter drop-shadow-lg scale-90 group-hover:scale-100 transition-transform">STILL PHOTO</span>
                                             </div>
                                             <div className="flex flex-col items-center gap-2 group">
                                                 {!isRecording ? (
-                                                    <Button type="button" size="lg" className="h-20 w-20 rounded-full bg-red-600 hover:bg-red-500 hover:scale-105 active:scale-95 text-white border-[6px] border-red-200/20 shadow-[0_0_40px_rgba(220,38,38,0.3)] transition-all flex items-center justify-center p-0" onClick={startRecording} disabled={mediaFiles.length >= 4 + existingMedia.length}><Video className="h-8 w-8" /></Button>
+                                                    <Button type="button" size="lg" className="h-20 w-20 rounded-full bg-red-600 text-white border-[6px] border-red-200/20 shadow-2xl transition-none active:scale-[0.98] flex items-center justify-center p-0" onClick={startRecording} disabled={mediaFiles.length >= 4 + existingMedia.length}><Video className="h-8 w-8" /></Button>
                                                 ) : (
-                                                    <Button type="button" size="lg" className="h-20 w-20 rounded-full bg-red-600 animate-pulse text-white border-[6px] border-white shadow-2xl flex items-center justify-center p-0" onClick={stopRecording}><div className="h-7 w-7 rounded-sm bg-white" /></Button>
+                                                    <Button type="button" size="lg" className="h-20 w-20 rounded-full bg-red-600 animate-pulse text-white border-[6px] border-white shadow-2xl transition-none active:scale-[0.98] flex items-center justify-center p-0" onClick={stopRecording}><div className="h-7 w-7 rounded-sm bg-white" /></Button>
                                                 )}
                                                 <span className="text-[10px] text-white font-black tracking-tighter drop-shadow-lg scale-90 group-hover:scale-100 transition-transform uppercase">{isRecording ? "Finish Motion" : "Motion Capture"}</span>
                                             </div>
@@ -686,7 +689,7 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                                         <div className="h-24 w-24 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-8 shadow-inner border border-primary/5"><Camera className="h-10 w-10 text-primary/40" /></div>
                                         <h4 className="text-white text-xl font-black mb-3 tracking-tight">Ready for Evidence</h4>
                                         <p className="text-white/40 text-sm mb-10 font-medium leading-relaxed">Activate camera to document physical indicators, postural alignment, or ROM limitations.</p>
-                                        <Button type="button" onClick={startCamera} className="w-full h-14 rounded-2xl text-sm font-black tracking-widest bg-primary hover:bg-primary/90 shadow-[0_10px_30px_rgba(var(--primary),0.3)]">INITIALIZE CLINICAL OPTICS</Button>
+                                        <Button type="button" onClick={startCamera} className="w-full h-14 rounded-2xl text-sm font-black tracking-widest bg-primary hover:bg-primary/90 shadow-2xl transition-none active:scale-[0.98]">INITIALIZE CLINICAL OPTICS</Button>
                                     </div>
                                 )}
                             </div>
@@ -734,9 +737,9 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                 </Card>
 
                 <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
-                    <Button type="button" variant="ghost" asChild className="rounded-xl h-12 px-6 font-bold text-slate-500 hover:text-slate-900"><Link href={`/assessment/${assessmentIndex}`}><ArrowLeft className="h-4 w-4 mr-2" /> Discard Changes</Link></Button>
+                    <Button type="button" variant="ghost" asChild className="rounded-xl h-12 px-6 font-bold text-slate-400 hover:text-slate-900 transition-none active:scale-[0.98]"><Link href={`/assessment/${assessmentIndex}`}><ArrowLeft className="h-4 w-4 mr-2" /> Discard Changes</Link></Button>
                     <div className="flex gap-4">
-                        <Button type="submit" disabled={isSubmitting} className="h-14 px-10 rounded-2xl font-black tracking-widest shadow-[0_10px_30px_rgba(var(--primary),0.3)] disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                        <Button type="submit" disabled={isSubmitting} className="h-14 px-10 rounded-2xl font-black tracking-widest shadow-2xl transition-none active:scale-[0.98] disabled:opacity-50">
                             {isSubmitting ? ( <><div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-3" /> SYNCHRONIZING...</> ) : "PUSH UPDATES TO CLOUD"}
                         </Button>
                     </div>
