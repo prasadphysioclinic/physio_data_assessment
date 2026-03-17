@@ -89,14 +89,14 @@ export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
                     <div className="relative w-full h-full max-w-[1400px] flex items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] bg-black">
                         {isVideoUrl(selectedMedia) ? (
                             <div className="w-full h-full relative flex items-center justify-center bg-black">
-                                <video 
-                                    src={convertDriveUrl(selectedMedia, 'download')} 
-                                    className="w-full h-full max-h-[90vh] object-contain shadow-2xl"
-                                    controls
-                                    autoPlay
-                                    muted
-                                    loop
-                                    playsInline
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                                </div>
+                                <iframe 
+                                    src={convertDriveUrl(selectedMedia, 'preview')} 
+                                    className="relative z-10 w-full h-full border-none"
+                                    allow="autoplay"
+                                    title="Clinical Motion Review"
                                 />
                             </div>
                         ) : (

@@ -71,7 +71,8 @@ export function convertDriveUrl(url: string | undefined | null, mode: 'download'
 
     if (id) {
         if (mode === 'thumbnail') {
-            return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+            // Use the ultra-reliable lh3 engine for ALL thumbnails (Photos & Videos)
+            return `https://lh3.googleusercontent.com/d/${id}`;
         }
         if (mode === 'preview') {
             return `https://drive.google.com/file/d/${id}/preview`;
