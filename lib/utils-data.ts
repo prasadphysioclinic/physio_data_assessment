@@ -70,8 +70,13 @@ export function convertDriveUrl(url: string | undefined | null, mode: 'download'
     else if (val.length >= 25 && !val.includes('/') && !val.includes(':')) id = val;
 
         if (id) {
-            // Universal Instant Engine: Use lh3 for ALL modes (thumbnail, preview, download)
-            // This is significantly faster for public files and bypasses Google Drive "Processing" screens.
+            if (mode === 'thumbnail') {
+                // Resilient Snapshot: The official thumbnail engine is best for grid previews
+                // This converts even "processing" videos into clear images for the grid.
+                return `https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
+            }
+            
+            // High-Speed Direct Stream: lh3 bypasses processing screens for instant playback
             return `https://lh3.googleusercontent.com/d/${id}`;
         }
 
