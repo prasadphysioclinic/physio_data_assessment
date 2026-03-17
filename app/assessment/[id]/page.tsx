@@ -267,11 +267,26 @@ export default async function AssessmentDetailPage(props: PageProps) {
 
                                     return (
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                            {allMedia.map((url, i) => (
-                                                <div key={i} className="aspect-square bg-slate-50 rounded-xl overflow-hidden border border-slate-100 flex items-center justify-center">
-                                                    <img src={convertDriveUrl(url)} alt="evidence" className="w-full h-full object-cover" />
-                                                </div>
-                                            ))}
+                                            {allMedia.map((url, i) => {
+                                                const isVideo = isVideoUrl(url);
+                                                const driveUrl = convertDriveUrl(url);
+                                                
+                                                return (
+                                                    <div key={i} className="aspect-square bg-slate-50 rounded-xl overflow-hidden border border-slate-100 flex items-center justify-center">
+                                                        {isVideo ? (
+                                                            <video 
+                                                                src={driveUrl} 
+                                                                controls 
+                                                                className="w-full h-full object-cover"
+                                                                preload="metadata"
+                                                                playsInline
+                                                            />
+                                                        ) : (
+                                                            <img src={driveUrl} alt="evidence" className="w-full h-full object-cover" />
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     );
                                 })()}

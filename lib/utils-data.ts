@@ -76,7 +76,11 @@ export function convertDriveUrl(url: string | undefined | null): string {
     else if (val.length >= 25 && !val.includes('/') && !val.includes(':')) id = val;
 
     if (id) {
-        // This is often more reliable than the /thumbnail endpoint for some Drive configurations
+        // Use direct usercontent for images (high-speed)
+        // Use uc?export=download for videos (enables playback)
+        if (isVideoUrl(val)) {
+            return `https://drive.google.com/uc?export=download&id=${id}`;
+        }
         return `https://lh3.googleusercontent.com/d/${id}`;
     }
 
