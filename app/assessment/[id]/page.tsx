@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { formatDate, formatDateTime } from "@/lib/format-date";
 import { DownloadReportButton } from "@/components/download-report";
 import { convertDriveUrl, isVideoUrl } from "@/lib/utils-data";
+import { ClinicalMediaGallery } from "@/components/media-gallery";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -265,30 +266,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                         return <div className="text-center py-10 border-2 border-dashed border-slate-100 rounded-xl text-slate-300 text-[11px] font-black uppercase">No Media Files Found</div>;
                                     }
 
-                                    return (
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                            {allMedia.map((url, i) => {
-                                                const isVideo = isVideoUrl(url);
-                                                const driveUrl = convertDriveUrl(url);
-                                                
-                                                return (
-                                                    <div key={i} className="aspect-square bg-slate-50 rounded-xl overflow-hidden border border-slate-100 flex items-center justify-center">
-                                                        {isVideo ? (
-                                                            <video 
-                                                                src={driveUrl} 
-                                                                controls 
-                                                                className="w-full h-full object-cover"
-                                                                preload="metadata"
-                                                                playsInline
-                                                            />
-                                                        ) : (
-                                                            <img src={driveUrl} alt="evidence" className="w-full h-full object-cover" />
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    );
+                                    return <ClinicalMediaGallery urls={allMedia} />;
                                 })()}
                             </CardContent>
                         </Card>
