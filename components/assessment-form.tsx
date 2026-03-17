@@ -73,7 +73,7 @@ const formSchema = z.object({
     aggravatingFactors: z.string().optional(),
     easingFactors: z.string().optional(),
     painDescription: z.string().optional(),
-    painVas: z.number().min(0).max(10),
+    painVas: z.number().min(0).max(100),
     symptomsLocation: z.string().optional(),
 
     // V. Diagnosis & Treatment Plan (41-48)
@@ -192,6 +192,11 @@ export function AssessmentForm() {
             form.setValue("date", dateValue.split('T')[0]);
         }
     }, [dateValue, form]);
+
+    function onInvalid(errors: any) {
+        console.error('Form Validation Errors:', errors);
+        alert("Please check the form for errors. Some required fields might be missing or invalid.");
+    }
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true);
@@ -347,13 +352,16 @@ export function AssessmentForm() {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Column 1 */}
                     <div className="space-y-6">
                         <Card className="rounded-2xl shadow-lg border-primary/10 overflow-hidden">
                             <CardHeader className="bg-primary/5 border-b py-4">
-                                <CardTitle className="text-lg flex items-center gap-2"><User className="h-5 w-5 text-primary" /> Patient Demographics</CardTitle>
+                                <div className="flex justify-between items-center">
+                                    <CardTitle className="text-lg flex items-center gap-2"><User className="h-5 w-5 text-primary" /> Patient Demographics</CardTitle>
+                                    <Button type="button" variant="ghost" size="sm" onClick={() => router.push('/')} className="text-slate-400 hover:text-red-500 font-bold transition-colors"><X className="h-4 w-4 mr-1" /> CANCEL</Button>
+                                </div>
                             </CardHeader>
                             <CardContent className="p-6 space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
