@@ -90,7 +90,10 @@ export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
                         {isVideoUrl(selectedMedia) ? (
                             <div className="w-full h-full relative flex items-center justify-center bg-black">
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                                    <div className="flex flex-col items-center gap-4">
+                                        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                                        <p className="text-[10px] font-black text-white/40 uppercase tracking-widest animate-pulse">Initializing native player...</p>
+                                    </div>
                                 </div>
                                 <iframe 
                                     src={convertDriveUrl(selectedMedia, 'preview')} 
@@ -110,21 +113,45 @@ export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
                         )}
                         
                         {/* Immersive Footer */}
-                        <div className="absolute bottom-0 left-0 right-0 p-10 bg-gradient-to-t from-black via-black/80 to-transparent flex justify-between items-end">
-                            <div className="space-y-3">
+                        <div className="absolute bottom-0 left-0 right-0 p-10 bg-gradient-to-t from-black via-black/90 to-transparent flex justify-between items-end">
+                            <div className="space-y-4">
                                 <div className="flex items-center gap-4">
                                     <div className="h-14 w-14 rounded-2xl bg-primary/20 flex items-center justify-center border-2 border-primary/30 backdrop-blur-md">
                                         {isVideoUrl(selectedMedia) ? <FileVideo className="h-7 w-7 text-primary" /> : <FileImage className="h-7 w-7 text-primary" />}
                                     </div>
                                     <div>
-                                        <p className="text-[11px] font-black text-primary uppercase tracking-[0.2em] mb-1">Authenticated Diagnostic Media</p>
-                                        <h3 className="text-2xl font-black text-white uppercase tracking-tight leading-none">Clinical Review Session</h3>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <p className="text-[11px] font-black text-primary uppercase tracking-[0.2em]">Diagnostic Media</p>
+                                            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                                        </div>
+                                        <h3 className="text-2xl font-black text-white uppercase tracking-tight leading-none">Diagnostic Clinical Review</h3>
                                     </div>
                                 </div>
+                                
+                                {isVideoUrl(selectedMedia) && (
+                                    <p className="text-white/40 text-[11px] font-medium max-w-md bg-white/5 p-3 rounded-xl border border-white/10 backdrop-blur-sm">
+                                        If the video does not play instantly due to browser restrictions, use the <span className="text-primary font-bold">Emergency Review</span> button.
+                                    </p>
+                                )}
                             </div>
-                            <Button variant="outline" size="lg" onClick={closeModal} className="h-14 rounded-2xl px-10 bg-white/5 border-white/10 hover:bg-white/10 text-white font-bold tracking-wider uppercase text-xs">
-                                Dismiss Review
-                            </Button>
+
+                            <div className="flex items-center gap-4">
+                                {isVideoUrl(selectedMedia) && (
+                                    <Button 
+                                        variant="secondary" 
+                                        size="lg" 
+                                        asChild
+                                        className="h-14 rounded-2xl px-10 bg-primary hover:bg-primary/90 text-white font-black tracking-wider uppercase text-xs shadow-2xl shadow-primary/20 transition-all hover:scale-105"
+                                    >
+                                        <a href={convertDriveUrl(selectedMedia, 'download')} target="_blank" rel="noopener noreferrer">
+                                            Emergency Review (Open Tab)
+                                        </a>
+                                    </Button>
+                                )}
+                                <Button variant="outline" size="lg" onClick={closeModal} className="h-14 rounded-2xl px-10 bg-white/5 border-white/10 hover:bg-white/10 text-white font-bold tracking-wider uppercase text-xs">
+                                    Dismiss Review
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>

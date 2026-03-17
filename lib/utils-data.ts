@@ -70,15 +70,10 @@ export function convertDriveUrl(url: string | undefined | null, mode: 'download'
     else if (val.length >= 25 && !val.includes('/') && !val.includes(':')) id = val;
 
     if (id) {
-        const isVideo = isVideoUrl(val);
-
         if (mode === 'thumbnail') {
-            // For videos, use the dedicated thumbnail endpoint (lh3 often fails for videos)
-            // For images, use the high-speed lh3 engine
-            if (isVideo) {
-                return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
-            }
-            return `https://lh3.googleusercontent.com/d/${id}`;
+            // Master Class: Use the absolute most resilient snapshot engine
+            // This engine works for BOTH photos and videos with high success rates
+            return `https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
         }
         
         if (mode === 'preview') {
@@ -86,6 +81,7 @@ export function convertDriveUrl(url: string | undefined | null, mode: 'download'
         }
         
         // Default download/stream mode
+        const isVideo = isVideoUrl(val);
         if (isVideo) {
             return `https://drive.google.com/uc?export=download&id=${id}`;
         }
@@ -99,16 +95,20 @@ export function isVideoUrl(url: string | undefined | null): boolean {
     if (!url || typeof url !== 'string') return false;
     const lower = url.toLowerCase();
     
-    // Explicit indicators only
-    return (
-        lower.includes('.mp4') || 
-        lower.includes('.mov') || 
-        lower.includes('.webm') || 
-        lower.includes('video/') || 
-        lower.includes('ext=.webm') || 
-        lower.includes('ext=.mp4') || 
-        lower.includes('mime=video')
-    );
+    // Explicit indicators (highest priority)
+    if (lower.includes('.mp4') || lower.includes('.mov') || lower.includes('.webm') || lower.includes('video/') || lower.includes('ext=.webm') || lower.includes('ext=.mp4') || lower.includes('mime=video')) {
+        return true;
+    }
+
+    // Master Class: Safety-First Heuristic
+    // If it's a Drive ID but doesn't have an explicit image extension, treat as motion capture
+    // This provides a "Play" signal for unverified clinical files instead of showing them as static
+    if (url.includes('id=') || url.includes('/d/')) {
+        const isExplicitImage = lower.includes('.jpg') || lower.includes('.jpeg') || lower.includes('.png') || lower.includes('.webp') || lower.includes('ext=.jpg');
+        return !isExplicitImage;
+    }
+
+    return false;
 }
 
 // ─── Duplicate Detection ─────────────────────────────────────────────
