@@ -82,7 +82,9 @@ export function parseClinicalMedia(val: string | undefined | null): ClinicalMedi
     // 2. Legacy Fallback (Fuzzy extraction)
     else {
         gId = extractDriveId(raw) || '';
-        if (raw.toLowerCase().includes('mime=video') || isVideoUrl(raw)) {
+        if (raw.toLowerCase().includes('mime=video') || 
+            raw.toLowerCase().includes('.mp4') || 
+            raw.toLowerCase().includes('.webm')) {
             mime = 'video/webm';
         }
     }

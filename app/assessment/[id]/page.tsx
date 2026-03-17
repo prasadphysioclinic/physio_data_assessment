@@ -238,27 +238,21 @@ export default async function AssessmentDetailPage(props: PageProps) {
                             </CardContent>
                         </Card>
 
-                        {/* Media Section */}
                         <Card className="border-slate-200 shadow-sm rounded-2xl bg-white">
                             <CardContent className="p-5">
                                 <SectionHeader title="Clinical Media" icon={Camera} />
                                 {(() => {
                                     const allMedia: string[] = [];
-                                    const seenUrls = new Set<string>();
-                                    const urlRegex = /(https?:\/\/[^\s]+|drive\.google\.com[^\s]+)/gi;
+                                    const seen = new Set<string>();
                                     const mediaColumns = ['Media1', 'Media2', 'Media3', 'Media4'];
                                     
                                     mediaColumns.forEach(col => {
                                         const value = assessment[col];
                                         if (!value) return;
                                         const valStr = String(value).trim();
-                                        const matches = valStr.match(urlRegex);
-                                        if (matches) {
-                                            matches.forEach(m => {
-                                                if (!seenUrls.has(m)) { allMedia.push(m); seenUrls.add(m); }
-                                            });
-                                        } else if (valStr.length >= 25 && valStr.length <= 50) {
-                                           if (!seenUrls.has(valStr)) { allMedia.push(valStr); seenUrls.add(valStr); }
+                                        if (!seen.has(valStr)) {
+                                            allMedia.push(valStr);
+                                            seen.add(valStr);
                                         }
                                     });
 
