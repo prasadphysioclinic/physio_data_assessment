@@ -86,6 +86,24 @@ function handleCreate(sheet, data) {
   const columns = getColumns();
   const row = new Array(columns.length).fill("");
 
+  // Step 0: Identify verification to prevent duplication on the backend
+  const existingRecords = sheet.getDataRange().getValues();
+  const targetDateStr = String(data.Date).split('T')[0];
+  const isDuplicate = existingRecords.some((row, idx) => {
+    if (idx === 0) return false; // Skip headers
+    const rowDateStr = row[0] instanceof Date ? row[0].toISOString().split('T')[0] : String(row[0]).split('T')[0];
+    const rowName = String(row[1]).trim();
+    return rowDateStr === targetDateStr && rowName === String(data.PatientName).trim();
+  });
+
+  if (isDuplicate) {
+    return createJsonResponse({ 
+      success: false, 
+      message: "An assessment for " + data.PatientName + " already exists for " + targetDateStr,
+      error: "duplicate_found" 
+    });
+  }
+
   // Step 1: Handle Media Uploads to Google Drive
   if (data.files && data.files.length > 0) {
     const mediaUrls = uploadMediaToDrive(data.PatientName, data.Date, data.files);

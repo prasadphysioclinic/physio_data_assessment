@@ -195,24 +195,16 @@ export function AssessmentForm() {
 
     function onInvalid(errors: any) {
         console.error('Form Validation Errors:', errors);
-        alert("Please check the form for errors. Some required fields might be missing or invalid.");
+        const errorFields = Object.keys(errors).map(key => key.charAt(0).toUpperCase() + key.slice(1)).join(", ");
+        alert(`Cannot Save: Please fix the following fields: ${errorFields}`);
     }
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true);
+        console.log("Submitting Assessment...", values);
         try {
             const sanitizedValues = sanitizeFormData(values);
             
-            // Check for duplicates
-            const allData = await getFromGoogleSheet();
-            const assessments = Array.isArray(allData) ? allData : [];
-            if (checkDuplicate(assessments, sanitizedValues.name, sanitizedValues.date)) {
-                if (!confirm(`An assessment for ${sanitizedValues.name} already exists on ${sanitizedValues.date}. Save anyway?`)) {
-                    setIsSubmitting(false);
-                    return;
-                }
-            }
-
             const payload = {
                 ...sanitizedValues,
                 files: mediaFiles.map(m => ({
@@ -239,7 +231,12 @@ export function AssessmentForm() {
                 body: JSON.stringify(payload),
             });
 
-            if (!response.ok) throw new Error("Database sync failed");
+            const result = await response.json();
+
+            if (!response.ok || !result.success || result.data?.success === false) {
+                const errorMsg = result.data?.message || result.error || "Database sync failed";
+                throw new Error(errorMsg);
+            }
 
             alert("New assessment recorded successfully!");
             router.push('/');
@@ -369,7 +366,11 @@ export function AssessmentForm() {
                                         <FormItem><FormLabel>Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                     <FormField control={form.control} name="name" render={({ field }) => (
-                                        <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="Patient Name" {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem>
+                                            <FormLabel>Full Name</FormLabel>
+                                            <FormControl><Input placeholder="Patient Name" {...field} /></FormControl>
+                                            <FormMessage className="text-xs text-red-500 font-bold" />
+                                        </FormItem>
                                     )} />
                                 </div>
                                 <div className="grid grid-cols-3 gap-4">

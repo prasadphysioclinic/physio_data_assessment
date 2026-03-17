@@ -216,24 +216,16 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
 
     function onInvalid(errors: any) {
         console.error('Form Validation Errors:', errors);
-        alert("Please check the form for errors. Some required fields might be missing or invalid.");
+        const errorFields = Object.keys(errors).map(key => key.charAt(0).toUpperCase() + key.slice(1)).join(", ");
+        alert(`Cannot Update: Please fix the following fields: ${errorFields}`);
     }
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true);
+        console.log("Saving clinical updates for index:", assessmentIndex);
         try {
             const sanitizedValues = sanitizeFormData(values);
             
-            // Check for duplicates (excluding current record)
-            const allData = await getFromGoogleSheet();
-            const assessments = Array.isArray(allData) ? allData : [];
-            if (checkDuplicate(assessments, sanitizedValues.name, sanitizedValues.date, assessmentIndex)) {
-                if (!confirm(`An assessment for ${sanitizedValues.name} already exists on ${sanitizedValues.date}. Save anyway?`)) {
-                    setIsSubmitting(false);
-                    return;
-                }
-            }
-
             const payload = {
                 ...sanitizedValues,
                 existingMedia,
@@ -262,7 +254,12 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                 body: JSON.stringify(payload),
             });
 
-            if (!response.ok) throw new Error("Cloud sync failed");
+            const result = await response.json();
+
+            if (!response.ok || !result.success || result.data?.success === false) {
+                const errorMsg = result.data?.message || result.error || "Sync update failed";
+                throw new Error(errorMsg);
+            }
 
             alert("Assessment updated successfully!");
             router.push(`/assessment/${assessmentIndex}`);
