@@ -192,11 +192,8 @@ export default async function AssessmentDetailPage(props: PageProps) {
                             <Card className="border-slate-200 shadow-sm rounded-2xl bg-white">
                                 <CardContent className="p-5">
                                     <SectionHeader title="Pain Profile" icon={Activity} />
-                                    <div className="flex justify-between items-center mb-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                        <span className="text-[10px] font-black uppercase text-slate-400">VAS Index</span>
-                                        <span className="text-3xl font-black text-primary">{assessment.PainIntensity_VAS || 0}/10</span>
-                                    </div>
                                     <div className="space-y-4">
+                                        <InfoRow label="VAS Index (0-10)" value={`${assessment.PainIntensity_VAS || 0}/10`} fullWidth />
                                         <InfoRow label="24h Response" value={assessment.TwentyFourHourHistory} fullWidth />
                                         <InfoRow label="Description" value={assessment.PainDescription} fullWidth />
                                         <div className="grid grid-cols-2 gap-4">

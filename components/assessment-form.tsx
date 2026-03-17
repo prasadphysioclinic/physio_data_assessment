@@ -224,13 +224,28 @@ export function AssessmentForm() {
     const startCamera = async () => {
         setIsInitializing(true);
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: cameraFacing },
-                audio: true
-            });
-            if (videoRef.current) videoRef.current.srcObject = stream;
+            // Simplified constraints: high-quality video, but NO audio (prevents permission blocks)
+            const constraints = {
+                video: { 
+                    facingMode: cameraFacing,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false // Disabled audio to ensure maximum compatibility and avoid permission silos
+            };
+            
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+                // Force play for iOS/Safary/Chrome mobile compatibility
+                try { await videoRef.current.play(); } catch(e) { console.warn("Autoplay blocked", e); }
+            }
             setIsStreaming(true);
-        } catch (err) { alert("Camera access denied"); }
+        } catch (err) { 
+            console.error("Camera detection error:", err);
+            alert("Camera not detected or access denied. Please check your system settings."); 
+        }
         setIsInitializing(false);
     };
 

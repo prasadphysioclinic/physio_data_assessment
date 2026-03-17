@@ -247,13 +247,25 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
     const startCamera = async () => {
         setIsInitializing(true);
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: cameraFacing },
-                audio: true
-            });
-            if (videoRef.current) videoRef.current.srcObject = stream;
+            // Fixing camera detection: Simplified constraints (no audio) and explicit play()
+            const constraints = {
+                video: { 
+                    facingMode: cameraFacing,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false
+            };
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+                try { await videoRef.current.play(); } catch(e) { console.error("Video play failed:", e); }
+            }
             setIsStreaming(true);
-        } catch (err) { alert("Camera access denied"); }
+        } catch (err) { 
+            console.error("Camera Error:", err);
+            alert("Camera not detected or lens permission denied."); 
+        }
         setIsInitializing(false);
     };
 
