@@ -95,7 +95,7 @@ export function convertDriveUrl(url: string | undefined | null): string {
 export function isVideoUrl(url: string): boolean {
     if (!url || typeof url !== 'string') return false;
     const lower = url.toLowerCase();
-    return lower.includes('.mp4') || lower.includes('.mov') || lower.includes('.webm') || lower.includes('video');
+    return lower.includes('.mp4') || lower.includes('.mov') || lower.includes('.webm') || lower.includes('video') || lower.includes('ext=.webm') || lower.includes('ext=.mp4');
 }
 
 // ─── Duplicate Detection ─────────────────────────────────────────────

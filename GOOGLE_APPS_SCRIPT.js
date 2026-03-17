@@ -236,7 +236,9 @@ function uploadMediaToDrive(patientName, date, files) {
     gFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     
     // Use the 'uc' URL for direct browser previewing
-    urls.push("https://drive.google.com/uc?export=view&id=" + gFile.getId());
+    // Append a hint for the frontend to distinguish video vs image
+    const hint = file.type.includes('video') ? "&ext=.webm" : "&ext=.jpg";
+    urls.push("https://drive.google.com/uc?export=view&id=" + gFile.getId() + hint);
   });
 
   return urls;

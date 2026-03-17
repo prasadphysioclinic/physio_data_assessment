@@ -193,7 +193,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                 <CardContent className="p-5">
                                     <SectionHeader title="Pain Profile" icon={Activity} />
                                     <div className="space-y-4">
-                                        <InfoRow label="VAS Index (0-10)" value={`${assessment.PainIntensity_VAS || 0}/10`} fullWidth />
+                                        <InfoRow label="VAS Index (0-10)" value={`${(Number(assessment.PainIntensity_VAS) || 0) / 10}/10`} fullWidth />
                                         <InfoRow label="24h Response" value={assessment.TwentyFourHourHistory} fullWidth />
                                         <InfoRow label="Description" value={assessment.PainDescription} fullWidth />
                                         <div className="grid grid-cols-2 gap-4">
