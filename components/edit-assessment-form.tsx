@@ -215,9 +215,11 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
     }, [assessment]);
 
     function onInvalid(errors: any) {
-        console.error('Form Validation Errors:', errors);
-        const errorFields = Object.keys(errors).map(key => key.charAt(0).toUpperCase() + key.slice(1)).join(", ");
-        alert(`Cannot Update: Please fix the following fields: ${errorFields}`);
+        console.error('❌ Update Validation Errors:', errors);
+        const errorDetails = Object.entries(errors)
+            .map(([field, err]: [string, any]) => `${field.toUpperCase()}: ${err.message || 'Invalid format'}`)
+            .join("\n");
+        alert(`Cannot Update Record:\n\n${errorDetails}`);
     }
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -265,8 +267,9 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
             router.push(`/assessment/${assessmentIndex}`);
             router.refresh();
         } catch (error) {
-            console.error('Update Error:', error);
-            alert("Error updating assessment. Please check your connection.");
+            console.error('❌ CRITICAL UPDATE FAILURE:', error);
+            const msg = error instanceof Error ? error.message : "Sync failure (check internet)";
+            alert(`UPDATE FAILED:\n${msg}`);
         } finally {
             setIsSubmitting(false);
         }

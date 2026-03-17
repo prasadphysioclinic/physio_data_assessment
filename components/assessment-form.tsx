@@ -194,14 +194,16 @@ export function AssessmentForm() {
     }, [dateValue, form]);
 
     function onInvalid(errors: any) {
-        console.error('Form Validation Errors:', errors);
-        const errorFields = Object.keys(errors).map(key => key.charAt(0).toUpperCase() + key.slice(1)).join(", ");
-        alert(`Cannot Save: Please fix the following fields: ${errorFields}`);
+        console.error('❌ Form Validation Errors:', errors);
+        const errorDetails = Object.entries(errors)
+            .map(([field, err]: [string, any]) => `${field.toUpperCase()}: ${err.message || 'Invalid format'}`)
+            .join("\n");
+        alert(`Cannot Save Record:\n\n${errorDetails}`);
     }
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
+        console.log("🚀 SUBMIT INITIATED", values);
         setIsSubmitting(true);
-        console.log("Submitting Assessment...", values);
         try {
             const sanitizedValues = sanitizeFormData(values);
             
@@ -242,8 +244,9 @@ export function AssessmentForm() {
             router.push('/');
             router.refresh();
         } catch (error) {
-            console.error('Save Error:', error);
-            alert("Connection error. Could not reach server.");
+            console.error('❌ CRITICAL SAVE FAILURE:', error);
+            const msg = error instanceof Error ? error.message : "Persistence failure (check internet)";
+            alert(`SAVE FAILED:\n${msg}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -367,7 +370,7 @@ export function AssessmentForm() {
                                     )} />
                                     <FormField control={form.control} name="name" render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Full Name</FormLabel>
+                                            <FormLabel className="flex items-center gap-1">Full Name <span className="text-red-500 font-bold">*</span></FormLabel>
                                             <FormControl><Input placeholder="Patient Name" {...field} /></FormControl>
                                             <FormMessage className="text-xs text-red-500 font-bold" />
                                         </FormItem>
@@ -732,8 +735,12 @@ export function AssessmentForm() {
 
                 <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
                     <Button type="button" variant="ghost" asChild className="rounded-xl h-12 px-6 font-bold text-slate-400 hover:text-slate-900 transition-all active:scale-[0.98]"><Link href="/"><ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard</Link></Button>
-                    <div className="flex gap-4">
-                        <Button type="submit" disabled={isSubmitting} className="h-14 px-10 rounded-2xl font-black tracking-widest shadow-2xl transition-all active:scale-[0.98] disabled:opacity-50 min-w-[200px]">
+                        <Button 
+                            type="submit" 
+                            disabled={isSubmitting} 
+                            onClick={() => console.log("🔘 SAVE BUTTON CLICKED")}
+                            className="h-14 px-10 rounded-2xl font-black tracking-widest shadow-2xl transition-all active:scale-[0.98] disabled:opacity-50 min-w-[200px]"
+                        >
                             {isSubmitting ? (
                                 <span className="flex items-center gap-2">
                                     <Activity className="h-5 w-5 animate-pulse" />
@@ -741,7 +748,6 @@ export function AssessmentForm() {
                                 </span>
                             ) : "INITIALIZE RECORD"}
                         </Button>
-                    </div>
                 </div>
             </form>
         </Form>
