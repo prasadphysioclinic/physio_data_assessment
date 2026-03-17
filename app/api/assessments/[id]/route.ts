@@ -116,9 +116,8 @@ export async function PUT(request: Request, context: RouteParams) {
                 hour12: false, timeZone: 'Asia/Kolkata'
             }).format(new Date()),
 
-            // Update Metadata
             id: assessmentIndex,
-            rowIndex: assessmentIndex + 2,
+            rowIndex: assessmentIndex + 1,
             action: 'update'
         };
 
