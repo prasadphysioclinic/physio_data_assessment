@@ -42,12 +42,23 @@ export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
                         <div 
                             key={i} 
                             onClick={() => handleMediaClick(url)}
-                            className="group relative aspect-square bg-slate-100 rounded-3xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-all"
+                            className="group relative aspect-square bg-slate-100 rounded-3xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-all border border-slate-200 shadow-sm"
                         >
                             <img src={thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                            
+                            {/* Type Labels for Absolute Clarity */}
+                            <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
+                                <div className={`w-1.5 h-1.5 rounded-full ${isVideo ? 'bg-blue-400 animate-pulse' : 'bg-emerald-400'}`} />
+                                <span className="text-[9px] font-black text-white uppercase tracking-widest">
+                                    {isVideo ? 'Motion' : 'Photo'}
+                                </span>
+                            </div>
+
                             {isVideo && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                                    <Play className="h-10 w-10 text-white fill-white" />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
+                                    <div className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30">
+                                        <Play className="h-8 w-8 text-white fill-white" />
+                                    </div>
                                 </div>
                             )}
                         </div>

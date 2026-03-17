@@ -88,14 +88,18 @@ export function isVideoUrl(url: string | undefined | null): boolean {
     const lower = url.toLowerCase();
     
     // Explicit indicators (Highest Priority)
-    const hasVideoIndicator = lower.includes('.mp4') || lower.includes('.mov') || lower.includes('.webm') || lower.includes('video/') || lower.includes('ext=.webm') || lower.includes('ext=.mp4') || lower.includes('mime=video');
-    if (hasVideoIndicator) return true;
+    // We look for common video extensions or MIME type hints
+    const hasVideoIndicator = 
+        lower.includes('.mp4') || 
+        lower.includes('.mov') || 
+        lower.includes('.webm') || 
+        lower.includes('.mkv') ||
+        lower.includes('video/') || 
+        lower.includes('ext=.webm') || 
+        lower.includes('ext=.mp4') || 
+        lower.includes('mime=video');
 
-    // Safety-First: If it's a Drive file and NOT a common image format, treat as motion capture
-    const isDriveFile = url.includes('id=') || url.includes('/d/');
-    const isKnownImage = lower.includes('.jpg') || lower.includes('.jpeg') || lower.includes('.png') || lower.includes('.webp') || lower.includes('ext=.jpg');
-    
-    return isDriveFile && !isKnownImage;
+    return hasVideoIndicator;
 }
 
 // ─── Duplicate Detection ─────────────────────────────────────────────
