@@ -41,7 +41,7 @@ function doPost(e) {
     const data = JSON.parse(e.postData.contents);
 
     // Route to update or create
-    if (data.action === 'update' && data.rowIndex) {
+    if (data.action === 'update' && (data.rowIndex !== undefined && data.rowIndex !== null)) {
       return handleUpdate(sheet, data);
     }
     return handleCreate(sheet, data);
@@ -102,21 +102,39 @@ function handleCreate(sheet, data) {
 }
 
 /**
- * ✏️ Handle Updates
+ * ✏️ Handle Updates (ATOMIC & ROBUST)
  */
 function handleUpdate(sheet, data) {
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const rowIndex = parseInt(data.rowIndex) + 1; // Convert 0-based to 1-based, +1 for header
+  
+  // Step 1: Handle NEW Media uploads during Update
+  if (data.files && data.files.length > 0) {
+    const newMediaUrls = uploadMediaToDrive(data.PatientName, data.Date, data.files);
+    
+    // Find first empty Media slot or append to existing
+    let mediaPtr = 0;
+    for (let i = 1; i <= 4; i++) {
+      const key = "Media" + i;
+      if (!data[key] && newMediaUrls[mediaPtr]) {
+        data[key] = newMediaUrls[mediaPtr++];
+      }
+    }
+  }
 
-  // Update only provided fields
-  Object.keys(data).forEach(key => {
-    const colIndex = headers.indexOf(key);
-    if (colIndex !== -1 && key !== 'rowIndex' && key !== 'action') {
-      sheet.getRange(rowIndex, colIndex + 1).setValue(data[key]);
+  // Step 2: Atomic Sheet Update (Read -> Merge -> Write)
+  const rowRange = sheet.getRange(rowIndex, 1, 1, headers.length);
+  const rowValues = rowRange.getValues()[0];
+
+  headers.forEach((header, index) => {
+    if (data[header] !== undefined && header !== 'rowIndex' && header !== 'action') {
+      rowValues[index] = data[header];
     }
   });
 
-  return createJsonResponse({ success: true, message: "Updated successfully" });
+  rowRange.setValues([rowValues]);
+
+  return createJsonResponse({ success: true, message: "Record synchronized successfully", rowIndex: rowIndex });
 }
 
 /**
