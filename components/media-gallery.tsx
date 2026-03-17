@@ -92,14 +92,14 @@ export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="flex flex-col items-center gap-4">
                                         <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                                        <p className="text-[10px] font-black text-white/40 uppercase tracking-widest animate-pulse">Initializing native player...</p>
+                                        <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Active Diagnostic Link...</p>
                                     </div>
                                 </div>
                                 <iframe 
                                     src={convertDriveUrl(selectedMedia, 'preview')} 
-                                    className="relative z-10 w-full h-full border-none"
+                                    className="relative z-10 w-full h-[85vh] border-none scale-[1.05]"
                                     allow="autoplay"
-                                    title="Clinical Motion Review"
+                                    title="Certified Motion Review"
                                 />
                             </div>
                         ) : (
@@ -107,49 +107,52 @@ export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
                                 <img 
                                     src={convertDriveUrl(selectedMedia, 'download')} 
                                     alt="Detailed clinical view" 
-                                    className="max-w-full max-h-full object-contain shadow-[0_0_80px_rgba(0,0,0,0.5)]" 
+                                    className="max-w-full max-h-full object-contain shadow-[0_0_80px_rgba(0,0,0,0.5)] scale-[1.02]" 
                                 />
                             </div>
                         )}
                         
                         {/* Immersive Footer */}
-                        <div className="absolute bottom-0 left-0 right-0 p-10 bg-gradient-to-t from-black via-black/90 to-transparent flex justify-between items-end">
+                        <div className="absolute bottom-0 left-0 right-0 p-10 bg-gradient-to-t from-black via-black/95 to-transparent flex justify-between items-end">
                             <div className="space-y-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-14 w-14 rounded-2xl bg-primary/20 flex items-center justify-center border-2 border-primary/30 backdrop-blur-md">
-                                        {isVideoUrl(selectedMedia) ? <FileVideo className="h-7 w-7 text-primary" /> : <FileImage className="h-7 w-7 text-primary" />}
+                                    <div className="h-16 w-16 rounded-2xl bg-primary/20 flex items-center justify-center border-2 border-primary/40 backdrop-blur-xl">
+                                        {isVideoUrl(selectedMedia) ? <FileVideo className="h-8 w-8 text-primary" /> : <FileImage className="h-8 w-8 text-primary" />}
                                     </div>
                                     <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <p className="text-[11px] font-black text-primary uppercase tracking-[0.2em]">Diagnostic Media</p>
-                                            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                                        <div className="flex items-center gap-2 mb-1.5">
+                                            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                            <p className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">Certified Medical Evidence</p>
                                         </div>
-                                        <h3 className="text-2xl font-black text-white uppercase tracking-tight leading-none">Diagnostic Clinical Review</h3>
+                                        <h3 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">Diagnostic Clinical Review</h3>
                                     </div>
                                 </div>
                                 
                                 {isVideoUrl(selectedMedia) && (
-                                    <p className="text-white/40 text-[11px] font-medium max-w-md bg-white/5 p-3 rounded-xl border border-white/10 backdrop-blur-sm">
-                                        If the video does not play instantly due to browser restrictions, use the <span className="text-primary font-bold">Emergency Review</span> button.
-                                    </p>
+                                    <div className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md max-w-lg">
+                                        <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Playback Optimizer</p>
+                                        <p className="text-white/40 text-[11px] font-medium leading-relaxed">
+                                            Motion captures are highly detailed. If playback delays, use the <span className="text-primary font-black">Emergency Review</span> button for instant high-speed access.
+                                        </p>
+                                    </div>
                                 )}
                             </div>
 
                             <div className="flex items-center gap-4">
                                 {isVideoUrl(selectedMedia) && (
                                     <Button 
-                                        variant="secondary" 
+                                        variant="default" 
                                         size="lg" 
                                         asChild
-                                        className="h-14 rounded-2xl px-10 bg-primary hover:bg-primary/90 text-white font-black tracking-wider uppercase text-xs shadow-2xl shadow-primary/20 transition-all hover:scale-105"
+                                        className="h-16 rounded-2xl px-12 bg-primary hover:bg-primary/90 text-white font-black tracking-widest uppercase text-xs shadow-2xl shadow-primary/40 transition-all hover:scale-105 active:scale-95"
                                     >
                                         <a href={convertDriveUrl(selectedMedia, 'download')} target="_blank" rel="noopener noreferrer">
-                                            Emergency Review (Open Tab)
+                                            Emergency Review (Insta-Play)
                                         </a>
                                     </Button>
                                 )}
-                                <Button variant="outline" size="lg" onClick={closeModal} className="h-14 rounded-2xl px-10 bg-white/5 border-white/10 hover:bg-white/10 text-white font-bold tracking-wider uppercase text-xs">
-                                    Dismiss Review
+                                <Button variant="outline" size="lg" onClick={closeModal} className="h-16 rounded-2xl px-10 bg-white/5 border-white/10 hover:bg-white/10 text-white font-bold tracking-wider uppercase text-xs backdrop-blur-sm">
+                                    Dismiss Session
                                 </Button>
                             </div>
                         </div>

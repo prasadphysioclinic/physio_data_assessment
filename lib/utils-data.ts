@@ -71,9 +71,9 @@ export function convertDriveUrl(url: string | undefined | null, mode: 'download'
 
     if (id) {
         if (mode === 'thumbnail') {
-            // Master Class: Use the absolute most resilient snapshot engine
-            // This engine works for BOTH photos and videos with high success rates
-            return `https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
+            // Absolute Mastery: Force high-speed, reliable lh3 engine for ALL snapshots
+            // This is the fastest engine for grid previews on both photos and videos.
+            return `https://lh3.googleusercontent.com/d/${id}`;
         }
         
         if (mode === 'preview') {
@@ -95,20 +95,15 @@ export function isVideoUrl(url: string | undefined | null): boolean {
     if (!url || typeof url !== 'string') return false;
     const lower = url.toLowerCase();
     
-    // Explicit indicators (highest priority)
-    if (lower.includes('.mp4') || lower.includes('.mov') || lower.includes('.webm') || lower.includes('video/') || lower.includes('ext=.webm') || lower.includes('ext=.mp4') || lower.includes('mime=video')) {
-        return true;
-    }
+    // Explicit indicators (Highest Priority)
+    const hasVideoIndicator = lower.includes('.mp4') || lower.includes('.mov') || lower.includes('.webm') || lower.includes('video/') || lower.includes('ext=.webm') || lower.includes('ext=.mp4') || lower.includes('mime=video');
+    if (hasVideoIndicator) return true;
 
-    // Master Class: Safety-First Heuristic
-    // If it's a Drive ID but doesn't have an explicit image extension, treat as motion capture
-    // This provides a "Play" signal for unverified clinical files instead of showing them as static
-    if (url.includes('id=') || url.includes('/d/')) {
-        const isExplicitImage = lower.includes('.jpg') || lower.includes('.jpeg') || lower.includes('.png') || lower.includes('.webp') || lower.includes('ext=.jpg');
-        return !isExplicitImage;
-    }
-
-    return false;
+    // Safety-First: If it's a Drive file and NOT a common image format, treat as motion capture
+    const isDriveFile = url.includes('id=') || url.includes('/d/');
+    const isKnownImage = lower.includes('.jpg') || lower.includes('.jpeg') || lower.includes('.png') || lower.includes('.webp') || lower.includes('ext=.jpg');
+    
+    return isDriveFile && !isKnownImage;
 }
 
 // ─── Duplicate Detection ─────────────────────────────────────────────

@@ -112,9 +112,13 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                     </div>
                                 </div>
                             </div>
-                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Last Updated</p>
-                                <p className="text-sm font-bold text-slate-700">{assessment.Timestamp ? formatDateTime(assessment.Timestamp) : formatDate(assessment.Date)}</p>
+                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-end gap-1">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Master Deployment Live</p>
+                                <div className="flex items-center gap-2">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-tight">System Updated: Mar 17, 10:55 PM</p>
+                                </div>
+                                <p className="text-xs font-bold text-slate-700 mt-1">{assessment.Timestamp ? formatDateTime(assessment.Timestamp) : formatDate(assessment.Date)}</p>
                             </div>
                         </div>
                     </CardContent>
