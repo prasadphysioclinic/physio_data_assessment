@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <header className="border-b sticky top-0 bg-background z-50">
+        <header className="border-b sticky top-0 bg-white z-50 shadow-sm">
           <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4">
             <Link href="/" className="flex items-center gap-2 sm:gap-3">
               <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 border-primary flex-shrink-0 bg-[#5a4a3a]">
@@ -51,7 +51,7 @@ export default function RootLayout({
               <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex rounded-xl font-black text-[10px] sm:text-xs h-8 sm:h-9 px-3 sm:px-4 shadow-sm border-slate-200">
                 <Link href="/">DASHBOARD</Link>
               </Button>
-              <Button asChild size="sm" className="rounded-xl font-black text-[10px] sm:text-xs h-8 sm:h-9 px-4 sm:px-6 shadow-md bg-slate-900 hover:bg-black transition-all">
+              <Button asChild size="sm" className="rounded-xl font-black text-[10px] sm:text-xs h-8 sm:h-9 px-4 sm:px-6 shadow-md bg-slate-900 hover:bg-black transition-all text-white">
                 <Link href="/new">NEW</Link>
               </Button>
             </nav>
