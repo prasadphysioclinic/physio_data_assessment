@@ -12,8 +12,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Search, UserCircle, ExternalLink, Calendar } from "lucide-react";
+import { Search, RefreshCw, Eye, Pencil, Trash2, LayoutDashboard, PlusCircle } from "lucide-react";
 import { formatDateShort } from "@/lib/format-date";
 
 interface Assessment {
@@ -45,6 +46,16 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
     const rowClass = "group hover:bg-slate-50 transition-none cursor-default";
 
     // Sort assessments by Date descending (latest first)
+    const router = useRouter();
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const handleRefresh = () => {
+        setIsRefreshing(true);
+        router.refresh();
+        // Reset after a short delay since refresh is fast
+        setTimeout(() => setIsRefreshing(false), 800);
+    };
+
     const sortedAssessments = [...assessments].sort((a, b) => {
         const dateA = a.Date ? new Date(a.Date).getTime() : 0;
         const dateB = b.Date ? new Date(b.Date).getTime() : 0;
@@ -94,6 +105,16 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                         Clear Search
                     </Button>
                 )}
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                    className="h-10 px-4 rounded-xl border-slate-200 font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm active:scale-95"
+                >
+                    <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin text-primary' : ''}`} />
+                    {isRefreshing ? 'Syncing...' : 'Refresh'}
+                </Button>
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-white shadow-md overflow-hidden">
@@ -177,11 +198,11 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                             </TableCell>
                                             <TableCell className="text-right px-3 pr-8 w-[140px]">
                                                 <div className="flex flex-row justify-end gap-2 h-full items-center">
-                                                    <Button variant="outline" size="sm" asChild className={`h-8 rounded-lg text-[10px] font-black px-3 ${btnClass} border-slate-200`}>
-                                                        <Link href={`/assessment/${targetId}`}>VIEW</Link>
+                                                    <Button variant="outline" size="sm" asChild className={`h-8 rounded-lg text-[10px] font-black px-3 ${btnClass} border-slate-200 active:scale-95 transition-all`}>
+                                                        <Link href={`/assessment/${targetId}`} prefetch={true}>VIEW</Link>
                                                     </Button>
-                                                    <Button variant="secondary" size="sm" asChild className={`h-8 rounded-lg text-[10px] font-black px-3 ${btnClass} bg-slate-100`}>
-                                                        <Link href={`/assessment/${targetId}/edit`}>EDIT</Link>
+                                                    <Button variant="secondary" size="sm" asChild className={`h-8 rounded-lg text-[10px] font-black px-3 ${btnClass} bg-slate-100 active:scale-95 transition-all`}>
+                                                        <Link href={`/assessment/${targetId}/edit`} prefetch={true}>EDIT</Link>
                                                     </Button>
                                                 </div>
                                             </TableCell>
