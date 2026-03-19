@@ -124,6 +124,7 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                     const slug = getSlug(assessment.PatientName);
 
                                     return (
+                                        <TableRow key={`${targetId}-${assessment.Date}`} className={rowClass}>
                                             <TableCell className="px-3 py-3 w-[110px] overflow-hidden">
                                                 <div className="flex flex-col min-w-0">
                                                     <span className="text-[11px] font-bold whitespace-nowrap text-slate-700">{formatDateShort(assessment.Date)}</span>
