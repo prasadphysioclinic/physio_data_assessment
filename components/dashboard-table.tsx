@@ -100,14 +100,13 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                     <Table>
                         <TableHeader className="bg-muted/50">
                             <TableRow>
-                                <TableHead className="w-[110px]">Date</TableHead>
-                                <TableHead>Patient</TableHead>
-                                <TableHead className="hidden sm:table-cell">Occupation</TableHead>
-                                <TableHead className="hidden sm:table-cell">Contact</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="hidden md:table-cell">Diagnosis</TableHead>
-                                <TableHead className="hidden lg:table-cell">Daily Note</TableHead>
-                                <TableHead className="text-right">Action</TableHead>
+                                <TableHead className="w-[85px] px-2">Date</TableHead>
+                                <TableHead className="px-2">Patient</TableHead>
+                                <TableHead className="hidden md:table-cell w-[100px] px-2 text-center">Occupation</TableHead>
+                                <TableHead className="hidden sm:table-cell w-[110px] px-2 text-center">Contact</TableHead>
+                                <TableHead className="w-[90px] px-2 text-center">Status</TableHead>
+                                <TableHead className="hidden lg:table-cell px-2">Diagnosis</TableHead>
+                                <TableHead className="text-right w-[110px] px-2">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -124,58 +123,51 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
 
                                     return (
                                         <TableRow key={`${targetId}-${assessment.Date}`} className={rowClass}>
-                                            <TableCell className="font-medium">
+                                            <TableCell className="px-2 font-medium">
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm">{formatDateShort(assessment.Date)}</span>
-                                                    <span className="text-[10px] text-muted-foreground font-mono">{assessment.Timestamp?.split(', ')[1]}</span>
+                                                    <span className="text-[11px] whitespace-nowrap">{formatDateShort(assessment.Date)}</span>
+                                                    <span className="text-[9px] text-muted-foreground font-mono">{assessment.Timestamp?.split(', ')[1]}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="px-2">
                                                 <div className="flex flex-col">
-                                                    <span className="font-bold text-sm">
+                                                    <span className="text-xs font-bold leading-tight">
                                                         {assessment.PatientName || 'Unknown'}
                                                     </span>
-                                                    <span className="text-[10px] text-muted-foreground">{assessment.Age ? `${assessment.Age} yrs` : 'Age N/A'} • {assessment.Sex || '-'}</span>
+                                                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">{assessment.Age ? `${assessment.Age}y` : 'Age?'} • {assessment.Sex || '-'}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="hidden sm:table-cell">
-                                                <span className="text-xs font-medium truncate max-w-[100px] inline-block">
+                                            <TableCell className="hidden md:table-cell px-2 text-center">
+                                                <span className="text-[11px] font-medium truncate max-w-[80px] inline-block capitalize text-slate-500">
                                                     {assessment.Occupation || '-'}
                                                 </span>
                                             </TableCell>
-                                            <TableCell className="hidden sm:table-cell">
+                                            <TableCell className="hidden sm:table-cell px-2 text-center">
                                                 <a 
                                                     href={`tel:${assessment.PhoneNumber}`} 
-                                                    className="text-xs text-primary hover:underline font-bold"
+                                                    className="text-[11px] text-primary hover:underline font-bold whitespace-nowrap"
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
                                                     {assessment.PhoneNumber || '-'}
                                                 </a>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="px-2 text-center">
                                                 {getPainBadge(assessment.PainIntensity_VAS)}
                                             </TableCell>
-                                            <TableCell className="hidden md:table-cell max-w-[150px] truncate text-sm">
+                                            <TableCell className="hidden lg:table-cell px-2 max-w-[140px] truncate text-[11px] text-slate-500">
                                                 {assessment.Diagnosis || assessment.ChiefComplaint || '-'}
                                             </TableCell>
-                                            <TableCell className="hidden lg:table-cell max-w-[200px] truncate text-xs text-muted-foreground">
-                                                {assessment.DailyNote || '-'}
-                                            </TableCell>
-
-                                            <TableCell className="text-right">
-                                                <div className="flex flex-col sm:flex-row justify-end gap-1.5 sm:gap-2">
-                                                    <Button variant="outline" size="sm" asChild className={`h-8 sm:h-9 rounded-lg text-[10px] sm:text-xs font-bold px-2 sm:px-3 ${btnClass}`}>
-                                                        <Link href={`/assessment/${targetId}`}>
-                                                            View
-                                                        </Link>
+                                            <TableCell className="text-right px-2">
+                                                <div className="flex justify-end gap-1">
+                                                    <Button variant="outline" size="sm" asChild className={`h-8 rounded-lg text-[10px] font-black px-2 sm:px-3 ${btnClass}`}>
+                                                        <Link href={`/assessment/${targetId}`}>VIEW</Link>
                                                     </Button>
-                                                    <Button variant="secondary" size="sm" asChild className={`h-8 sm:h-9 rounded-lg text-[10px] sm:text-xs font-bold px-2 sm:px-3 ${btnClass}`}>
-                                                        <Link href={`/assessment/${targetId}/edit`}>
-                                                            Edit
-                                                        </Link>
+                                                    <Button variant="secondary" size="sm" asChild className={`h-8 rounded-lg text-[10px] font-black px-2 sm:px-3 ${btnClass}`}>
+                                                        <Link href={`/assessment/${targetId}/edit`}>EDIT</Link>
                                                     </Button>
                                                 </div>
                                             </TableCell>
+
                                         </TableRow>
                                     );
                                 })
