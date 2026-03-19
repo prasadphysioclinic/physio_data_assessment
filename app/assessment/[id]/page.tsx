@@ -167,11 +167,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                     <InfoRow label="Muscle Power" value={assessment.MusclePower} />
                                     <InfoRow label="Palpation" value={assessment.Palpation} />
                                     <InfoRow label="Gait" value={assessment.Gait} />
-                                    <InfoRow label="End Feel" value={assessment.EndFeel} />
                                     <InfoRow label="Functional" value={assessment.FunctionalTesting} />
-                                    <InfoRow label="Capsular" value={assessment.CapsularPattern} />
-                                    <InfoRow label="Isometrics" value={assessment.ResistedIsometrics} />
-                                    <InfoRow label="Joint Play" value={assessment.JointPlayMovements} />
                                     <InfoRow label="Add. Comments" value={assessment.Comments} fullWidth />
                                 </div>
                             </CardContent>

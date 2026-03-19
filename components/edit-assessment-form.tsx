@@ -60,11 +60,7 @@ const formSchema = z.object({
     sensation: z.string().optional(),
     reflexes: z.string().optional(),
     specialTests: z.string().optional(),
-    endFeel: z.string().optional(),
-    capsularPattern: z.string().optional(),
-    resistedIsometrics: z.string().optional(),
     functionalTesting: z.string().optional(),
-    jointPlayMovements: z.string().optional(),
     comments: z.string().optional(),
 
     // IV. Pain Assessment (35-40)
@@ -158,11 +154,7 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
             sensation: assessment.Sensation || "",
             reflexes: assessment.Reflexes || "",
             specialTests: assessment.SpecialTests || "",
-            endFeel: assessment.EndFeel || "",
-            capsularPattern: assessment.CapsularPattern || "",
-            resistedIsometrics: assessment.ResistedIsometrics || "",
             functionalTesting: assessment.FunctionalTesting || "",
-            jointPlayMovements: assessment.JointPlayMovements || "",
             comments: assessment.Comments || "",
             painHistory: assessment.PainHistory || "",
             aggravatingFactors: assessment.AggravatingFactors || "",
@@ -516,22 +508,6 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                                     )} />
                                     <FormField control={form.control} name="specialTests" render={({ field }) => (
                                         <FormItem><FormLabel>Special Tests</FormLabel><FormControl><Input placeholder="Orthopedic tests" {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <FormField control={form.control} name="endFeel" render={({ field }) => (
-                                        <FormItem><FormLabel>End Feel</FormLabel><FormControl><Input placeholder="Bony/Springy" {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                    <FormField control={form.control} name="capsularPattern" render={({ field }) => (
-                                        <FormItem><FormLabel>Capsular Pattern</FormLabel><FormControl><Input placeholder="Present/Absent" {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <FormField control={form.control} name="resistedIsometrics" render={({ field }) => (
-                                        <FormItem><FormLabel>Resisted Isometrics</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                    <FormField control={form.control} name="jointPlayMovements" render={({ field }) => (
-                                        <FormItem><FormLabel>Joint Play</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
                                 <FormField control={form.control} name="comments" render={({ field }) => (

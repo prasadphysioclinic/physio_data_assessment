@@ -123,11 +123,10 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                         <TableHeader className="bg-muted/50">
                             <TableRow>
                                 <TableHead className="w-[110px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Date</TableHead>
-                                <TableHead className="w-[210px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Patient Details</TableHead>
+                                <TableHead className="w-[240px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Patient Details</TableHead>
                                 <TableHead className="w-[140px] px-3 text-center font-black text-[11px] uppercase tracking-widest text-slate-800">Occupation</TableHead>
                                 <TableHead className="w-[140px] px-3 text-center font-black text-[11px] uppercase tracking-widest text-slate-800">Contact</TableHead>
-                                <TableHead className="w-[100px] px-3 text-center font-black text-[11px] uppercase tracking-widest text-slate-800">Status</TableHead>
-                                <TableHead className="w-[180px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Diagnosis</TableHead>
+                                <TableHead className="w-[250px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Diagnosis</TableHead>
                                 <TableHead className="w-[180px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Daily Note</TableHead>
                                 <TableHead className="text-right w-[140px] px-3 pr-8 font-black text-[11px] uppercase tracking-widest text-slate-800">Action</TableHead>
                             </TableRow>
@@ -135,7 +134,7 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                         <TableBody>
                             {filteredAssessments.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="h-32 text-center text-muted-foreground italic">
+                                    <TableCell colSpan={7} className="h-32 text-center text-muted-foreground italic">
                                         {searchQuery ? "No results found." : "No assessments recorded yet."}
                                     </TableCell>
                                 </TableRow>
@@ -152,7 +151,7 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                                     <span className="text-[9px] text-muted-foreground font-mono">{assessment.Timestamp?.split(', ')[1]}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="px-3 py-3 w-[210px] overflow-hidden">
+                                            <TableCell className="px-3 py-3 w-[240px] overflow-hidden">
                                                 <div className="w-full flex flex-col gap-0.5 min-w-0">
                                                     <div className="w-full truncate">
                                                         <span className="text-[12px] font-black leading-tight uppercase tracking-tight text-slate-900">
@@ -179,10 +178,7 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                                     </span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="px-2 text-center">
-                                                {getPainBadge(assessment.PainIntensity_VAS)}
-                                            </TableCell>
-                                            <TableCell className="px-3 py-3 w-[180px] overflow-hidden">
+                                            <TableCell className="px-3 py-3 w-[250px] overflow-hidden">
                                                 <div className="w-full truncate">
                                                     <span className="text-[11px] font-bold text-slate-700">
                                                         {assessment.Diagnosis || assessment.ChiefComplaint || '-'}
