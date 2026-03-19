@@ -102,8 +102,9 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                             <TableRow>
                                 <TableHead className="w-[110px]">Date</TableHead>
                                 <TableHead>Patient</TableHead>
+                                <TableHead className="hidden sm:table-cell">Occupation</TableHead>
+                                <TableHead className="hidden sm:table-cell">Contact</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead className="hidden md:table-cell">Occupation</TableHead>
                                 <TableHead className="hidden md:table-cell">Diagnosis</TableHead>
                                 <TableHead className="hidden lg:table-cell">Daily Note</TableHead>
                                 <TableHead className="text-right">Action</TableHead>
@@ -137,11 +138,22 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                                     <span className="text-[10px] text-muted-foreground">{assessment.Age ? `${assessment.Age} yrs` : 'Age N/A'} • {assessment.Sex || '-'}</span>
                                                 </div>
                                             </TableCell>
+                                            <TableCell className="hidden sm:table-cell">
+                                                <span className="text-xs font-medium truncate max-w-[100px] inline-block">
+                                                    {assessment.Occupation || '-'}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="hidden sm:table-cell">
+                                                <a 
+                                                    href={`tel:${assessment.PhoneNumber}`} 
+                                                    className="text-xs text-primary hover:underline font-bold"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    {assessment.PhoneNumber || '-'}
+                                                </a>
+                                            </TableCell>
                                             <TableCell>
                                                 {getPainBadge(assessment.PainIntensity_VAS)}
-                                            </TableCell>
-                                            <TableCell className="hidden md:table-cell text-sm">
-                                                {assessment.Occupation || '-'}
                                             </TableCell>
                                             <TableCell className="hidden md:table-cell max-w-[150px] truncate text-sm">
                                                 {assessment.Diagnosis || assessment.ChiefComplaint || '-'}
