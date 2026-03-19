@@ -105,9 +105,9 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                 <TableHead className="hidden md:table-cell w-[12%] px-2 text-center">Occupation</TableHead>
                                 <TableHead className="hidden sm:table-cell w-[12%] px-2 text-center">Contact</TableHead>
                                 <TableHead className="w-[8%] px-2 text-center">Status</TableHead>
-                                <TableHead className="hidden lg:table-cell w-[16%] px-2">Diagnosis</TableHead>
-                                <TableHead className="hidden lg:table-cell w-[16%] px-2">Daily Note</TableHead>
-                                <TableHead className="text-right w-[10%] px-2 pr-4">Action</TableHead>
+                                <TableHead className="hidden lg:table-cell w-[15%] px-2">Diagnosis</TableHead>
+                                <TableHead className="hidden lg:table-cell w-[15%] px-2">Daily Note</TableHead>
+                                <TableHead className="text-right w-[12%] px-2 pr-4">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -130,19 +130,19 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                                     <span className="text-[9px] text-muted-foreground font-mono">{assessment.Timestamp?.split(', ')[1]}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="px-2 py-3">
-                                                <div className="flex flex-col gap-0.5">
-                                                    <span className="text-xs font-bold leading-tight uppercase tracking-tight">
+                                            <TableCell className="px-2 py-3 overflow-hidden">
+                                                <div className="w-full flex flex-col gap-0.5 min-w-0">
+                                                    <span className="text-xs font-bold leading-tight uppercase tracking-tight truncate w-full block">
                                                         {assessment.PatientName || 'Unknown'}
                                                     </span>
-                                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 text-[10px] text-muted-foreground">
-                                                        <span className="bg-slate-100 px-1 rounded font-mono">{assessment.Age ? `${assessment.Age}y` : 'Age?'}</span>
-                                                        <span>{assessment.Sex || '-'}</span>
+                                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 text-[10px] text-muted-foreground truncate w-full">
+                                                        <span className="bg-slate-100 px-1 rounded font-mono shrink-0">{assessment.Age ? `${assessment.Age}y` : 'Age?'}</span>
+                                                        <span className="shrink-0">{assessment.Sex || '-'}</span>
                                                         {/* Mobile-only inline metadata */}
-                                                        <span className="md:hidden text-slate-400 italic">| {assessment.Occupation || '-'}</span>
+                                                        <span className="md:hidden text-slate-400 italic truncate max-w-[50px]">| {assessment.Occupation || '-'}</span>
                                                         <a 
                                                             href={`tel:${assessment.PhoneNumber}`} 
-                                                            className="sm:hidden text-primary font-bold decoration-primary/30 underline underline-offset-2"
+                                                            className="sm:hidden text-primary font-bold decoration-primary/30 underline underline-offset-2 truncate"
                                                             onClick={(e) => e.stopPropagation()}
                                                         >
                                                             {assessment.PhoneNumber || '-'}
@@ -150,32 +150,40 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                                     </div>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="hidden md:table-cell px-2 text-center">
-                                                <span className="text-[11px] font-medium truncate max-w-[80px] inline-block capitalize text-slate-500">
-                                                    {assessment.Occupation || '-'}
-                                                </span>
+                                            <TableCell className="hidden md:table-cell px-2 text-center overflow-hidden">
+                                                <div className="w-full truncate">
+                                                    <span className="text-[11px] font-medium capitalize text-slate-500">
+                                                        {assessment.Occupation || '-'}
+                                                    </span>
+                                                </div>
                                             </TableCell>
-                                            <TableCell className="hidden sm:table-cell px-2 text-center">
-                                                <a 
-                                                    href={`tel:${assessment.PhoneNumber}`} 
-                                                    className="text-[11px] text-primary hover:underline font-bold whitespace-nowrap"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    {assessment.PhoneNumber || '-'}
-                                                </a>
+                                            <TableCell className="hidden sm:table-cell px-2 text-center overflow-hidden">
+                                                <div className="w-full truncate">
+                                                    <a 
+                                                        href={`tel:${assessment.PhoneNumber}`} 
+                                                        className="text-[11px] text-primary hover:underline font-bold"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        {assessment.PhoneNumber || '-'}
+                                                    </a>
+                                                </div>
                                             </TableCell>
                                             <TableCell className="px-2 text-center">
                                                 {getPainBadge(assessment.PainIntensity_VAS)}
                                             </TableCell>
-                                            <TableCell className="hidden lg:table-cell px-2">
-                                                <span className="text-[11px] font-bold truncate block text-slate-700">
-                                                    {assessment.Diagnosis || assessment.ChiefComplaint || '-'}
-                                                </span>
+                                            <TableCell className="hidden lg:table-cell px-2 overflow-hidden">
+                                                <div className="w-full truncate">
+                                                    <span className="text-[11px] font-bold text-slate-700">
+                                                        {assessment.Diagnosis || assessment.ChiefComplaint || '-'}
+                                                    </span>
+                                                </div>
                                             </TableCell>
-                                            <TableCell className="hidden lg:table-cell px-2">
-                                                <span className="text-[10px] text-slate-400 truncate block italic">
-                                                    {assessment.DailyNote || '-'}
-                                                </span>
+                                            <TableCell className="hidden lg:table-cell px-2 overflow-hidden">
+                                                <div className="w-full truncate">
+                                                    <span className="text-[10px] text-slate-400 italic">
+                                                        {assessment.DailyNote || '-'}
+                                                    </span>
+                                                </div>
                                             </TableCell>
                                             <TableCell className="text-right px-2 pr-4">
                                                 <div className="flex flex-col sm:flex-row justify-end gap-1">
