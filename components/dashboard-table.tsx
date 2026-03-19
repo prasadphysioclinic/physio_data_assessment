@@ -58,7 +58,8 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
             (assessment.PatientName && String(assessment.PatientName).toLowerCase().includes(query)) ||
             (assessment.Diagnosis && String(assessment.Diagnosis).toLowerCase().includes(query)) ||
             (assessment.ChiefComplaint && String(assessment.ChiefComplaint).toLowerCase().includes(query)) ||
-            (assessment.Date && String(assessment.Date).toLowerCase().includes(query))
+            (assessment.Date && String(assessment.Date).toLowerCase().includes(query)) ||
+            (assessment.PhoneNumber && String(assessment.PhoneNumber).toLowerCase().includes(query))
         );
     });
 
@@ -100,14 +101,14 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                     <Table className="table-fixed w-[1200px]">
                         <TableHeader className="bg-muted/50">
                             <TableRow>
-                                <TableHead className="w-[110px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Date</TableHead>
-                                <TableHead className="w-[200px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Patient Details</TableHead>
-                                <TableHead className="w-[140px] px-3 text-center font-black text-[10px] uppercase tracking-wider text-slate-500">Occupation</TableHead>
-                                <TableHead className="w-[140px] px-3 text-center font-black text-[10px] uppercase tracking-wider text-slate-500">Contact</TableHead>
-                                <TableHead className="w-[100px] px-3 text-center font-black text-[10px] uppercase tracking-wider text-slate-500">Status</TableHead>
-                                <TableHead className="w-[180px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Diagnosis</TableHead>
-                                <TableHead className="w-[180px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Daily Note</TableHead>
-                                <TableHead className="text-right w-[140px] px-3 pr-6 font-black text-[10px] uppercase tracking-wider text-slate-500">Action</TableHead>
+                                <TableHead className="w-[110px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Date</TableHead>
+                                <TableHead className="w-[210px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Patient Details</TableHead>
+                                <TableHead className="w-[140px] px-3 text-center font-black text-[11px] uppercase tracking-widest text-slate-800">Occupation</TableHead>
+                                <TableHead className="w-[140px] px-3 text-center font-black text-[11px] uppercase tracking-widest text-slate-800">Contact</TableHead>
+                                <TableHead className="w-[100px] px-3 text-center font-black text-[11px] uppercase tracking-widest text-slate-800">Status</TableHead>
+                                <TableHead className="w-[180px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Diagnosis</TableHead>
+                                <TableHead className="w-[180px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Daily Note</TableHead>
+                                <TableHead className="text-right w-[140px] px-3 pr-8 font-black text-[11px] uppercase tracking-widest text-slate-800">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -123,14 +124,13 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                     const slug = getSlug(assessment.PatientName);
 
                                     return (
-                                        <TableRow key={`${targetId}-${assessment.Date}`} className={rowClass}>
-                                            <TableCell className="px-3 py-3 w-[110px]">
+                                            <TableCell className="px-3 py-3 w-[110px] overflow-hidden">
                                                 <div className="flex flex-col min-w-0">
-                                                    <span className="text-[11px] font-bold whitespace-nowrap">{formatDateShort(assessment.Date)}</span>
+                                                    <span className="text-[11px] font-bold whitespace-nowrap text-slate-700">{formatDateShort(assessment.Date)}</span>
                                                     <span className="text-[9px] text-muted-foreground font-mono">{assessment.Timestamp?.split(', ')[1]}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="px-3 py-3 w-[200px]">
+                                            <TableCell className="px-3 py-3 w-[210px] overflow-hidden">
                                                 <div className="w-full flex flex-col gap-0.5 min-w-0">
                                                     <div className="w-full truncate">
                                                         <span className="text-[12px] font-black leading-tight uppercase tracking-tight text-slate-900">
@@ -174,12 +174,12 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                                     </span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-right px-3 pr-6">
-                                                <div className="flex flex-row justify-end gap-1.5 h-full items-center">
-                                                    <Button variant="outline" size="sm" asChild className={`h-8 rounded-lg text-[10px] font-black px-3 ${btnClass}`}>
+                                            <TableCell className="text-right px-3 pr-8 w-[140px]">
+                                                <div className="flex flex-row justify-end gap-2 h-full items-center">
+                                                    <Button variant="outline" size="sm" asChild className={`h-8 rounded-lg text-[10px] font-black px-3 ${btnClass} border-slate-200`}>
                                                         <Link href={`/assessment/${targetId}`}>VIEW</Link>
                                                     </Button>
-                                                    <Button variant="secondary" size="sm" asChild className={`h-8 rounded-lg text-[10px] font-black px-3 ${btnClass}`}>
+                                                    <Button variant="secondary" size="sm" asChild className={`h-8 rounded-lg text-[10px] font-black px-3 ${btnClass} bg-slate-100`}>
                                                         <Link href={`/assessment/${targetId}/edit`}>EDIT</Link>
                                                     </Button>
                                                 </div>
