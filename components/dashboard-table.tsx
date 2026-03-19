@@ -96,18 +96,17 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
             </div>
 
             <div className="rounded-xl border bg-card overflow-hidden">
-                <div className="overflow-x-auto">
-                    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-                        <Table className="w-full min-w-[1000px]">
+                <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+                    <Table className="w-full min-w-[1200px]">
                         <TableHeader className="bg-muted/50">
                             <TableRow>
-                                <TableHead className="w-[100px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Date</TableHead>
-                                <TableHead className="w-[220px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Patient Details</TableHead>
-                                <TableHead className="hidden md:table-cell w-[140px] px-3 text-center font-black text-[10px] uppercase tracking-wider text-slate-500">Occupation</TableHead>
-                                <TableHead className="hidden sm:table-cell w-[140px] px-3 text-center font-black text-[10px] uppercase tracking-wider text-slate-500">Contact</TableHead>
+                                <TableHead className="w-[110px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Date</TableHead>
+                                <TableHead className="w-[200px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Patient Details</TableHead>
+                                <TableHead className="w-[140px] px-3 text-center font-black text-[10px] uppercase tracking-wider text-slate-500">Occupation</TableHead>
+                                <TableHead className="w-[140px] px-3 text-center font-black text-[10px] uppercase tracking-wider text-slate-500">Contact</TableHead>
                                 <TableHead className="w-[100px] px-3 text-center font-black text-[10px] uppercase tracking-wider text-slate-500">Status</TableHead>
-                                <TableHead className="hidden lg:table-cell w-[180px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Diagnosis</TableHead>
-                                <TableHead className="hidden lg:table-cell w-[180px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Daily Note</TableHead>
+                                <TableHead className="w-[180px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Diagnosis</TableHead>
+                                <TableHead className="w-[180px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Daily Note</TableHead>
                                 <TableHead className="text-right w-[140px] px-3 pr-6 font-black text-[10px] uppercase tracking-wider text-slate-500">Action</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -125,38 +124,35 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
 
                                     return (
                                         <TableRow key={`${targetId}-${assessment.Date}`} className={rowClass}>
-                                            <TableCell className="px-2 font-medium">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[11px] whitespace-nowrap">{formatDateShort(assessment.Date)}</span>
+                                            <TableCell className="px-3 py-3 w-[110px]">
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-[11px] font-bold whitespace-nowrap">{formatDateShort(assessment.Date)}</span>
                                                     <span className="text-[9px] text-muted-foreground font-mono">{assessment.Timestamp?.split(', ')[1]}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="px-2 py-3 overflow-hidden">
+                                            <TableCell className="px-3 py-3 w-[200px]">
                                                 <div className="w-full flex flex-col gap-0.5 min-w-0">
-                                                    <span className="text-xs font-bold leading-tight uppercase tracking-tight truncate w-full block">
-                                                        {assessment.PatientName || 'Unknown'}
-                                                    </span>
-                                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 text-[10px] text-muted-foreground truncate w-full">
+                                                    <div className="w-full truncate">
+                                                        <span className="text-[12px] font-black leading-tight uppercase tracking-tight text-slate-900">
+                                                            {assessment.PatientName || 'Unknown'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-x-2 text-[10px] text-muted-foreground">
                                                         <span className="bg-slate-100 px-1 rounded font-mono shrink-0">{assessment.Age ? `${assessment.Age}y` : 'Age?'}</span>
                                                         <span className="shrink-0">{assessment.Sex || '-'}</span>
-                                                        {/* Mobile-only inline metadata */}
-                                                        <span className="md:hidden text-slate-400 italic truncate max-w-[50px]">| {assessment.Occupation || '-'}</span>
-                                                        <span className="sm:hidden text-primary font-bold decoration-primary/30 underline underline-offset-2 truncate">
-                                                            {assessment.PhoneNumber || '-'}
-                                                        </span>
                                                     </div>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="hidden md:table-cell px-2 text-center overflow-hidden">
+                                            <TableCell className="px-3 py-3 text-center w-[140px]">
                                                 <div className="w-full truncate">
-                                                    <span className="text-[11px] font-medium capitalize text-slate-500">
+                                                    <span className="text-[11px] font-bold capitalize text-slate-600">
                                                         {assessment.Occupation || '-'}
                                                     </span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="hidden sm:table-cell px-2 text-center overflow-hidden">
+                                            <TableCell className="px-3 py-3 text-center w-[140px]">
                                                 <div className="w-full truncate">
-                                                    <span className="text-[11px] text-primary font-bold">
+                                                    <span className="text-[11px] text-primary font-black">
                                                         {assessment.PhoneNumber || '-'}
                                                     </span>
                                                 </div>
@@ -164,16 +160,16 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                             <TableCell className="px-2 text-center">
                                                 {getPainBadge(assessment.PainIntensity_VAS)}
                                             </TableCell>
-                                            <TableCell className="hidden lg:table-cell px-2 overflow-hidden">
+                                            <TableCell className="px-3 py-3 w-[180px]">
                                                 <div className="w-full truncate">
                                                     <span className="text-[11px] font-bold text-slate-700">
                                                         {assessment.Diagnosis || assessment.ChiefComplaint || '-'}
                                                     </span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="hidden lg:table-cell px-2 overflow-hidden">
+                                            <TableCell className="px-3 py-3 w-[180px]">
                                                 <div className="w-full truncate">
-                                                    <span className="text-[10px] text-slate-400 italic">
+                                                    <span className="text-[10px] text-slate-500 italic">
                                                         {assessment.DailyNote || '-'}
                                                     </span>
                                                 </div>
@@ -194,7 +190,6 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                             )}
                         </TableBody>
                     </Table>
-                    </div>
                 </div>
             </div>
             <p className="text-[10px] text-muted-foreground text-center italic">
