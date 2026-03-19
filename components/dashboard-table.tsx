@@ -95,9 +95,9 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                 )}
             </div>
 
-            <div className="rounded-xl border bg-card overflow-hidden">
-                <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-                    <Table className="w-full min-w-[1200px]">
+            <div className="rounded-xl border border-slate-200 bg-white shadow-md overflow-hidden">
+                <div className="overflow-x-auto">
+                    <Table className="table-fixed w-[1200px]">
                         <TableHeader className="bg-muted/50">
                             <TableRow>
                                 <TableHead className="w-[110px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Date</TableHead>
@@ -143,14 +143,14 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                                     </div>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="px-3 py-3 text-center w-[140px]">
+                                            <TableCell className="px-3 py-3 text-center w-[140px] overflow-hidden">
                                                 <div className="w-full truncate">
                                                     <span className="text-[11px] font-bold capitalize text-slate-600">
                                                         {assessment.Occupation || '-'}
                                                     </span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="px-3 py-3 text-center w-[140px]">
+                                            <TableCell className="px-3 py-3 text-center w-[140px] overflow-hidden">
                                                 <div className="w-full truncate">
                                                     <span className="text-[11px] text-primary font-black">
                                                         {assessment.PhoneNumber || '-'}
@@ -160,14 +160,14 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                             <TableCell className="px-2 text-center">
                                                 {getPainBadge(assessment.PainIntensity_VAS)}
                                             </TableCell>
-                                            <TableCell className="px-3 py-3 w-[180px]">
+                                            <TableCell className="px-3 py-3 w-[180px] overflow-hidden">
                                                 <div className="w-full truncate">
                                                     <span className="text-[11px] font-bold text-slate-700">
                                                         {assessment.Diagnosis || assessment.ChiefComplaint || '-'}
                                                     </span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="px-3 py-3 w-[180px]">
+                                            <TableCell className="px-3 py-3 w-[180px] overflow-hidden">
                                                 <div className="w-full truncate">
                                                     <span className="text-[10px] text-slate-500 italic">
                                                         {assessment.DailyNote || '-'}
