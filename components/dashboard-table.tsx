@@ -97,22 +97,23 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
 
             <div className="rounded-xl border bg-card overflow-hidden">
                 <div className="overflow-x-auto">
-                    <Table>
+                    <Table className="table-fixed w-full">
                         <TableHeader className="bg-muted/50">
                             <TableRow>
-                                <TableHead className="w-[85px] px-2">Date</TableHead>
-                                <TableHead className="px-2">Patient</TableHead>
-                                <TableHead className="hidden md:table-cell w-[100px] px-2 text-center">Occupation</TableHead>
-                                <TableHead className="hidden sm:table-cell w-[110px] px-2 text-center">Contact</TableHead>
-                                <TableHead className="w-[90px] px-2 text-center">Status</TableHead>
-                                <TableHead className="hidden lg:table-cell px-2">Diagnosis</TableHead>
-                                <TableHead className="text-right w-[110px] px-2">Action</TableHead>
+                                <TableHead className="w-[8%] px-2">Date</TableHead>
+                                <TableHead className="w-[18%] px-2">Patient Details</TableHead>
+                                <TableHead className="hidden md:table-cell w-[12%] px-2 text-center">Occupation</TableHead>
+                                <TableHead className="hidden sm:table-cell w-[12%] px-2 text-center">Contact</TableHead>
+                                <TableHead className="w-[8%] px-2 text-center">Status</TableHead>
+                                <TableHead className="hidden lg:table-cell w-[16%] px-2">Diagnosis</TableHead>
+                                <TableHead className="hidden lg:table-cell w-[16%] px-2">Daily Note</TableHead>
+                                <TableHead className="text-right w-[10%] px-2 pr-4">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {filteredAssessments.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="h-32 text-center text-muted-foreground italic">
+                                    <TableCell colSpan={8} className="h-32 text-center text-muted-foreground italic">
                                         {searchQuery ? "No results found." : "No assessments recorded yet."}
                                     </TableCell>
                                 </TableRow>
@@ -129,12 +130,24 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                                     <span className="text-[9px] text-muted-foreground font-mono">{assessment.Timestamp?.split(', ')[1]}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="px-2">
-                                                <div className="flex flex-col">
-                                                    <span className="text-xs font-bold leading-tight">
+                                            <TableCell className="px-2 py-3">
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="text-xs font-bold leading-tight uppercase tracking-tight">
                                                         {assessment.PatientName || 'Unknown'}
                                                     </span>
-                                                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">{assessment.Age ? `${assessment.Age}y` : 'Age?'} • {assessment.Sex || '-'}</span>
+                                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 text-[10px] text-muted-foreground">
+                                                        <span className="bg-slate-100 px-1 rounded font-mono">{assessment.Age ? `${assessment.Age}y` : 'Age?'}</span>
+                                                        <span>{assessment.Sex || '-'}</span>
+                                                        {/* Mobile-only inline metadata */}
+                                                        <span className="md:hidden text-slate-400 italic">| {assessment.Occupation || '-'}</span>
+                                                        <a 
+                                                            href={`tel:${assessment.PhoneNumber}`} 
+                                                            className="sm:hidden text-primary font-bold decoration-primary/30 underline underline-offset-2"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            {assessment.PhoneNumber || '-'}
+                                                        </a>
+                                                    </div>
                                                 </div>
                                             </TableCell>
                                             <TableCell className="hidden md:table-cell px-2 text-center">
@@ -154,15 +167,22 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                             <TableCell className="px-2 text-center">
                                                 {getPainBadge(assessment.PainIntensity_VAS)}
                                             </TableCell>
-                                            <TableCell className="hidden lg:table-cell px-2 max-w-[140px] truncate text-[11px] text-slate-500">
-                                                {assessment.Diagnosis || assessment.ChiefComplaint || '-'}
+                                            <TableCell className="hidden lg:table-cell px-2">
+                                                <span className="text-[11px] font-bold truncate block text-slate-700">
+                                                    {assessment.Diagnosis || assessment.ChiefComplaint || '-'}
+                                                </span>
                                             </TableCell>
-                                            <TableCell className="text-right px-2">
-                                                <div className="flex justify-end gap-1">
-                                                    <Button variant="outline" size="sm" asChild className={`h-8 rounded-lg text-[10px] font-black px-2 sm:px-3 ${btnClass}`}>
+                                            <TableCell className="hidden lg:table-cell px-2">
+                                                <span className="text-[10px] text-slate-400 truncate block italic">
+                                                    {assessment.DailyNote || '-'}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="text-right px-2 pr-4">
+                                                <div className="flex flex-col sm:flex-row justify-end gap-1">
+                                                    <Button variant="outline" size="sm" asChild className={`h-7 rounded-md text-[9px] font-black px-2 ${btnClass}`}>
                                                         <Link href={`/assessment/${targetId}`}>VIEW</Link>
                                                     </Button>
-                                                    <Button variant="secondary" size="sm" asChild className={`h-8 rounded-lg text-[10px] font-black px-2 sm:px-3 ${btnClass}`}>
+                                                    <Button variant="secondary" size="sm" asChild className={`h-7 rounded-md text-[9px] font-black px-2 ${btnClass}`}>
                                                         <Link href={`/assessment/${targetId}/edit`}>EDIT</Link>
                                                     </Button>
                                                 </div>
