@@ -140,13 +140,9 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                                         <span className="shrink-0">{assessment.Sex || '-'}</span>
                                                         {/* Mobile-only inline metadata */}
                                                         <span className="md:hidden text-slate-400 italic truncate max-w-[50px]">| {assessment.Occupation || '-'}</span>
-                                                        <a 
-                                                            href={`tel:${assessment.PhoneNumber}`} 
-                                                            className="sm:hidden text-primary font-bold decoration-primary/30 underline underline-offset-2 truncate"
-                                                            onClick={(e) => e.stopPropagation()}
-                                                        >
+                                                        <span className="sm:hidden text-primary font-bold decoration-primary/30 underline underline-offset-2 truncate">
                                                             {assessment.PhoneNumber || '-'}
-                                                        </a>
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </TableCell>
@@ -159,13 +155,9 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                             </TableCell>
                                             <TableCell className="hidden sm:table-cell px-2 text-center overflow-hidden">
                                                 <div className="w-full truncate">
-                                                    <a 
-                                                        href={`tel:${assessment.PhoneNumber}`} 
-                                                        className="text-[11px] text-primary hover:underline font-bold"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    >
+                                                    <span className="text-[11px] text-primary font-bold">
                                                         {assessment.PhoneNumber || '-'}
-                                                    </a>
+                                                    </span>
                                                 </div>
                                             </TableCell>
                                             <TableCell className="px-2 text-center">
