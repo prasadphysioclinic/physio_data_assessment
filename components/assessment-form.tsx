@@ -365,7 +365,7 @@ export function AssessmentForm() {
                                 </div>
                             </CardHeader>
                             <CardContent className="p-6 space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={form.control} name="date" render={({ field }) => (
                                         <FormItem><FormLabel>Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
@@ -377,7 +377,7 @@ export function AssessmentForm() {
                                         </FormItem>
                                     )} />
                                 </div>
-                                <div className="grid grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-4">
                                     <FormField control={form.control} name="age" render={({ field }) => (
                                         <FormItem><FormLabel>Age</FormLabel><FormControl><Input placeholder="Yrs" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
@@ -388,7 +388,7 @@ export function AssessmentForm() {
                                         <FormItem><FormLabel>Occupation</FormLabel><FormControl><Input placeholder="Job" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
-                                <div className="grid grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <FormField control={form.control} name="phoneNumber" render={({ field }) => (
                                         <FormItem><FormLabel>Contact</FormLabel><FormControl><Input placeholder="Phone" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
@@ -399,7 +399,7 @@ export function AssessmentForm() {
                                         <FormItem><FormLabel>Weight (kg)</FormLabel><FormControl><Input placeholder="kg" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={form.control} name="bloodPressure" render={({ field }) => (
                                         <FormItem><FormLabel>BP</FormLabel><FormControl><Input placeholder="120/80" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
@@ -410,7 +410,7 @@ export function AssessmentForm() {
                                 <FormField control={form.control} name="dietHabit" render={({ field }) => (
                                     <FormItem><FormLabel>Diet Habit</FormLabel><FormControl><Input placeholder="Dietary notes" {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={form.control} name="sleepingHistory" render={({ field }) => (
                                         <FormItem><FormLabel>Sleep History</FormLabel><FormControl><Input placeholder="Rest patterns" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
@@ -455,7 +455,7 @@ export function AssessmentForm() {
                                 <FormField control={form.control} name="observation" render={({ field }) => (
                                     <FormItem><FormLabel>Posture & Observation</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={form.control} name="activeROM" render={({ field }) => (
                                         <FormItem><FormLabel>Active ROM</FormLabel><FormControl><Input placeholder="Full/Limited" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
@@ -463,7 +463,7 @@ export function AssessmentForm() {
                                         <FormItem><FormLabel>Passive ROM</FormLabel><FormControl><Input placeholder="End-feel" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={form.control} name="musclePower" render={({ field }) => (
                                         <FormItem><FormLabel>Muscle Power (MMT)</FormLabel><FormControl><Input placeholder="Grade 0-5" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
@@ -482,7 +482,7 @@ export function AssessmentForm() {
                                 <CardTitle className="text-lg flex items-center gap-2"><Stethoscope className="h-5 w-5 text-primary" /> Specialized Assessments</CardTitle>
                             </CardHeader>
                             <CardContent className="p-6 space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={form.control} name="neurologicalTests" render={({ field }) => (
                                         <FormItem><FormLabel>Neuro Tests</FormLabel><FormControl><Input placeholder="Myotomes, etc." {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
@@ -490,7 +490,7 @@ export function AssessmentForm() {
                                         <FormItem><FormLabel>Sensation</FormLabel><FormControl><Input placeholder="Dermatomes" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={form.control} name="reflexes" render={({ field }) => (
                                         <FormItem><FormLabel>Reflexes</FormLabel><FormControl><Input placeholder="DTRs" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
@@ -498,7 +498,7 @@ export function AssessmentForm() {
                                         <FormItem><FormLabel>Special Tests</FormLabel><FormControl><Input placeholder="Orthopedic tests" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={form.control} name="endFeel" render={({ field }) => (
                                         <FormItem><FormLabel>End Feel</FormLabel><FormControl><Input placeholder="Bony/Springy" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
@@ -506,7 +506,7 @@ export function AssessmentForm() {
                                         <FormItem><FormLabel>Capsular Pattern</FormLabel><FormControl><Input placeholder="Present/Absent" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={form.control} name="resistedIsometrics" render={({ field }) => (
                                         <FormItem><FormLabel>Resisted Isometrics</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
@@ -734,13 +734,12 @@ export function AssessmentForm() {
                     </CardContent>
                 </Card>
 
-                <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
-                    <Button type="button" variant="ghost" asChild className="rounded-xl h-12 px-6 font-bold text-slate-400 hover:text-slate-900 transition-all active:scale-[0.98]"><Link href="/"><ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard</Link></Button>
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 sm:p-6 rounded-3xl shadow-xl border border-slate-100">
+                    <Button type="button" variant="ghost" asChild className="w-full sm:w-auto rounded-xl h-12 px-6 font-bold text-slate-400 hover:text-slate-900 transition-all active:scale-[0.98] order-2 sm:order-1"><Link href="/"><ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard</Link></Button>
                         <Button 
                             type="submit" 
                             disabled={isSubmitting} 
-                            onClick={() => console.log("🔘 SAVE BUTTON CLICKED")}
-                            className="h-14 px-10 rounded-2xl font-black tracking-widest shadow-2xl transition-all active:scale-[0.98] disabled:opacity-50 min-w-[200px]"
+                            className="w-full sm:w-auto h-14 px-10 rounded-2xl font-black tracking-widest shadow-2xl transition-all active:scale-[0.98] disabled:opacity-50 min-w-[200px] order-1 sm:order-2"
                         >
                             {isSubmitting ? (
                                 <span className="flex items-center gap-2">

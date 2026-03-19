@@ -68,7 +68,7 @@ export function ClinicalMediaGallery({ urls }: MediaGalleryProps) {
                         <X className="h-6 w-6" />
                     </button>
 
-                    <div className="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden flex flex-col items-center justify-center shadow-2xl border border-white/5">
+                    <div className="relative w-full max-w-5xl aspect-square sm:aspect-video bg-black rounded-2xl overflow-hidden flex flex-col items-center justify-center shadow-2xl border border-white/5 mx-auto">
                         {(() => {
                             const info = parseClinicalMedia(selectedMedia);
                             if (!info) return null;

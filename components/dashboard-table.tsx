@@ -151,13 +151,13 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                             </TableCell>
 
                                             <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button variant="outline" size="sm" asChild className={`h-8 rounded-lg text-xs font-bold px-3 ${btnClass}`}>
+                                                <div className="flex flex-col sm:flex-row justify-end gap-1.5 sm:gap-2">
+                                                    <Button variant="outline" size="sm" asChild className={`h-8 sm:h-9 rounded-lg text-[10px] sm:text-xs font-bold px-2 sm:px-3 ${btnClass}`}>
                                                         <Link href={`/assessment/${targetId}`}>
                                                             View
                                                         </Link>
                                                     </Button>
-                                                    <Button variant="secondary" size="sm" asChild className={`h-8 rounded-lg text-xs font-bold px-3 ${btnClass}`}>
+                                                    <Button variant="secondary" size="sm" asChild className={`h-8 sm:h-9 rounded-lg text-[10px] sm:text-xs font-bold px-2 sm:px-3 ${btnClass}`}>
                                                         <Link href={`/assessment/${targetId}/edit`}>
                                                             Edit
                                                         </Link>

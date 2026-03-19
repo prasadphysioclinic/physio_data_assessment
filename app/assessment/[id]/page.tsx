@@ -97,22 +97,22 @@ export default async function AssessmentDetailPage(props: PageProps) {
                 </div>
 
                 {/* Patient Header */}
-                <Card className="border-slate-200 shadow-sm rounded-2xl bg-white">
-                    <CardContent className="p-6">
+                <Card className="border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden">
+                    <CardContent className="p-4 sm:p-6">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                            <div className="flex items-center gap-5">
-                                <div className="h-16 w-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
-                                    <User className="h-8 w-8" />
+                            <div className="flex items-center gap-4 sm:gap-5">
+                                <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+                                    <User className="h-6 w-6 sm:h-8 sm:w-8" />
                                 </div>
-                                <div>
-                                    <h1 className="text-2xl font-black text-slate-900 tracking-tight">{assessment.PatientName || 'Unnamed Patient'}</h1>
-                                    <div className="flex flex-wrap gap-4 text-[11px] font-black text-slate-500 mt-1 uppercase tracking-wider">
+                                <div className="min-w-0">
+                                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate">{assessment.PatientName || 'Unnamed Patient'}</h1>
+                                    <div className="flex flex-wrap gap-2 sm:gap-4 text-[10px] sm:text-[11px] font-black text-slate-500 mt-1 uppercase tracking-wider">
                                         <span className="flex items-center gap-1.5"><Activity className="h-3.5 w-3.5" /> AGE: {assessment.Age || 'N/A'}</span>
                                         <span className="flex items-center gap-1.5 text-primary">STATUS: {assessment.ImprovingStaticWorse || 'STATIC'}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            <div className="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-100 flex-shrink-0">
                                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Last Updated</p>
                                 <p className="text-sm font-bold text-slate-700">{assessment.Timestamp ? formatDateTime(assessment.Timestamp) : formatDate(assessment.Date)}</p>
                             </div>
@@ -126,7 +126,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
                         <Card className="border-slate-200 shadow-sm rounded-2xl bg-white">
                             <CardContent className="p-5">
                                 <SectionHeader title="Patient Profile" icon={User} />
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                                     <InfoRow label="Gender" value={assessment.Sex} />
                                     <InfoRow label="Occupation" value={assessment.Occupation} />
                                     <InfoRow label="Phone" value={assessment.PhoneNumber} />
