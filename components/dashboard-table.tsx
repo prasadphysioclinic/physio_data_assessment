@@ -97,17 +97,18 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
 
             <div className="rounded-xl border bg-card overflow-hidden">
                 <div className="overflow-x-auto">
-                    <Table className="table-fixed w-full">
+                    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+                        <Table className="w-full min-w-[1000px]">
                         <TableHeader className="bg-muted/50">
                             <TableRow>
-                                <TableHead className="w-[8%] px-2">Date</TableHead>
-                                <TableHead className="w-[18%] px-2">Patient Details</TableHead>
-                                <TableHead className="hidden md:table-cell w-[12%] px-2 text-center">Occupation</TableHead>
-                                <TableHead className="hidden sm:table-cell w-[12%] px-2 text-center">Contact</TableHead>
-                                <TableHead className="w-[8%] px-2 text-center">Status</TableHead>
-                                <TableHead className="hidden lg:table-cell w-[15%] px-2">Diagnosis</TableHead>
-                                <TableHead className="hidden lg:table-cell w-[15%] px-2">Daily Note</TableHead>
-                                <TableHead className="text-right w-[12%] px-2 pr-4">Action</TableHead>
+                                <TableHead className="w-[100px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Date</TableHead>
+                                <TableHead className="w-[220px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Patient Details</TableHead>
+                                <TableHead className="hidden md:table-cell w-[140px] px-3 text-center font-black text-[10px] uppercase tracking-wider text-slate-500">Occupation</TableHead>
+                                <TableHead className="hidden sm:table-cell w-[140px] px-3 text-center font-black text-[10px] uppercase tracking-wider text-slate-500">Contact</TableHead>
+                                <TableHead className="w-[100px] px-3 text-center font-black text-[10px] uppercase tracking-wider text-slate-500">Status</TableHead>
+                                <TableHead className="hidden lg:table-cell w-[180px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Diagnosis</TableHead>
+                                <TableHead className="hidden lg:table-cell w-[180px] px-3 font-black text-[10px] uppercase tracking-wider text-slate-500">Daily Note</TableHead>
+                                <TableHead className="text-right w-[140px] px-3 pr-6 font-black text-[10px] uppercase tracking-wider text-slate-500">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -177,23 +178,23 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                                     </span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-right px-2 pr-4">
-                                                <div className="flex flex-col sm:flex-row justify-end gap-1">
-                                                    <Button variant="outline" size="sm" asChild className={`h-7 rounded-md text-[9px] font-black px-2 ${btnClass}`}>
+                                            <TableCell className="text-right px-3 pr-6">
+                                                <div className="flex flex-row justify-end gap-1.5 h-full items-center">
+                                                    <Button variant="outline" size="sm" asChild className={`h-8 rounded-lg text-[10px] font-black px-3 ${btnClass}`}>
                                                         <Link href={`/assessment/${targetId}`}>VIEW</Link>
                                                     </Button>
-                                                    <Button variant="secondary" size="sm" asChild className={`h-7 rounded-md text-[9px] font-black px-2 ${btnClass}`}>
+                                                    <Button variant="secondary" size="sm" asChild className={`h-8 rounded-lg text-[10px] font-black px-3 ${btnClass}`}>
                                                         <Link href={`/assessment/${targetId}/edit`}>EDIT</Link>
                                                     </Button>
                                                 </div>
                                             </TableCell>
-
                                         </TableRow>
                                     );
                                 })
                             )}
                         </TableBody>
                     </Table>
+                    </div>
                 </div>
             </div>
             <p className="text-[10px] text-muted-foreground text-center italic">
