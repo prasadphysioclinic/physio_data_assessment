@@ -47,12 +47,12 @@ export default function RootLayout({
                 PhysioTrack
               </span>
             </Link>
-            <nav className="flex items-center gap-2 sm:gap-4">
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/">Dashboard</Link>
+            <nav className="flex items-center gap-1.5 sm:gap-3">
+              <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex rounded-xl font-black text-[10px] sm:text-xs h-8 sm:h-9 px-3 sm:px-4 shadow-sm border-slate-200">
+                <Link href="/">DASHBOARD</Link>
               </Button>
-              <Button asChild size="sm">
-                <Link href="/new">New</Link>
+              <Button asChild size="sm" className="rounded-xl font-black text-[10px] sm:text-xs h-8 sm:h-9 px-4 sm:px-6 shadow-md bg-slate-900 hover:bg-black transition-all">
+                <Link href="/new">NEW</Link>
               </Button>
             </nav>
           </div>
