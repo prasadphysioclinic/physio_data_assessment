@@ -124,13 +124,19 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
         defaultValues: {
             date: (() => {
                 if (!assessment.Date) return "";
-                // Robust extraction of YYYY-MM-DD to avoid timezone shifting
-                const d = new Date(assessment.Date);
-                if (isNaN(d.getTime())) return String(assessment.Date).split('T')[0];
-                const year = d.getUTCFullYear();
-                const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-                const day = String(d.getUTCDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
+                try {
+                    const d = new Date(assessment.Date);
+                    if (isNaN(d.getTime())) return String(assessment.Date).split('T')[0];
+                    // Use Intl.DateTimeFormat to get the ISO date relative to IST
+                    return new Intl.DateTimeFormat('en-CA', { 
+                        year: 'numeric', 
+                        month: '2-digit', 
+                        day: '2-digit', 
+                        timeZone: 'Asia/Kolkata' 
+                    }).format(d);
+                } catch (e) {
+                    return String(assessment.Date).split('T')[0];
+                }
             })(),
             name: assessment.PatientName || "",
             age: assessment.Age || "",
