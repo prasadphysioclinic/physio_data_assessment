@@ -87,10 +87,6 @@ const formSchema = z.object({
     review2: z.string().optional(),
     review3: z.string().optional(),
     dailyNote: z.string().optional(),
-    twentyFourHourHistory: z.string().optional(),
-    improvingStaticWorse: z.string().optional(),
-    newOldInjury: z.string().optional(),
-    submittedBy: z.string().optional(),
 });
 
 interface EditFormProps {
@@ -126,7 +122,16 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            date: assessment.Date || "",
+            date: (() => {
+                if (!assessment.Date) return "";
+                // Robust extraction of YYYY-MM-DD to avoid timezone shifting
+                const d = new Date(assessment.Date);
+                if (isNaN(d.getTime())) return String(assessment.Date).split('T')[0];
+                const year = d.getUTCFullYear();
+                const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(d.getUTCDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            })(),
             name: assessment.PatientName || "",
             age: assessment.Age || "",
             sex: assessment.Sex || "",
@@ -175,10 +180,6 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
             review2: assessment.Review2 || "",
             review3: assessment.Review3 || "",
             dailyNote: assessment.DailyNote || "",
-            twentyFourHourHistory: assessment.TwentyFourHourHistory || "",
-            improvingStaticWorse: assessment.ImprovingStaticWorse || "Static",
-            newOldInjury: assessment.NewOrOldInjury || "New",
-            submittedBy: assessment.SubmittedBy || "System",
         },
     });
 
@@ -615,20 +616,6 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                                         <FormItem><FormLabel>Review 3</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
-                                <FormField control={form.control} name="twentyFourHourHistory" render={({ field }) => (
-                                    <FormItem><FormLabel>24-hour Response</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
-                                <div className="grid grid-cols-2 gap-4">
-                                    <FormField control={form.control} name="improvingStaticWorse" render={({ field }) => (
-                                        <FormItem><FormLabel>Status</FormLabel><FormControl><Input placeholder="Improving/Static/Worse" {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                    <FormField control={form.control} name="newOldInjury" render={({ field }) => (
-                                        <FormItem><FormLabel>Injury Type</FormLabel><FormControl><Input placeholder="New/Old" {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                </div>
-                                <FormField control={form.control} name="submittedBy" render={({ field }) => (
-                                    <FormItem><FormLabel>Authenticated By</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
                             </CardContent>
                         </Card>
                     </div>

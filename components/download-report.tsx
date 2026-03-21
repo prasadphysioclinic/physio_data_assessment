@@ -77,8 +77,6 @@ export function DownloadReportButton({ assessment }: ReportProps) {
             addField('Present History', assessment.PresentHistory);
             addField('Past Medical History', assessment.PastHistory);
             addField('Imaging Findings', assessment.DiagnosticImaging);
-            addField('Clinical Course', assessment.ImprovingStaticWorse);
-            addField('Injury Classification', assessment.NewOrOldInjury);
             y += 4;
 
             // ── Physical Examination ──
@@ -137,7 +135,7 @@ export function DownloadReportButton({ assessment }: ReportProps) {
             addField('Daily Progress Note', assessment.DailyNote);
             addField('Clinical Summary', assessment.PatientSummary);
             addField('Review Schedule', `R1: ${assessment.Review1 || '-'} | R2: ${assessment.Review2 || '-'} | R3: ${assessment.Review3 || '-'}`);
-            addField('Digital Signature', assessment.SubmittedBy || 'Authenticated User');
+            addField('Record Date', assessment.Date);
             addField('Record Timestamp', assessment.Timestamp);
 
             // ── Page Numbers & Footer ──

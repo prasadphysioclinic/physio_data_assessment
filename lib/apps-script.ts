@@ -43,11 +43,7 @@ export interface AssessmentData {
     Sensation?: string;
     Reflexes?: string;
     SpecialTests?: string;
-    EndFeel?: string;
-    CapsularPattern?: string;
-    ResistedIsometrics?: string;
     FunctionalTesting?: string;
-    JointPlayMovements?: string;
     Comments?: string;
 
     // 35-40: Pain Assessment
@@ -74,12 +70,6 @@ export interface AssessmentData {
     Review2?: string;
     Review3?: string;
     DailyNote?: string;
-
-    // 53-56: Disposition & Submission
-    TwentyFourHourHistory?: string;
-    ImprovingStaticWorse?: string;
-    NewOrOldInjury?: string;
-    SubmittedBy?: string;
 
     // 57-60: Media Suite A
     Media1?: string;

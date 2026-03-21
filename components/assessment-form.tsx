@@ -88,10 +88,6 @@ const formSchema = z.object({
     review2: z.string().optional(),
     review3: z.string().optional(),
     dailyNote: z.string().optional(),
-    twentyFourHourHistory: z.string().optional(),
-    improvingStaticWorse: z.string().optional(),
-    newOldInjury: z.string().optional(),
-    submittedBy: z.string().optional(),
 });
 
 export function AssessmentForm() {
@@ -170,10 +166,6 @@ export function AssessmentForm() {
             review2: "",
             review3: "",
             dailyNote: "",
-            twentyFourHourHistory: "",
-            improvingStaticWorse: "Static",
-            newOldInjury: "New",
-            submittedBy: "",
         },
     });
 
@@ -595,20 +587,6 @@ export function AssessmentForm() {
                                         <FormItem><FormLabel>Review 3</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
-                                <FormField control={form.control} name="twentyFourHourHistory" render={({ field }) => (
-                                    <FormItem><FormLabel>24-hour Response</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
-                                <div className="grid grid-cols-2 gap-4">
-                                    <FormField control={form.control} name="improvingStaticWorse" render={({ field }) => (
-                                        <FormItem><FormLabel>Status</FormLabel><FormControl><Input placeholder="Improving/Static/Worse" {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                    <FormField control={form.control} name="newOldInjury" render={({ field }) => (
-                                        <FormItem><FormLabel>Injury Type</FormLabel><FormControl><Input placeholder="New/Old" {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                </div>
-                                <FormField control={form.control} name="submittedBy" render={({ field }) => (
-                                    <FormItem><FormLabel>Authenticated By</FormLabel><FormControl><Input placeholder="Doctor Name" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
                             </CardContent>
                         </Card>
                     </div>

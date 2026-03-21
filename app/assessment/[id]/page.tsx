@@ -108,7 +108,6 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                     <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate">{assessment.PatientName || 'Unnamed Patient'}</h1>
                                     <div className="flex flex-wrap gap-2 sm:gap-4 text-[10px] sm:text-[11px] font-black text-slate-500 mt-1 uppercase tracking-wider">
                                         <span className="flex items-center gap-1.5"><Activity className="h-3.5 w-3.5" /> AGE: {assessment.Age || 'N/A'}</span>
-                                        <span className="flex items-center gap-1.5 text-primary">STATUS: {assessment.ImprovingStaticWorse || 'STATIC'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -148,7 +147,6 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                     <InfoRow label="History of Illness" value={assessment.PresentHistory} fullWidth />
                                     <InfoRow label="Past Medical" value={assessment.PastHistory} fullWidth />
                                     <InfoRow label="Findings" value={assessment.DiagnosticImaging} fullWidth />
-                                    <InfoRow label="Injury Type" value={assessment.NewOrOldInjury} />
                                     <InfoRow label="Red Flags" value={assessment.RedFlags} fullWidth />
                                 </div>
                             </CardContent>
@@ -191,7 +189,6 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                     <SectionHeader title="Pain Profile" icon={Activity} />
                                     <div className="space-y-4">
                                         <InfoRow label="VAS Index (0-10)" value={`${(Number(assessment.PainIntensity_VAS) || 0) / 10}/10`} fullWidth />
-                                        <InfoRow label="24h Response" value={assessment.TwentyFourHourHistory} fullWidth />
                                         <InfoRow label="Description" value={assessment.PainDescription} fullWidth />
                                         <div className="grid grid-cols-2 gap-4">
                                             <InfoRow label="Aggravating" value={assessment.AggravatingFactors} />
@@ -280,8 +277,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                         <InfoRow label="Review 3" value={assessment.Review3} />
                                     </div>
                                     <InfoRow label="Case Summary" value={assessment.PatientSummary} fullWidth />
-                                    <div className="flex justify-between text-[9px] font-black text-slate-400 pt-6 border-t border-slate-100 uppercase tracking-widest">
-                                        <span>Authenticated By: {assessment.SubmittedBy || 'Staff'}</span>
+                                    <div className="flex justify-center text-[9px] font-black text-slate-400 pt-6 border-t border-slate-100 uppercase tracking-widest">
                                         <span>Medically Verified Record</span>
                                     </div>
                                 </CardContent>
