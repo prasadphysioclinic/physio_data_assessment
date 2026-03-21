@@ -77,18 +77,20 @@ export default async function AssessmentDetailPage(props: PageProps) {
     return (
         <div className="min-h-screen bg-[#fafafa] p-4 sm:p-6 font-sans">
             <div className="max-w-6xl mx-auto space-y-6">
-                {/* Header Actions - Optimized for Speed */}
-                <div className="flex items-center justify-between">
-                    <Button asChild variant="outline" size="sm" className="rounded-xl border-slate-200 bg-white hover:bg-slate-50 transition-none h-10 px-4">
+                {/* Header Actions - Fully Responsive Stacking */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <Button asChild variant="outline" size="sm" className="w-full sm:w-auto rounded-xl border-slate-200 bg-white hover:bg-slate-50 h-11 px-4 font-bold shadow-sm">
                         <Link href="/">
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to Dashboard
                         </Link>
                     </Button>
-                    <div className="flex gap-2">
-                        <DownloadReportButton assessment={assessment} />
-                        <Button asChild size="sm" className="rounded-xl shadow-sm h-10 px-6 transition-none font-bold">
-                            <Link href={`/assessment/${assessmentIndex}/edit`}>
+                    <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
+                        <div className="flex-1 xs:flex-initial">
+                            <DownloadReportButton assessment={assessment} className="w-full" />
+                        </div>
+                        <Button asChild size="sm" className="w-full sm:w-auto rounded-xl shadow-lg h-11 px-6 font-bold bg-primary hover:bg-primary/90">
+                            <Link href={`/assessment/${assessmentIndex}/edit`} className="flex items-center justify-center">
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Edit Record
                             </Link>
@@ -100,20 +102,28 @@ export default async function AssessmentDetailPage(props: PageProps) {
                 <Card className="border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden">
                     <CardContent className="p-4 sm:p-6">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                            <div className="flex items-center gap-4 sm:gap-5">
-                                <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 shrink-0">
-                                    <User className="h-6 w-6 sm:h-8 sm:w-8" />
+                            <div className="flex items-center gap-4 sm:gap-5 min-w-0">
+                                <div className="h-12 w-12 sm:h-20 sm:w-20 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary shrink-0 shadow-inner">
+                                    <User className="h-6 w-6 sm:h-10 sm:w-10" />
                                 </div>
-                                <div className="min-w-0">
-                                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate">{assessment.PatientName || 'Unnamed Patient'}</h1>
-                                    <div className="flex flex-wrap gap-2 sm:gap-4 text-[10px] sm:text-[11px] font-black text-slate-500 mt-1 uppercase tracking-wider">
-                                        <span className="flex items-center gap-1.5"><Activity className="h-3.5 w-3.5" /> AGE: {assessment.Age || 'N/A'}</span>
+                                <div className="min-w-0 flex-1">
+                                    <h1 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight break-words uppercase">
+                                        {assessment.PatientName || 'Unnamed Patient'}
+                                    </h1>
+                                    <div className="flex flex-wrap gap-2 sm:gap-4 text-[10px] sm:text-[12px] font-black text-primary/60 mt-2 uppercase tracking-widest">
+                                        <span className="flex items-center gap-2 bg-primary/5 px-2 py-1 rounded-md">
+                                            <Activity className="h-3.5 w-3.5" /> 
+                                            AGE: {assessment.Age || 'N/A'}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
-                            <div className="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-100 flex-shrink-0">
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Last Updated</p>
-                                <p className="text-sm font-bold text-slate-700">{assessment.Timestamp ? formatDateTime(assessment.Timestamp) : formatDate(assessment.Date)}</p>
+                            <div className="bg-slate-50 p-3 sm:p-5 rounded-2xl border border-slate-100 flex-shrink-0 shadow-sm">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 opacity-70">Documented On</p>
+                                <p className="text-sm font-black text-slate-800 flex items-center gap-2">
+                                    <CalendarDays className="h-4 w-4 text-primary" />
+                                    {assessment.Timestamp ? formatDateTime(assessment.Timestamp) : formatDate(assessment.Date)}
+                                </p>
                             </div>
                         </div>
                     </CardContent>

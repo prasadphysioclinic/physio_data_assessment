@@ -4,11 +4,14 @@ import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import { useState } from "react";
 
+import { cn } from "@/lib/utils";
+
 interface ReportProps {
     assessment: any;
+    className?: string;
 }
 
-export function DownloadReportButton({ assessment }: ReportProps) {
+export function DownloadReportButton({ assessment, className }: ReportProps) {
     const [isGenerating, setIsGenerating] = useState(false);
 
     async function generatePDF() {
@@ -159,9 +162,22 @@ export function DownloadReportButton({ assessment }: ReportProps) {
     }
 
     return (
-        <Button onClick={generatePDF} disabled={isGenerating} variant="outline" size="sm" className="gap-2 border-blue-200 hover:bg-blue-50 text-blue-700 font-bold">
-            <FileDown className="h-4 w-4" />
-            {isGenerating ? 'Compiling Report...' : 'Download Assessment Report'}
+        <Button 
+            onClick={generatePDF} 
+            disabled={isGenerating} 
+            variant="outline" 
+            size="sm" 
+            className={cn("gap-2 border-blue-200 hover:bg-blue-50 text-blue-700 font-bold h-11", className)}
+        >
+            <FileDown className="h-4 w-4 shrink-0" />
+            <span className="truncate">
+                {isGenerating ? 'Compiling...' : (
+                    <span className="flex items-center">
+                        <span className="hidden xs:inline">Download Assessment Report</span>
+                        <span className="xs:hidden">Get Report</span>
+                    </span>
+                )}
+            </span>
         </Button>
     );
 }
