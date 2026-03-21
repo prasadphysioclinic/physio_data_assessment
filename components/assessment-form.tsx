@@ -658,7 +658,7 @@ export function AssessmentForm() {
                                         <div className="h-24 w-24 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-8 shadow-inner border border-primary/5"><Camera className="h-10 w-10 text-primary/40" /></div>
                                         <h4 className="text-white text-xl font-black mb-3 tracking-tight">Ready for Evidence</h4>
                                         <p className="text-white/40 text-sm mb-10 font-medium leading-relaxed">Activate camera to document physical indicators, postural alignment, or ROM limitations.</p>
-                                        <Button type="button" onClick={startCamera} className="w-full h-14 rounded-2xl text-sm font-black tracking-widest bg-primary hover:bg-primary/90 shadow-2xl transition-all active:scale-[0.98]">INITIALIZE CLINICAL OPTICS</Button>
+                                        <Button type="button" onClick={startCamera} className="w-full h-14 rounded-2xl text-sm font-black tracking-widest bg-blue-600 hover:bg-blue-700 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all active:scale-[0.98]">INITIALIZE CLINICAL OPTICS</Button>
                                     </div>
                                 )}
                             </div>
