@@ -609,8 +609,8 @@ export function AssessmentForm() {
                         <input type="file" ref={fileInputRef} className="hidden" accept="image/*,video/*" multiple onChange={handleFileChange} />
                     </CardHeader>
                     <CardContent className="p-0">
-                        <div className="flex flex-col lg:flex-row min-h-[450px]">
-                            <div className="flex-1 bg-slate-950 relative flex items-center justify-center overflow-hidden min-h-[350px]">
+                        <div className="flex flex-col lg:flex-row min-h-[500px]">
+                            <div className="flex-1 bg-slate-950 relative flex items-center justify-center overflow-hidden min-h-[450px]">
                                 {isInitializing && (
                                     <div className="absolute inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center gap-4">
                                         <div className="h-14 w-14 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
