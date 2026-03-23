@@ -190,6 +190,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                         <InfoRow label="Sensory" value={assessment.Sensation} fullWidth />
                                         <InfoRow label="DTR Reflexes" value={assessment.Reflexes} fullWidth />
                                         <InfoRow label="Special Tests" value={assessment.SpecialTests} fullWidth />
+                                        <InfoRow label="Clinical Comments" value={assessment.Comments} fullWidth />
                                     </div>
                                 </CardContent>
                             </Card>

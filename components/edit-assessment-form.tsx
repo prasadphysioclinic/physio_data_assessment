@@ -409,11 +409,11 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                                         <FormItem><FormLabel>BP</FormLabel><FormControl><Input placeholder="120/80" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                     <FormField control={form.control} name="diabeticMellitus" render={({ field }) => (
-                                        <FormItem><FormLabel>Diabetic History</FormLabel><FormControl><Input placeholder="DM status" {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Diabetic Status (Yes/No)</FormLabel><FormControl><Input placeholder="Yes/No" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
                                 <FormField control={form.control} name="dietHabit" render={({ field }) => (
-                                    <FormItem><FormLabel>Diet Habit</FormLabel><FormControl><Input placeholder="Dietary notes" {...field} /></FormControl><FormMessage /></FormItem>
+                                    <FormItem><FormLabel>Dietary Habits</FormLabel><FormControl><Input placeholder="Dietary notes" {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={form.control} name="sleepingHistory" render={({ field }) => (
@@ -468,6 +468,9 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                                         <FormItem><FormLabel>Passive ROM</FormLabel><FormControl><Input placeholder="End-feel" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
+                                <FormField control={form.control} name="palpation" render={({ field }) => (
+                                    <FormItem><FormLabel>Palpation (Tenderness/Effusion)</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={form.control} name="musclePower" render={({ field }) => (
                                         <FormItem><FormLabel>Muscle Power (MMT)</FormLabel><FormControl><Input placeholder="Grade 0-5" {...field} /></FormControl><FormMessage /></FormItem>
@@ -476,9 +479,6 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                                         <FormItem><FormLabel>Gait Analysis</FormLabel><FormControl><Input placeholder="Limp, etc." {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
-                                <FormField control={form.control} name="palpation" render={({ field }) => (
-                                    <FormItem><FormLabel>Palpation (Tenderness/Effusion)</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
                             </CardContent>
                         </Card>
 
