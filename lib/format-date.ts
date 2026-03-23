@@ -68,3 +68,16 @@ export function formatDateTime(dateString: string | undefined | null): string {
         return dateString;
     }
 }
+
+/**
+ * Returns current date or provided date in YYYY-MM-DD format, locked to IST
+ */
+export function getIndiaDateString(dateInput?: string | Date): string {
+    const d = dateInput ? new Date(dateInput) : new Date();
+    return new Intl.DateTimeFormat('en-CA', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit', 
+        timeZone: 'Asia/Kolkata' 
+    }).format(d);
+}

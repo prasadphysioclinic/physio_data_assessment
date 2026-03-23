@@ -1,188 +1,154 @@
 /**
- * Google Apps Script for PhysioTrack
- * 
- * SETUP INSTRUCTIONS:
- * 1. Open your Google Sheet
- * 2. Click Extensions > Apps Script
- * 3. Delete any existing code
- * 4. Copy and paste this entire file
- * 5. Click Deploy > New deployment (or Manage deployments > Edit)
- * 6. Select "Web app" as type
- * 7. Set "Execute as" to "Me"
- * 8. Set "Who has access" to "Anyone"
- * 9. Click Deploy and copy the Web App URL
- * 10. Add the URL to your .env.local file as GOOGLE_APPS_SCRIPT_URL
- * 
- * IMPORTANT: After updating this code, you must create a NEW deployment
- * or update the existing deployment for changes to take effect!
+ * Prasad Physiotherapy Clinic - Backend Sync Engine (v2.3 - Final)
+ * Solves: Date Mismatch, Duplicates on Edit, and Phantom Columns.
  */
 
+const SHEET_NAME = "Sheet1"; 
+const MEDIA_FOLDER_NAME = "ClinicalMedia";
+
+// ─── Core Handlers (GET/POST) ────────────────────────────────────────
+
+function doGet() {
+  const sheet = getOrCreateSheet();
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) {
+    return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  const headers = data[0];
+  const rows = data.slice(1);
+  
+  const result = rows.map((row, i) => {
+    let obj = {};
+    headers.forEach((h, j) => {
+      obj[h] = row[j];
+    });
+    obj.rowIndex = i; // Array index for UI
+    return obj;
+  });
+  
+  return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+}
+
 function doPost(e) {
-    try {
-        const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-        const data = JSON.parse(e.postData.contents);
-
-        // Check if this is an update request
-        if (data.action === 'update' && data.rowIndex) {
-            return handleUpdate(sheet, data);
-        }
-
-        // Otherwise, handle as new entry
-        return handleCreate(sheet, data);
-
-    } catch (error) {
-        // Return error response
-        return ContentService.createTextOutput(JSON.stringify({
-            success: false,
-            error: error.toString(),
-            stack: error.stack
-        })).setMimeType(ContentService.MimeType.JSON);
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const sheet = getOrCreateSheet();
+    
+    // 1. Process Media Uploads
+    const mediaUrls = [];
+    if (data.files && data.files.length > 0) {
+      const folder = getOrCreateMediaFolder();
+      data.files.forEach(file => {
+        const blob = Utilities.newBlob(Utilities.base64Decode(file.data), file.type, file.name);
+        const driveFile = folder.createFile(blob);
+        driveFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        mediaUrls.push(`${driveFile.getId()}|${file.type}|${file.name}`);
+      });
     }
-}
 
-function handleCreate(sheet, data) {
-    // Define the exact column order matching your headers (37 columns now, removed BodyMapImage)
-    const columns = [
-        'Date', 'PatientName', 'Age', 'Occupation', 'MechanismOfInjury',
-        'AggravatingEasingFactors', 'TwentyFourHourHistory', 'ImprovingStaticWorse',
-        'NewOrOldInjury', 'PastHistory', 'DiagnosticImaging', 'PainLocation',
-        'PainIntensity_VAS', 'PainPattern', 'ObservationPosture',
-        'Active_L_Flex', 'Active_R_Flex', 'Active_L_Ext', 'Active_R_Ext',
-        'Passive_L_Flex', 'Passive_R_Flex', 'Passive_L_Ext', 'Passive_R_Ext',
-        'EndFeel', 'CapsularPattern', 'ResistedIsometrics', 'FunctionalTesting',
-        'SensoryScan', 'Reflexes', 'NeuroSpecialTests', 'SpecialTests',
-        'JointPlayMovements', 'Palpation_Tenderness', 'Palpation_Effusion',
-        'Comments', 'SubmittedBy', 'Timestamp'
-    ];
+    // 2. Map Data to Sheet1 (Locked to IST)
+    const timestamp = Utilities.formatDate(new Date(), "Asia/Kolkata", "yyyy-MM-dd HH:mm:ss");
+    const headers = getCoreHeaders();
 
-    // Create row data in the correct order
-    const rowData = columns.map(col => {
-        const value = data[col];
-        // Handle undefined/null values
-        if (value === undefined || value === null) {
-            return '';
-        }
-        return value;
+    const rowData = headers.map(header => {
+      if (header === "Timestamp") return timestamp;
+      if (header.startsWith("Media")) {
+        const index = parseInt(header.replace("Media", "")) - 1;
+        return mediaUrls[index] || data[header] || "";
+      }
+      const val = data[header];
+      return val !== undefined ? val : "";
     });
 
-    // Add timestamp if not provided
-    if (!data.Timestamp) {
-        rowData[rowData.length - 1] = new Date().toISOString();
+    // 3. Save Action (Trust the ID + 2 for row number)
+    if (data.action === 'update' && data.rowIndex !== undefined) {
+      // The API sends (assessmentIndex + 2) which is the ACTUAL row number in Sheet1.
+      const actualRow = Number(data.rowIndex); 
+      sheet.getRange(actualRow, 1, 1, rowData.length).setValues([rowData]);
+      return createJsonResponse({ success: true, action: 'update' });
+    } else {
+      sheet.appendRow(rowData);
+      return createJsonResponse({ success: true, action: 'create' });
     }
-
-    // Append the row to the sheet
-    sheet.appendRow(rowData);
-
-    // Return success response
-    return ContentService.createTextOutput(JSON.stringify({
-        success: true,
-        message: 'Assessment saved successfully',
-        rowNumber: sheet.getLastRow()
-    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (err) {
+    return createJsonResponse({ success: false, error: err.toString() });
+  }
 }
 
-function handleUpdate(sheet, data) {
-    const rowIndex = data.rowIndex;
+// ─── Utility & Fix Functions ──────────────────────────────────
 
-    // Define the exact column order (37 columns, removed BodyMapImage)
-    const columns = [
-        'Date', 'PatientName', 'Age', 'Occupation', 'MechanismOfInjury',
-        'AggravatingEasingFactors', 'TwentyFourHourHistory', 'ImprovingStaticWorse',
-        'NewOrOldInjury', 'PastHistory', 'DiagnosticImaging', 'PainLocation',
-        'PainIntensity_VAS', 'PainPattern', 'ObservationPosture',
-        'Active_L_Flex', 'Active_R_Flex', 'Active_L_Ext', 'Active_R_Ext',
-        'Passive_L_Flex', 'Passive_R_Flex', 'Passive_L_Ext', 'Passive_R_Ext',
-        'EndFeel', 'CapsularPattern', 'ResistedIsometrics', 'FunctionalTesting',
-        'SensoryScan', 'Reflexes', 'NeuroSpecialTests', 'SpecialTests',
-        'JointPlayMovements', 'Palpation_Tenderness', 'Palpation_Effusion',
-        'Comments', 'SubmittedBy', 'Timestamp'
-    ];
-
-    // Create row data in the correct order
-    const rowData = columns.map(col => {
-        const value = data[col];
-        if (value === undefined || value === null) {
-            return '';
-        }
-        return value;
-    });
-
-    // Update timestamp
-    rowData[rowData.length - 1] = new Date().toISOString();
-
-    // Update the specific row
-    const range = sheet.getRange(rowIndex, 1, 1, rowData.length);
-    range.setValues([rowData]);
-
-    // Return success response
-    return ContentService.createTextOutput(JSON.stringify({
-        success: true,
-        message: 'Assessment updated successfully',
-        rowNumber: rowIndex
-    })).setMimeType(ContentService.MimeType.JSON);
+function createJsonResponse(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 
-function doGet(e) {
-    try {
-        const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-        const data = sheet.getDataRange().getValues();
+function getOrCreateSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.getSheets()[0];
+  }
+  return sheet;
+}
 
-        // Check if sheet has data
-        if (data.length === 0) {
-            return ContentService.createTextOutput(JSON.stringify({
-                success: true,
-                data: []
-            })).setMimeType(ContentService.MimeType.JSON);
-        }
-
-        const headers = data[0];
-        const rows = data.slice(1);
-
-        // Convert rows to objects using headers
-        const assessments = rows.map(row => {
-            const obj = {};
-            headers.forEach((header, index) => {
-                obj[header] = row[index];
-            });
-            return obj;
-        });
-
-        // Return success response with data
-        return ContentService.createTextOutput(JSON.stringify({
-            success: true,
-            data: assessments,
-            count: assessments.length
-        })).setMimeType(ContentService.MimeType.JSON);
-
-    } catch (error) {
-        // Return error response
-        return ContentService.createTextOutput(JSON.stringify({
-            success: false,
-            error: error.toString(),
-            stack: error.stack
-        })).setMimeType(ContentService.MimeType.JSON);
-    }
+function getOrCreateMediaFolder() {
+  const folders = DriveApp.getFoldersByName(MEDIA_FOLDER_NAME);
+  return folders.hasNext() ? folders.next() : DriveApp.createFolder(MEDIA_FOLDER_NAME);
 }
 
 /**
- * Test function to verify the script works
- * Run this from the Apps Script editor to test
+ * 🚀 PRODUCTION FIX (RUN THIS ONCE)
+ * Select 'migrateClinicalData' and click RUN to fix your Sheet1 structure.
  */
-function testScript() {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    Logger.log('Sheet name: ' + sheet.getName());
-    Logger.log('Last row: ' + sheet.getLastRow());
-    Logger.log('Last column: ' + sheet.getLastColumn());
+function migrateClinicalData() {
+  const sheet = getOrCreateSheet();
+  const headers = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
+  const deprecated = ["24-hour response", "status", "injury type", "authentication by"];
+  
+  Logger.log("Starting Fix on Sheet1...");
+  
+  // 1. Delete bad columns
+  for (let i = headers.length - 1; i >= 0; i--) {
+    if (deprecated.some(d => headers[i].toLowerCase().includes(d.toLowerCase()))) {
+      sheet.deleteColumn(i + 1);
+    }
+  }
+  
+  // 2. Purge extra phantom columns (Column 55+)
+  const coreCount = getCoreHeaders().length;
+  if (sheet.getLastColumn() > coreCount) {
+    const extra = sheet.getLastColumn() - coreCount;
+    sheet.deleteColumns(coreCount + 1, extra);
+  }
+  
+  // 3. Re-set Header Titles on Sheet1
+  setupHeaders();
+  Logger.log("FIX COMPLETE: Sheet1 is now clean and aligned.");
+}
 
-    // Test data
-    const testData = {
-        Date: new Date().toISOString().split('T')[0],
-        PatientName: 'Test Patient',
-        Age: '30',
-        Occupation: 'Engineer',
-        MechanismOfInjury: 'Test injury',
-        Timestamp: new Date().toISOString()
-    };
+function getCoreHeaders() {
+  return [
+    "Date", "PatientName", "Age", "Sex", "Occupation", "PhoneNumber", "Height", "Weight", 
+    "BloodPressure", "DiabeticMellitus", "DietHabit", "SleepingHistory", "MenstruationHistory",
+    "ChiefComplaint", "PresentHistory", "PastHistory", "DiagnosticImaging", "RedFlags",
+    "Observation", "ActiveROM", "PassiveROM", "MusclePower", "Palpation", "Gait", 
+    "NeurologicalTests", "Sensation", "Reflexes", "SpecialTests", "FunctionalTesting", "Comments",
+    "PainHistory", "AggravatingFactors", "EasingFactors", "PainDescription", "PainIntensity_VAS", "SymptomsLocation",
+    "Diagnosis", "TreatmentPlan", "ManualTherapy", "Electrotherapy", "ExercisePrescription", 
+    "PatientEducation", "HomeFollowups", "WhatTreatment",
+    "PatientSummary", "Review1", "Review2", "Review3", "DailyNote",
+    "Media1", "Media2", "Media3", "Media4", "Timestamp"
+  ];
+}
 
-    Logger.log('Test data: ' + JSON.stringify(testData));
+function setupHeaders() {
+  const sheet = getOrCreateSheet();
+  const headers = getCoreHeaders();
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  const range = sheet.getRange(1, 1, 1, headers.length);
+  range.setFontWeight("bold");
+  range.setBackground("#f3f3f3");
+  range.setHorizontalAlignment("center");
+  sheet.setFrozenRows(1);
 }

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { getIndiaDateString } from "@/lib/format-date";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -117,7 +118,7 @@ export function AssessmentForm() {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            date: new Date().toISOString().split('T')[0],
+            date: getIndiaDateString(),
             name: "",
             age: "",
             sex: "",

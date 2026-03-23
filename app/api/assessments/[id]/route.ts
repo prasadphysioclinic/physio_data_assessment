@@ -118,7 +118,7 @@ export async function PUT(request: Request, context: RouteParams) {
 
             // Metadata for Synchronization
             id: assessmentIndex,
-            rowIndex: assessmentIndex + 1,
+            rowIndex: assessmentIndex + 2,
             action: 'update'
         };
 

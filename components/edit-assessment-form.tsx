@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Camera, Video, X, Upload, FileVideo, Plus, User, ClipboardList, Activity, Stethoscope, FileText } from "lucide-react";
+import { getIndiaDateString } from "@/lib/format-date";
 import { sanitizeFormData, validateFileSize, checkDuplicate, compressImage, convertDriveUrl, isVideoUrl, calculatePayloadSize, formatBytes, stripBase64Metadata } from "@/lib/utils-data";
 import { getFromGoogleSheet } from "@/lib/apps-script";
 
@@ -122,22 +123,7 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            date: (() => {
-                if (!assessment.Date) return "";
-                try {
-                    const d = new Date(assessment.Date);
-                    if (isNaN(d.getTime())) return String(assessment.Date).split('T')[0];
-                    // Use Intl.DateTimeFormat to get the ISO date relative to IST
-                    return new Intl.DateTimeFormat('en-CA', { 
-                        year: 'numeric', 
-                        month: '2-digit', 
-                        day: '2-digit', 
-                        timeZone: 'Asia/Kolkata' 
-                    }).format(d);
-                } catch (e) {
-                    return String(assessment.Date).split('T')[0];
-                }
-            })(),
+            date: getIndiaDateString(assessment.Date),
             name: assessment.PatientName || "",
             age: assessment.Age || "",
             sex: assessment.Sex || "",
