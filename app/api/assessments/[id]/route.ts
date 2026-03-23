@@ -106,9 +106,9 @@ export async function PUT(request: Request, context: RouteParams) {
                 hour12: true, timeZone: 'Asia/Kolkata'
             }).format(new Date()).replace(', ', ', '),
 
-            // System Identification
+            // System Identification (Strategic Row Addressing)
             id: assessmentIndex,
-            rowIndex: assessmentIndex + 2,
+            rowIndex: assessmentIndex + 2, // Map array index to 1-based sheet row (Header is Row 1)
             action: 'update'
         };
 

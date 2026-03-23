@@ -61,16 +61,31 @@ function doPost(e) {
       return val !== undefined ? val : "";
     });
 
-    // 3. Save Action (Trust the ID + 2 for row number)
-    if (data.action === 'update' && data.rowIndex !== undefined) {
-      // The API sends (assessmentIndex + 2) which is the ACTUAL row number in Sheet1.
+    // 3. Save Action (Strategy: Update if rowIndex & action='update' are present, otherwise Append)
+    const isUpdate = (data.action === 'update' || data.action === 'EDIT') && data.rowIndex !== undefined;
+    
+    if (isUpdate) {
+      // The API sends (assessmentIndex + 2) which is the ACTUAL 1-based row number in Sheet1.
       const actualRow = Number(data.rowIndex); 
-      sheet.getRange(actualRow, 1, 1, rowData.length).setValues([rowData]);
-      return createJsonResponse({ success: true, action: 'update' });
-    } else {
-      sheet.appendRow(rowData);
-      return createJsonResponse({ success: true, action: 'create' });
+      if (!isNaN(actualRow) && actualRow > 1) {
+        sheet.getRange(actualRow, 1, 1, rowData.length).setValues([rowData]);
+        return createJsonResponse({ 
+          success: true, 
+          action: 'update', 
+          row: actualRow,
+          message: "Record successfully replaced at Row " + actualRow 
+        });
+      }
     }
+
+    // Default: Append new record
+    sheet.appendRow(rowData);
+    return createJsonResponse({ 
+      success: true, 
+      action: 'create', 
+      row: sheet.getLastRow(),
+      message: "New record successfully appended." 
+    });
     
   } catch (err) {
     return createJsonResponse({ success: false, error: err.toString() });
