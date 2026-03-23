@@ -198,6 +198,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                 <CardContent className="p-5">
                                     <SectionHeader title="Pain Profile" icon={Activity} />
                                     <div className="space-y-4">
+                                        <InfoRow label="Pain History" value={assessment.PainHistory} fullWidth />
                                         <InfoRow label="VAS Index (0-10)" value={`${(Number(assessment.PainIntensity_VAS) || 0) / 10}/10`} fullWidth />
                                         <InfoRow label="Description" value={assessment.PainDescription} fullWidth />
                                         <div className="grid grid-cols-2 gap-4">
@@ -220,6 +221,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                         <InfoRow label="Strategy" value={assessment.TreatmentPlan} fullWidth />
                                         <InfoRow label="Intervention" value={assessment.WhatTreatment} fullWidth />
                                         <InfoRow label="Education" value={assessment.PatientEducation} fullWidth />
+                                        <InfoRow label="Follow-ups" value={assessment.HomeFollowups} fullWidth />
                                     </div>
                                     <div className="grid grid-cols-1 gap-3 content-start">
                                         <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-3">

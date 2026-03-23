@@ -32,7 +32,7 @@ export async function PUT(request: Request, context: RouteParams) {
 
         // 65-Column Mapping Strategy (UPDATE PHASE)
         const updateData: AssessmentData = {
-            // 1-13
+            // 1-13: Patient Basics
             Date: body.date,
             PatientName: body.name,
             Age: body.age,
@@ -47,14 +47,14 @@ export async function PUT(request: Request, context: RouteParams) {
             SleepingHistory: body.sleepingHistory || "",
             MenstruationHistory: body.menstruationHistory || "",
 
-            // 14-18
+            // 14-18: Clinical History
             ChiefComplaint: body.chiefComplaint || "",
             PresentHistory: body.presentHistory || "",
             PastHistory: body.pastHistory || "",
             DiagnosticImaging: body.diagnosticImaging || "",
             RedFlags: body.redFlags || "",
 
-            // 19-34
+            // 19-30: Physical Exam & Comments
             Observation: body.observation || "",
             ActiveROM: body.activeROM || "",
             PassiveROM: body.passiveROM || "",
@@ -65,14 +65,10 @@ export async function PUT(request: Request, context: RouteParams) {
             Sensation: body.sensation || "",
             Reflexes: body.reflexes || "",
             SpecialTests: body.specialTests || "",
-            EndFeel: body.endFeel || "",
-            CapsularPattern: body.capsularPattern || "",
-            ResistedIsometrics: body.resistedIsometrics || "",
             FunctionalTesting: body.functionalTesting || "",
-            JointPlayMovements: body.jointPlayMovements || "",
             Comments: body.comments || "",
 
-            // 35-40
+            // 31-36: Pain Profile
             PainHistory: body.painHistory || "",
             AggravatingFactors: body.aggravatingFactors || "",
             EasingFactors: body.easingFactors || "",
@@ -80,7 +76,7 @@ export async function PUT(request: Request, context: RouteParams) {
             PainIntensity_VAS: body.painVas || 0,
             SymptomsLocation: body.symptomsLocation || "",
 
-            // 41-48
+            // 37-44: Treatment Strategy
             Diagnosis: body.diagnosis || "",
             TreatmentPlan: body.treatmentPlan || "",
             ManualTherapy: body.manualTherapy || "",
@@ -90,33 +86,27 @@ export async function PUT(request: Request, context: RouteParams) {
             HomeFollowups: body.homeFollowups || "",
             WhatTreatment: body.whatTreatment || "",
 
-            // 49-52
+            // 45-49: Summaries & Notes
             PatientSummary: body.patientSummary || "",
             Review1: body.review1 || "",
             Review2: body.review2 || "",
             Review3: body.review3 || "",
             DailyNote: body.dailyNote || "",
 
-            // 53-56
-            TwentyFourHourHistory: body.twentyFourHourHistory || "",
-            ImprovingStaticWorse: body.improvingStaticWorse || "",
-            NewOrOldInjury: body.newOldInjury || "",
-            SubmittedBy: body.submittedBy || "System (Updated)",
-
-            // 57-60 (PRESERVE MEDIA)
+            // 50-53: Media Preservation
             Media1: existingMedia.length > 0 ? existingMedia[0] : (existingRow.Media1 || ""),
             Media2: existingMedia.length > 1 ? existingMedia[1] : (existingRow.Media2 || ""),
             Media3: existingMedia.length > 2 ? existingMedia[2] : (existingRow.Media3 || ""),
             Media4: existingMedia.length > 3 ? existingMedia[3] : (existingRow.Media4 || ""),
 
-            // 61
+            // 54: Timestamp Management
             Timestamp: new Intl.DateTimeFormat('en-GB', {
                 day: '2-digit', month: '2-digit', year: 'numeric',
                 hour: '2-digit', minute: '2-digit', second: '2-digit',
                 hour12: true, timeZone: 'Asia/Kolkata'
             }).format(new Date()).replace(', ', ', '),
 
-            // Metadata for Synchronization
+            // System Identification
             id: assessmentIndex,
             rowIndex: assessmentIndex + 2,
             action: 'update'

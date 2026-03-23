@@ -73,6 +73,8 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             addField('Clinical Date', formatDate(assessment.Date));
             addField('Physique (H/W)', `${assessment.Height || '-'} / ${assessment.Weight || '-'}`);
             addField('Clinical Vitals', `BP: ${assessment.BloodPressure || 'N/A'} | DM: ${assessment.DiabeticMellitus || 'N/A'}`);
+            addField('Habits & Lifestyle', assessment.DietHabit);
+            addField('Sleep & Cycle', `Sleep: ${assessment.SleepingHistory || 'N/A'} | Cycle: ${assessment.MenstruationHistory || 'N/A'}`);
             y += 4;
 
             // ── History & Complaint ──
@@ -81,6 +83,7 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             addField('Present History', assessment.PresentHistory);
             addField('Past Medical History', assessment.PastHistory);
             addField('Imaging Findings', assessment.DiagnosticImaging);
+            addField('Red Flags', assessment.RedFlags);
             y += 4;
 
             // ── Physical Examination ──
@@ -91,13 +94,19 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             addField('Manual Muscle Testing', assessment.MusclePower);
             addField('Palpation Findings', assessment.Palpation);
             addField('Gait Analysis', assessment.Gait);
+            addField('Functional Testing', assessment.FunctionalTesting);
             addField('Neurological Tests', assessment.NeurologicalTests);
+            addField('Sensory Mapping', assessment.Sensation);
+            addField('DTR Reflexes', assessment.Reflexes);
             addField('Special Tests', assessment.SpecialTests);
+            addField('Clinical Comments', assessment.Comments);
             y += 4;
 
             // ── Pain Profile ──
             addTitle('IV. PAIN ASSESSMENT PROFILE');
             addField('Symptoms Location', assessment.SymptomsLocation);
+            addField('Pain History', assessment.PainHistory);
+            addField('Pain Description', assessment.PainDescription);
             addField('Aggravating Factors', assessment.AggravatingFactors);
             addField('Easing Factors', assessment.EasingFactors);
             
@@ -127,11 +136,13 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             // ── Plan & Diagnosis ──
             addTitle('V. DIAGNOSIS & INTERVENTION');
             addField('Physiotherapy Diagnosis', assessment.Diagnosis);
-            addField('Intervention Goal', assessment.TreatmentPlan);
+            addField('Treatment Plan', assessment.TreatmentPlan);
             addField('Manual Therapy', assessment.ManualTherapy);
             addField('Electrotherapy', assessment.Electrotherapy);
             addField('Exercise Prescription', assessment.ExercisePrescription);
             addField('Patient Education', assessment.PatientEducation);
+            addField('Home Follow-ups', assessment.HomeFollowups);
+            addField('Specific Interventions', assessment.WhatTreatment);
             y += 4;
 
             // ── Conclusion ──

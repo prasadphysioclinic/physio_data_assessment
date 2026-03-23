@@ -32,7 +32,7 @@ export interface AssessmentData {
     DiagnosticImaging?: string;
     RedFlags?: string;
 
-    // 19-34: Physical Examination & Findings
+    // 19-30: Physical Examination & Findings
     Observation?: string;
     ActiveROM?: string;
     PassiveROM?: string;
@@ -46,7 +46,7 @@ export interface AssessmentData {
     FunctionalTesting?: string;
     Comments?: string;
 
-    // 35-40: Pain Assessment
+    // 31-36: Pain Assessment
     PainHistory?: string;
     AggravatingFactors?: string;
     EasingFactors?: string;
@@ -54,7 +54,7 @@ export interface AssessmentData {
     PainIntensity_VAS?: number | string;
     SymptomsLocation?: string;
 
-    // 41-48: Diagnosis & Treatment Plan
+    // 37-44: Diagnosis & Treatment Plan
     Diagnosis?: string;
     TreatmentPlan?: string;
     ManualTherapy?: string;
@@ -64,20 +64,20 @@ export interface AssessmentData {
     HomeFollowups?: string;
     WhatTreatment?: string;
 
-    // 49-52: Summary & Reviews
+    // 45-49: Summary & Reviews
     PatientSummary?: string;
     Review1?: string;
     Review2?: string;
     Review3?: string;
     DailyNote?: string;
 
-    // 57-60: Media Suite A
+    // 50-53: Media Suite
     Media1?: string;
     Media2?: string;
     Media3?: string;
     Media4?: string;
 
-    // 61: System Data
+    // 54: System Data
     Timestamp?: string;
 
     // System/Helper fields (not in Sheets columns)

@@ -661,12 +661,12 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                                         </div>
                                         <div className="absolute inset-x-0 bottom-8 flex justify-center items-center gap-8 px-4">
                                             <div className="flex flex-col items-center gap-2 group">
-                                                <Button type="button" size="lg" className="h-20 w-20 rounded-full bg-white text-primary border-[6px] border-primary/10 shadow-2xl transition-all active:scale-[0.98] flex items-center justify-center p-0" onClick={takePhoto} disabled={mediaFiles.length >= 4 + existingMedia.length}><Camera className="h-8 w-8" /></Button>
+                                                <Button type="button" size="lg" className="h-20 w-20 rounded-full bg-white text-primary border-[6px] border-primary/10 shadow-2xl transition-all active:scale-[0.98] flex items-center justify-center p-0" onClick={takePhoto} disabled={(mediaFiles.length + existingMedia.length) >= 4}><Camera className="h-8 w-8" /></Button>
                                                 <span className="text-[10px] text-white font-black tracking-tighter drop-shadow-lg scale-90 group-hover:scale-100 transition-transform">STILL PHOTO</span>
                                             </div>
                                             <div className="flex flex-col items-center gap-2 group">
                                                 {!isRecording ? (
-                                                    <Button type="button" size="lg" className="h-20 w-20 rounded-full bg-red-600 text-white border-[6px] border-red-200/20 shadow-2xl transition-all active:scale-[0.98] flex items-center justify-center p-0" onClick={startRecording} disabled={mediaFiles.length >= 4 + existingMedia.length}><Video className="h-8 w-8" /></Button>
+                                                    <Button type="button" size="lg" className="h-20 w-20 rounded-full bg-red-600 text-white border-[6px] border-red-200/20 shadow-2xl transition-all active:scale-[0.98] flex items-center justify-center p-0" onClick={startRecording} disabled={(mediaFiles.length + existingMedia.length) >= 4}><Video className="h-8 w-8" /></Button>
                                                 ) : (
                                                     <Button type="button" size="lg" className="h-20 w-20 rounded-full bg-red-600 animate-pulse text-white border-[6px] border-white shadow-2xl transition-all active:scale-[0.98] flex items-center justify-center p-0" onClick={stopRecording}><div className="h-7 w-7 rounded-sm bg-white" /></Button>
                                                 )}

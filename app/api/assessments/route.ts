@@ -10,9 +10,9 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
 
-        // 65-Column Mapping Strategy (STRICT ALIGNMENT)
+        // 54-Column Core Clinical Schema Mapping
         const rowData: AssessmentData = {
-            // 1-13
+            // 1-13: Patient Demographics & Basics
             Date: body.date || new Date().toISOString().split('T')[0],
             PatientName: body.name,
             Age: String(body.age),
@@ -27,14 +27,14 @@ export async function POST(request: Request) {
             SleepingHistory: body.sleepingHistory || "",
             MenstruationHistory: body.menstruationHistory || "",
 
-            // 14-18
+            // 14-18: Clinical History
             ChiefComplaint: body.chiefComplaint || "",
             PresentHistory: body.presentHistory || "",
             PastHistory: body.pastHistory || "",
             DiagnosticImaging: body.diagnosticImaging || "",
             RedFlags: body.redFlags || "",
 
-            // 19-34
+            // 19-30: Physical Examination & Findings
             Observation: body.observation || "",
             ActiveROM: body.activeROM || "",
             PassiveROM: body.passiveROM || "",
@@ -45,14 +45,10 @@ export async function POST(request: Request) {
             Sensation: body.sensation || "",
             Reflexes: body.reflexes || "",
             SpecialTests: body.specialTests || "",
-            EndFeel: body.endFeel || "",
-            CapsularPattern: body.capsularPattern || "",
-            ResistedIsometrics: body.resistedIsometrics || "",
             FunctionalTesting: body.functionalTesting || "",
-            JointPlayMovements: body.jointPlayMovements || "",
             Comments: body.comments || "",
 
-            // 35-40
+            // 31-36: Pain Assessment
             PainHistory: body.painHistory || "",
             AggravatingFactors: body.aggravatingFactors || "",
             EasingFactors: body.easingFactors || "",
@@ -60,7 +56,7 @@ export async function POST(request: Request) {
             PainIntensity_VAS: body.painVas || 0,
             SymptomsLocation: body.symptomsLocation || "",
 
-            // 41-48
+            // 37-44: Diagnosis & Treatment Plan
             Diagnosis: body.diagnosis || "",
             TreatmentPlan: body.treatmentPlan || "",
             ManualTherapy: body.manualTherapy || "",
@@ -70,35 +66,29 @@ export async function POST(request: Request) {
             HomeFollowups: body.homeFollowups || "",
             WhatTreatment: body.whatTreatment || "",
 
-            // 49-52
+            // 45-49: Summary & Reviews
             PatientSummary: body.patientSummary || "",
             Review1: body.review1 || "",
             Review2: body.review2 || "",
             Review3: body.review3 || "",
             DailyNote: body.dailyNote || "",
 
-            // 53-56
-            TwentyFourHourHistory: body.twentyFourHourHistory || "",
-            ImprovingStaticWorse: body.improvingStaticWorse || "",
-            NewOrOldInjury: body.newOldInjury || "",
-            SubmittedBy: body.submittedBy || "System",
-
-            // 57-60 (Handled by Apps Script on initial upload, but passed here for safety)
+            // 50-53: Media (Will be handled by Apps Script via the 'files' array)
             Media1: "",
             Media2: "",
             Media3: "",
             Media4: "",
 
+            // 54: Timestamp
             Timestamp: new Intl.DateTimeFormat('en-GB', {
                 day: '2-digit', month: '2-digit', year: 'numeric',
                 hour: '2-digit', minute: '2-digit', second: '2-digit',
                 hour12: true, timeZone: 'Asia/Kolkata',
             }).format(new Date()).replace(', ', ', '),
 
-            // Payload metadata
+            // Extended metadata for processing
             files: body.files || [],
-            action: body.action || 'create',
-            rowIndex: body.rowIndex
+            action: 'create'
         };
 
         const result = await saveToGoogleSheet(rowData);
