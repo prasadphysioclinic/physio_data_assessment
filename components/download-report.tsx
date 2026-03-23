@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import { useState } from "react";
+import { formatDate, formatDateTime } from "@/lib/format-date";
 
 import { cn } from "@/lib/utils";
 
@@ -69,7 +70,7 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             addField('Age / Gender', `${assessment.Age || 'N/A'} / ${assessment.Sex || 'N/A'}`);
             addField('Occupation', assessment.Occupation);
             addField('Primary Contact', assessment.PhoneNumber);
-            addField('Clinical Date', assessment.Date);
+            addField('Clinical Date', formatDate(assessment.Date));
             addField('Physique (H/W)', `${assessment.Height || '-'} / ${assessment.Weight || '-'}`);
             addField('Clinical Vitals', `BP: ${assessment.BloodPressure || 'N/A'} | DM: ${assessment.DiabeticMellitus || 'N/A'}`);
             y += 4;
@@ -138,8 +139,8 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             addField('Daily Progress Note', assessment.DailyNote);
             addField('Clinical Summary', assessment.PatientSummary);
             addField('Review Schedule', `R1: ${assessment.Review1 || '-'} | R2: ${assessment.Review2 || '-'} | R3: ${assessment.Review3 || '-'}`);
-            addField('Record Date', assessment.Date);
-            addField('Record Timestamp', assessment.Timestamp);
+            addField('Record Date', formatDate(assessment.Date));
+            addField('Record Timestamp', formatDateTime(assessment.Timestamp));
 
             // ── Page Numbers & Footer ──
             const totalPages = doc.getNumberOfPages();
