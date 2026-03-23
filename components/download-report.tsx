@@ -111,7 +111,8 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             addField('Easing Factors', assessment.EasingFactors);
             
             // VAS Intensity Rendering
-            const vas = parseInt(String(assessment.PainIntensity_VAS || 0));
+            const rawVas = Number(assessment.PainIntensity_VAS || 0);
+            const displayVas = rawVas / 10;
             if (y > 265) { doc.addPage(); y = 15; }
             doc.setFontSize(8.5);
             doc.setFont('helvetica', 'bold');
@@ -122,15 +123,15 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             const barH = 4;
             doc.setFillColor(241, 245, 249);
             doc.rect(barX, y - 3, barW, barH, 'F');
-            const filledW = (Math.min(vas, 10) / 10) * barW;
-            const r = vas <= 3 ? 34 : vas <= 6 ? 234 : 220;
-            const g = vas <= 3 ? 197 : vas <= 6 ? 179 : 38;
-            const b = vas <= 3 ? 94 : vas <= 6 ? 8 : 38;
+            const filledW = (Math.min(displayVas, 10) / 10) * barW;
+            const r = displayVas <= 3 ? 34 : displayVas <= 6 ? 234 : 220;
+            const g = displayVas <= 3 ? 197 : displayVas <= 6 ? 179 : 38;
+            const b = displayVas <= 3 ? 94 : displayVas <= 6 ? 8 : 38;
             doc.setFillColor(r, g, b);
             doc.rect(barX, y - 3, filledW, barH, 'F');
             doc.setTextColor(30, 41, 59);
             doc.setFont('helvetica', 'bold');
-            doc.text(`${vas}/10`, barX + barW + 5, y);
+            doc.text(`${displayVas}/10`, barX + barW + 5, y);
             y += 10;
 
             // ── Plan & Diagnosis ──
