@@ -570,7 +570,7 @@ export function EditAssessmentForm({ assessment, assessmentIndex }: EditFormProp
                                 <FormField control={form.control} name="exercisePrescription" render={({ field }) => (
                                     <FormItem><FormLabel>Exercise Prescription</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-4">
                                     <FormField control={form.control} name="patientEducation" render={({ field }) => (
                                         <FormItem><FormLabel>Education</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
