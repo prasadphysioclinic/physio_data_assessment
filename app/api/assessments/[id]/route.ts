@@ -77,7 +77,8 @@ export async function PUT(request: Request, context: RouteParams) {
             SymptomsLocation: body.symptomsLocation || "",
 
             // 37-44: Treatment Strategy
-            ['Problem List']: body.diagnosis || "",
+            ['Problem List']: body.problemList || "",
+            Diagnosis: body.diagnosis || "",
             TreatmentPlan: body.treatmentPlan || "",
             ManualTherapy: body.manualTherapy || "",
             Electrotherapy: body.electrotherapy || "",

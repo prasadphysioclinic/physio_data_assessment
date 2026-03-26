@@ -218,7 +218,8 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                 <SectionHeader title="Clinical Management" icon={Pill} />
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-4">
-                                        <InfoRow label="Problem List" value={assessment['Problem List'] || assessment.Diagnosis} fullWidth />
+                                        <InfoRow label="Problem List" value={assessment['Problem List']} fullWidth />
+                                        <InfoRow label="Clinical Diagnosis" value={assessment.Diagnosis} fullWidth />
                                         <InfoRow label="Strategy" value={assessment.TreatmentPlan} fullWidth />
                                         <InfoRow label="Specific advise" value={assessment['Specific advice'] || assessment.WhatTreatment} fullWidth />
                                         <InfoRow label="Education" value={assessment.PatientEducation} fullWidth />

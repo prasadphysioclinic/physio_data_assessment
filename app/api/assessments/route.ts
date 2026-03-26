@@ -57,6 +57,7 @@ export async function POST(request: Request) {
             SymptomsLocation: body.symptomsLocation || "",
 
             // 37-44: Diagnosis & Treatment Plan
+            ['Problem List']: body.problemList || "",
             Diagnosis: body.diagnosis || "",
             TreatmentPlan: body.treatmentPlan || "",
             ManualTherapy: body.manualTherapy || "",
@@ -64,7 +65,7 @@ export async function POST(request: Request) {
             ExercisePrescription: body.exercisePrescription || "",
             PatientEducation: body.patientEducation || "",
             HomeFollowups: body.homeFollowups || "",
-            WhatTreatment: body.whatTreatment || "",
+            ['Specific advice']: body.whatTreatment || "",
 
             // 45-49: Summary & Reviews
             PatientSummary: body.patientSummary || "",

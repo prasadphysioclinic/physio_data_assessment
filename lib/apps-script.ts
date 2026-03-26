@@ -56,6 +56,7 @@ export interface AssessmentData {
 
     // 37-44: Treatment Strategy
     ['Problem List']?: string;
+    Diagnosis?: string;
     TreatmentPlan?: string;
     ManualTherapy?: string;
     Electrotherapy?: string;

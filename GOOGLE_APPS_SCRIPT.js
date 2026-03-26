@@ -151,7 +151,7 @@ function getCoreHeaders() {
     "Observation", "ActiveROM", "PassiveROM", "MusclePower", "Palpation", "Gait", 
     "NeurologicalTests", "Sensation", "Reflexes", "SpecialTests", "FunctionalTesting", "Comments",
     "PainHistory", "AggravatingFactors", "EasingFactors", "PainDescription", "PainIntensity_VAS", "SymptomsLocation",
-    "Problem List", "TreatmentPlan", "ManualTherapy", "Electrotherapy", "ExercisePrescription", 
+    "Problem List", "Diagnosis", "TreatmentPlan", "ManualTherapy", "Electrotherapy", "ExercisePrescription", 
     "PatientEducation", "HomeFollowups", "Specific advice",
     "Review1", "Review2", "Review3", "DailyNote",
     "Media1", "Media2", "Media3", "Media4", "Timestamp"

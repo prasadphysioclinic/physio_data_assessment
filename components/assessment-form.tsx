@@ -74,6 +74,7 @@ const formSchema = z.object({
     symptomsLocation: z.string().optional(),
 
     // V. Diagnosis & Treatment Plan (41-48)
+    problemList: z.string().optional(),
     diagnosis: z.string().optional(),
     treatmentPlan: z.string().optional(),
     manualTherapy: z.string().optional(),
@@ -535,8 +536,11 @@ export function AssessmentForm() {
                                 <CardTitle className="text-lg flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> Treatment Plan</CardTitle>
                             </CardHeader>
                             <CardContent className="p-6 space-y-4">
-                                <FormField control={form.control} name="diagnosis" render={({ field }) => (
+                                <FormField control={form.control} name="problemList" render={({ field }) => (
                                     <FormItem><FormLabel>Problem List</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="diagnosis" render={({ field }) => (
+                                    <FormItem><FormLabel>Clinical Diagnosis</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
                                 <FormField control={form.control} name="treatmentPlan" render={({ field }) => (
                                     <FormItem><FormLabel>Treatment Strategy</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>

@@ -136,7 +136,8 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
 
             // ── Plan & Diagnosis ──
             addTitle('V. DIAGNOSIS & INTERVENTION');
-            addField('Problem List', assessment['Problem List'] || assessment.Diagnosis);
+            addField('Problem List', assessment['Problem List']);
+            addField('Clinical Diagnosis', assessment.Diagnosis);
             addField('Treatment Plan', assessment.TreatmentPlan);
             addField('Manual Therapy', assessment.ManualTherapy);
             addField('Electrotherapy', assessment.Electrotherapy);
