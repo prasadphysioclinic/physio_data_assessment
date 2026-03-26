@@ -126,7 +126,7 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                 <TableHead className="w-[240px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Patient Details</TableHead>
                                 <TableHead className="w-[140px] px-3 text-center font-black text-[11px] uppercase tracking-widest text-slate-800">Occupation</TableHead>
                                 <TableHead className="w-[140px] px-3 text-center font-black text-[11px] uppercase tracking-widest text-slate-800">Contact</TableHead>
-                                <TableHead className="w-[250px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Diagnosis</TableHead>
+                                <TableHead className="w-[250px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Problem List</TableHead>
                                 <TableHead className="w-[180px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Daily Note</TableHead>
                                 <TableHead className="text-right w-[140px] px-3 pr-8 font-black text-[11px] uppercase tracking-widest text-slate-800">Action</TableHead>
                             </TableRow>
@@ -181,7 +181,7 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                             <TableCell className="px-3 py-3 w-[250px] overflow-hidden">
                                                 <div className="w-full truncate">
                                                     <span className="text-[11px] font-bold text-slate-700">
-                                                        {assessment.Diagnosis || assessment.ChiefComplaint || '-'}
+                                                        {assessment['Problem List'] || assessment.Diagnosis || assessment.ChiefComplaint || '-'}
                                                     </span>
                                                 </div>
                                             </TableCell>

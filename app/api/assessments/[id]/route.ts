@@ -77,17 +77,16 @@ export async function PUT(request: Request, context: RouteParams) {
             SymptomsLocation: body.symptomsLocation || "",
 
             // 37-44: Treatment Strategy
-            Diagnosis: body.diagnosis || "",
+            ['Problem List']: body.diagnosis || "",
             TreatmentPlan: body.treatmentPlan || "",
             ManualTherapy: body.manualTherapy || "",
             Electrotherapy: body.electrotherapy || "",
             ExercisePrescription: body.exercisePrescription || "",
             PatientEducation: body.patientEducation || "" ,
             HomeFollowups: body.homeFollowups || "",
-            WhatTreatment: body.whatTreatment || "",
+            ['Specific advice']: body.whatTreatment || "",
 
             // 45-49: Summaries & Notes
-            PatientSummary: body.patientSummary || "",
             Review1: body.review1 || "",
             Review2: body.review2 || "",
             Review3: body.review3 || "",

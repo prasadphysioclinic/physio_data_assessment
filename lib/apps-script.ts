@@ -54,18 +54,17 @@ export interface AssessmentData {
     PainIntensity_VAS?: number | string;
     SymptomsLocation?: string;
 
-    // 37-44: Diagnosis & Treatment Plan
-    Diagnosis?: string;
+    // 37-44: Treatment Strategy
+    ['Problem List']?: string;
     TreatmentPlan?: string;
     ManualTherapy?: string;
     Electrotherapy?: string;
     ExercisePrescription?: string;
     PatientEducation?: string;
     HomeFollowups?: string;
-    WhatTreatment?: string;
+    ['Specific advice']?: string;
 
-    // 45-49: Summary & Reviews
-    PatientSummary?: string;
+    // 45-49: Summaries & Reviews
     Review1?: string;
     Review2?: string;
     Review3?: string;

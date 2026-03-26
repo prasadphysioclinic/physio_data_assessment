@@ -1,6 +1,7 @@
 /**
- * Prasad Physiotherapy Clinic - Backend Sync Engine (v2.3 - Final)
+ * Prasad Physiotherapy Clinic - Backend Sync Engine (v2.5 - Final)
  * Solves: Date Mismatch, Duplicates on Edit, and Phantom Columns.
+ * Updated: Problem List, Specific advice, Removed Clinical Summary.
  */
 
 const SHEET_NAME = "Sheet1"; 
@@ -150,9 +151,9 @@ function getCoreHeaders() {
     "Observation", "ActiveROM", "PassiveROM", "MusclePower", "Palpation", "Gait", 
     "NeurologicalTests", "Sensation", "Reflexes", "SpecialTests", "FunctionalTesting", "Comments",
     "PainHistory", "AggravatingFactors", "EasingFactors", "PainDescription", "PainIntensity_VAS", "SymptomsLocation",
-    "Diagnosis", "TreatmentPlan", "ManualTherapy", "Electrotherapy", "ExercisePrescription", 
-    "PatientEducation", "HomeFollowups", "WhatTreatment",
-    "PatientSummary", "Review1", "Review2", "Review3", "DailyNote",
+    "Problem List", "TreatmentPlan", "ManualTherapy", "Electrotherapy", "ExercisePrescription", 
+    "PatientEducation", "HomeFollowups", "Specific advice",
+    "Review1", "Review2", "Review3", "DailyNote",
     "Media1", "Media2", "Media3", "Media4", "Timestamp"
   ];
 }

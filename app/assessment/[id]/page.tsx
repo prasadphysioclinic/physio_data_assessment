@@ -218,9 +218,9 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                 <SectionHeader title="Clinical Management" icon={Pill} />
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-4">
-                                        <InfoRow label="Diagnosis" value={assessment.Diagnosis} fullWidth />
+                                        <InfoRow label="Problem List" value={assessment['Problem List'] || assessment.Diagnosis} fullWidth />
                                         <InfoRow label="Strategy" value={assessment.TreatmentPlan} fullWidth />
-                                        <InfoRow label="Intervention" value={assessment.WhatTreatment} fullWidth />
+                                        <InfoRow label="Specific advise" value={assessment['Specific advice'] || assessment.WhatTreatment} fullWidth />
                                         <InfoRow label="Education" value={assessment.PatientEducation} fullWidth />
                                         <InfoRow label="Follow-ups" value={assessment.HomeFollowups} fullWidth />
                                     </div>
@@ -289,7 +289,6 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                         <InfoRow label="Review 2" value={assessment.Review2} />
                                         <InfoRow label="Review 3" value={assessment.Review3} />
                                     </div>
-                                    <InfoRow label="Case Summary" value={assessment.PatientSummary} fullWidth />
                                     <div className="flex justify-center text-[9px] font-black text-slate-400 pt-6 border-t border-slate-100 uppercase tracking-widest">
                                         <span>Medically Verified Record</span>
                                     </div>

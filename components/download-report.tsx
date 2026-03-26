@@ -136,20 +136,19 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
 
             // ── Plan & Diagnosis ──
             addTitle('V. DIAGNOSIS & INTERVENTION');
-            addField('Physiotherapy Diagnosis', assessment.Diagnosis);
+            addField('Problem List', assessment['Problem List'] || assessment.Diagnosis);
             addField('Treatment Plan', assessment.TreatmentPlan);
             addField('Manual Therapy', assessment.ManualTherapy);
             addField('Electrotherapy', assessment.Electrotherapy);
             addField('Exercise Prescription', assessment.ExercisePrescription);
             addField('Patient Education', assessment.PatientEducation);
             addField('Home Follow-ups', assessment.HomeFollowups);
-            addField('Specific Interventions', assessment.WhatTreatment);
+            addField('Specific advise', assessment['Specific advice'] || assessment.WhatTreatment);
             y += 4;
 
             // ── Conclusion ──
             addTitle('VI. ADMINISTRATIVE SUMMARY');
             addField('Daily Progress Note', assessment.DailyNote);
-            addField('Clinical Summary', assessment.PatientSummary);
             addField('Review Schedule', `R1: ${assessment.Review1 || '-'} | R2: ${assessment.Review2 || '-'} | R3: ${assessment.Review3 || '-'}`);
             addField('Record Date', formatDate(assessment.Date));
             addField('Record Timestamp', formatDateTime(assessment.Timestamp));
