@@ -43,7 +43,7 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
 
     // Button and Row performance optimization: instant feedback
     const btnClass = "transition-none active:scale-[0.98]";
-    const rowClass = "group hover:bg-slate-50 transition-none cursor-default";
+    const rowClass = "group hover:bg-slate-50 transition-colors cursor-pointer active:bg-slate-100";
 
     // Sort assessments by Date descending (latest first)
     const router = useRouter();
@@ -144,7 +144,11 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                     const slug = getSlug(assessment.PatientName);
 
                                     return (
-                                        <TableRow key={`${targetId}-${assessment.Date}`} className={rowClass}>
+                                        <TableRow 
+                                            key={`${targetId}-${assessment.Date}`} 
+                                            className={rowClass}
+                                            onClick={() => router.push(`/assessment/${targetId}`)}
+                                        >
                                             <TableCell className="px-3 py-3 w-[110px] overflow-hidden">
                                                 <div className="flex flex-col min-w-0">
                                                     <span className="text-[11px] font-bold whitespace-nowrap text-slate-700">{formatDateShort(assessment.Date)}</span>
@@ -193,7 +197,7 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-right px-3 pr-8 w-[140px]">
-                                                <div className="flex flex-row justify-end gap-2 h-full items-center">
+                                                <div className="flex flex-row justify-end gap-2 h-full items-center" onClick={(e) => e.stopPropagation()}>
                                                     <Button variant="outline" size="sm" asChild className={`h-8 rounded-lg text-[10px] font-black px-3 ${btnClass} border-slate-200 active:scale-95 transition-all`}>
                                                         <Link href={`/assessment/${targetId}`} prefetch={true}>VIEW</Link>
                                                     </Button>
