@@ -117,12 +117,17 @@ export default async function AssessmentDetailPage(props: PageProps) {
                                     </div>
                                 </div>
                             </div>
-                            <div className="bg-slate-50 p-3 sm:p-5 rounded-2xl border border-slate-100 flex-shrink-0 shadow-sm">
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 opacity-70">Documented On</p>
-                                <p className="text-sm font-black text-slate-800 flex items-center gap-2">
+                            <div className="bg-slate-50 p-3 sm:p-5 rounded-2xl border border-slate-100 flex-shrink-0 shadow-sm text-right">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 opacity-70">Assessment Date</p>
+                                <p className="text-sm font-black text-slate-800 flex items-center justify-end gap-2">
                                     <CalendarDays className="h-4 w-4 text-primary" />
-                                    {assessment.Timestamp ? formatDateTime(assessment.Timestamp) : formatDate(assessment.Date)}
+                                    {formatDate(assessment.Date)}
                                 </p>
+                                {assessment.Timestamp && (
+                                    <p className="text-[8px] font-bold text-slate-400 uppercase mt-1">
+                                        System Sync: {formatDateTime(assessment.Timestamp).split(' at ')[1]}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </CardContent>
