@@ -112,7 +112,7 @@ export async function PUT(request: Request, context: RouteParams) {
             action: 'update'
         };
 
-        const payload: any = { ...updateData };
+        const payload: AssessmentData = { ...updateData };
         if (body.files && body.files.length > 0) {
             payload.files = body.files;
         }

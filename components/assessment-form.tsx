@@ -443,10 +443,10 @@ export function AssessmentForm() {
                                 )} />
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={form.control} name="activeROM" render={({ field }) => (
-                                        <FormItem><FormLabel>Active ROM</FormLabel><FormControl><Input placeholder="Full/Limited" {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Active ROM</FormLabel><FormControl><Textarea placeholder="Flex101 int. Rot.16..." {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                     <FormField control={form.control} name="passiveROM" render={({ field }) => (
-                                        <FormItem><FormLabel>Passive ROM</FormLabel><FormControl><Input placeholder="End-feel" {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Passive ROM</FormLabel><FormControl><Textarea placeholder="End-feel..." {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
                                 <FormField control={form.control} name="palpation" render={({ field }) => (
@@ -454,10 +454,10 @@ export function AssessmentForm() {
                                 )} />
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={form.control} name="musclePower" render={({ field }) => (
-                                        <FormItem><FormLabel>Muscle Power (MMT)</FormLabel><FormControl><Input placeholder="Grade 0-5" {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Muscle Power (MMT)</FormLabel><FormControl><Textarea placeholder="Grade 0-5" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                     <FormField control={form.control} name="gait" render={({ field }) => (
-                                        <FormItem><FormLabel>Gait Analysis</FormLabel><FormControl><Input placeholder="Limp, etc." {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Gait Analysis</FormLabel><FormControl><Textarea placeholder="Limp, etc." {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
                             </CardContent>
@@ -470,18 +470,18 @@ export function AssessmentForm() {
                             <CardContent className="p-6 space-y-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={form.control} name="neurologicalTests" render={({ field }) => (
-                                        <FormItem><FormLabel>Neuro Tests</FormLabel><FormControl><Input placeholder="Myotomes, etc." {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Neuro Tests</FormLabel><FormControl><Textarea placeholder="Myotomes, etc." {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                     <FormField control={form.control} name="sensation" render={({ field }) => (
-                                        <FormItem><FormLabel>Sensation</FormLabel><FormControl><Input placeholder="Dermatomes" {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Sensation</FormLabel><FormControl><Textarea placeholder="Dermatomes" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={form.control} name="reflexes" render={({ field }) => (
-                                        <FormItem><FormLabel>Reflexes</FormLabel><FormControl><Input placeholder="DTRs" {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Reflexes</FormLabel><FormControl><Textarea placeholder="DTRs" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                     <FormField control={form.control} name="specialTests" render={({ field }) => (
-                                        <FormItem><FormLabel>Special Tests</FormLabel><FormControl><Input placeholder="Orthopedic tests" {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Special Tests</FormLabel><FormControl><Textarea placeholder="Orthopedic tests" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
                                 <FormField control={form.control} name="comments" render={({ field }) => (
@@ -517,14 +517,14 @@ export function AssessmentForm() {
                                 <FormItem><FormLabel>Pain Description</FormLabel><FormControl><Textarea placeholder="Burning, Sharp, etc." {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name="symptomsLocation" render={({ field }) => (
-                                <FormItem><FormLabel>Symptoms Location</FormLabel><FormControl><Input placeholder="Left leg, etc." {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Symptoms Location</FormLabel><FormControl><Textarea placeholder="Left leg, etc." {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                             <div className="space-y-4">
                                 <FormField control={form.control} name="aggravatingFactors" render={({ field }) => (
-                                    <FormItem><FormLabel>Aggravating</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                    <FormItem><FormLabel>Aggravating</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
                                 <FormField control={form.control} name="easingFactors" render={({ field }) => (
-                                    <FormItem><FormLabel>Easing</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                    <FormItem><FormLabel>Easing</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
                             </div>
                         </CardContent>
@@ -547,10 +547,10 @@ export function AssessmentForm() {
                                 )} />
                                 <div className="space-y-4">
                                     <FormField control={form.control} name="manualTherapy" render={({ field }) => (
-                                        <FormItem><FormLabel>Manual Therapy</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Manual Therapy</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                     <FormField control={form.control} name="electrotherapy" render={({ field }) => (
-                                        <FormItem><FormLabel>Electrotherapy</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Electrotherapy</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
                                 <FormField control={form.control} name="exercisePrescription" render={({ field }) => (
@@ -558,14 +558,14 @@ export function AssessmentForm() {
                                 )} />
                                 <div className="space-y-4">
                                     <FormField control={form.control} name="patientEducation" render={({ field }) => (
-                                        <FormItem><FormLabel>Education</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Education</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                     <FormField control={form.control} name="homeFollowups" render={({ field }) => (
-                                        <FormItem><FormLabel>Follow-ups</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Follow-ups</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
                                 <FormField control={form.control} name="whatTreatment" render={({ field }) => (
-                                    <FormItem><FormLabel>Specific advise</FormLabel><FormControl><Input placeholder="Modalities used today" {...field} /></FormControl><FormMessage /></FormItem>
+                                    <FormItem><FormLabel>Specific advise</FormLabel><FormControl><Textarea placeholder="Modalities used today" {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
                             </CardContent>
                         </Card>
@@ -580,13 +580,13 @@ export function AssessmentForm() {
                                 )} />
                                 <div className="space-y-4">
                                     <FormField control={form.control} name="review1" render={({ field }) => (
-                                        <FormItem><FormLabel>Review 1</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Review 1</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                     <FormField control={form.control} name="review2" render={({ field }) => (
-                                        <FormItem><FormLabel>Review 2</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Review 2</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                     <FormField control={form.control} name="review3" render={({ field }) => (
-                                        <FormItem><FormLabel>Review 3</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Review 3</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </div>
                             </CardContent>

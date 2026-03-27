@@ -1,12 +1,11 @@
 import { getFromGoogleSheet } from "@/lib/apps-script";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowLeft, Pencil, User, ClipboardList, Activity, Stethoscope, FileText, Camera, HeartPulse, Scale, Pill, Coffee, Moon, CalendarDays } from "lucide-react";
+import { ArrowLeft, Pencil, User, ClipboardList, Activity, Stethoscope, FileText, Camera, CalendarDays, Pill } from "lucide-react";
 import { notFound } from "next/navigation";
 import { formatDate, formatDateTime } from "@/lib/format-date";
 import { DownloadReportButton } from "@/components/download-report";
-import { convertDriveUrl, isVideoUrl } from "@/lib/utils-data";
 import { ClinicalMediaGallery } from "@/components/media-gallery";
 
 export const dynamic = 'force-dynamic';
@@ -17,6 +16,24 @@ interface PageProps {
         id: string;
     }>;
 }
+
+const SectionHeader = ({ icon: Icon, title }: { icon: any; title: string }) => (
+    <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
+        <Icon className="h-5 w-5 text-primary" />
+        <h2 className="text-lg font-bold text-slate-800 tracking-tight">{title}</h2>
+    </div>
+);
+
+const InfoRow = ({ label, value, fullWidth = false }: { label: string; value: string | number | undefined; fullWidth?: boolean }) => (
+    <div className={`space-y-1 ${fullWidth ? 'col-span-full' : ''}`}>
+        <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">{label}</p>
+        <div className={`p-2.5 rounded-lg bg-slate-50 border border-slate-100 min-h-[42px] flex items-center`}>
+            <p className="text-sm font-semibold text-slate-700 leading-snug">
+                {value || <span className="text-slate-300 font-normal italic">Empty</span>}
+            </p>
+        </div>
+    </div>
+);
 
 export default async function AssessmentDetailPage(props: PageProps) {
     const params = await props.params;
@@ -55,24 +72,6 @@ export default async function AssessmentDetailPage(props: PageProps) {
     }
 
     const assessment = assessments[assessmentIndex];
-
-    const SectionHeader = ({ icon: Icon, title }: { icon: any; title: string }) => (
-        <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
-            <Icon className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-bold text-slate-800 tracking-tight">{title}</h2>
-        </div>
-    );
-
-    const InfoRow = ({ label, value, fullWidth = false }: { label: string; value: string | number | undefined; fullWidth?: boolean }) => (
-        <div className={`space-y-1 ${fullWidth ? 'col-span-full' : ''}`}>
-            <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">{label}</p>
-            <div className={`p-2.5 rounded-lg bg-slate-50 border border-slate-100 min-h-[42px] flex items-center`}>
-                <p className="text-sm font-semibold text-slate-700 leading-snug">
-                    {value || <span className="text-slate-300 font-normal italic">Empty</span>}
-                </p>
-            </div>
-        </div>
-    );
 
     return (
         <div className="min-h-screen bg-[#fafafa] p-4 sm:p-6 font-sans">
