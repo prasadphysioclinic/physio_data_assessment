@@ -99,7 +99,7 @@ function DailyNoteCell({ assessment, onUpdate }: { assessment: Assessment, onUpd
             </SheetTrigger>
             <SheetContent 
                 side="right" 
-                className="w-full sm:max-w-md border-l border-slate-200 shadow-2xl flex flex-col p-0 gap-0"
+                className="w-full sm:max-w-md border-l border-slate-200 shadow-2xl flex flex-col p-0 gap-0 bg-white opacity-100"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="p-6 border-b border-slate-100 bg-slate-50/50">
