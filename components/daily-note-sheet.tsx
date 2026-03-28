@@ -163,7 +163,7 @@ export function DailyNoteSheet({ assessment, onUpdate, children }: DailyNoteShee
                     </div>
                 </div>
 
-                {isEditing && (
+                {isEditing ? (
                     <div className="p-6 bg-white border-t border-slate-100 flex gap-3">
                         <Button 
                             variant="ghost" 
@@ -187,6 +187,16 @@ export function DailyNoteSheet({ assessment, onUpdate, children }: DailyNoteShee
                                 <Save className="mr-2 h-4 w-4" />
                             )}
                             {isSaving ? "Syncing..." : "Confirm & Save"}
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="p-6 bg-white border-t border-slate-100">
+                        <Button 
+                            variant="outline" 
+                            onClick={() => setOpen(false)}
+                            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-slate-200 text-slate-500 hover:bg-slate-50 transition-all"
+                        >
+                            Back to Dashboard
                         </Button>
                     </div>
                 )}
