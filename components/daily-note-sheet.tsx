@@ -92,7 +92,7 @@ export function DailyNoteSheet({ assessment, onUpdate, children }: DailyNoteShee
                 className="w-full sm:max-w-md border-l border-slate-200 shadow-2xl flex flex-col p-0 gap-0 bg-white opacity-100"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="p-6 border-b border-slate-100 bg-slate-50/50">
+                <div className="p-4 sm:p-6 border-b border-slate-100 bg-slate-50/50">
                     <SheetHeader>
                         <div className="flex items-center gap-2 mb-1">
                             <Badge variant="outline" className="text-[10px] font-bold border-primary/20 bg-primary/5 text-primary">SESSION RECORD</Badge>
@@ -104,7 +104,7 @@ export function DailyNoteSheet({ assessment, onUpdate, children }: DailyNoteShee
                     </SheetHeader>
                 </div>
 
-                <div className="flex-1 p-6 space-y-4 overflow-y-auto">
+                <div className="flex-1 p-4 sm:p-6 space-y-4 overflow-y-auto overflow-x-hidden">
                     <div className="flex items-center justify-between">
                         <Label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Continuous Progress Observation</Label>
                         {!isEditing && (
@@ -125,11 +125,11 @@ export function DailyNoteSheet({ assessment, onUpdate, children }: DailyNoteShee
                             value={note}
                             onChange={(e) => setNote(e.target.value)}
                             placeholder="Type progress note, treatment adjustments, or clinical observations here..."
-                            className="min-h-[350px] resize-none border-slate-200 focus-visible:ring-primary/20 rounded-xl bg-slate-50 text-sm font-medium leading-relaxed p-4"
+                            className="min-h-[300px] sm:min-h-[350px] resize-none border-slate-200 focus-visible:ring-primary/20 rounded-xl bg-slate-50 text-sm font-medium leading-relaxed p-3 sm:p-4"
                             autoFocus
                         />
                     ) : (
-                        <div className="min-h-[350px] p-6 rounded-xl bg-slate-50 border border-slate-100 relative group">
+                        <div className="min-h-[300px] sm:min-h-[350px] p-4 sm:p-6 rounded-xl bg-slate-50 border border-slate-100 relative group">
                             {note ? (
                                 <p className="text-sm font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">
                                     {note}
@@ -155,7 +155,7 @@ export function DailyNoteSheet({ assessment, onUpdate, children }: DailyNoteShee
                         </div>
                     )}
                     
-                    <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-100 flex gap-3">
+                    <div className="p-3 sm:p-4 rounded-xl bg-blue-50/50 border border-blue-100 flex gap-3">
                         <AlertCircle className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
                         <p className="text-[10px] text-blue-700 leading-tight">
                             Clinical notes are synchronized in real-time. Modifications here update the permanent record and all generated reports.
@@ -164,21 +164,21 @@ export function DailyNoteSheet({ assessment, onUpdate, children }: DailyNoteShee
                 </div>
 
                 {isEditing ? (
-                    <div className="p-6 bg-white border-t border-slate-100 flex gap-3">
+                    <div className="p-4 sm:p-6 bg-white border-t border-slate-100 flex gap-3">
                         <Button 
                             variant="ghost" 
                             onClick={() => {
                                 setIsEditing(false);
                                 setNote(assessment.DailyNote || "");
                             }}
-                            className="flex-1 h-12 rounded-xl text-xs font-black uppercase tracking-widest"
+                            className="flex-1 h-11 sm:h-12 rounded-xl text-xs font-black uppercase tracking-widest"
                             disabled={isSaving}
                         >
                             Cancel
                         </Button>
                         <Button 
                             onClick={handleSave} 
-                            className="flex-[2] h-12 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/10 transition-all active:scale-[0.98]"
+                            className="flex-[2] h-11 sm:h-12 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/10 transition-all active:scale-[0.98]"
                             disabled={isSaving}
                         >
                             {isSaving ? (
@@ -190,11 +190,11 @@ export function DailyNoteSheet({ assessment, onUpdate, children }: DailyNoteShee
                         </Button>
                     </div>
                 ) : (
-                    <div className="p-6 bg-white border-t border-slate-100">
+                    <div className="p-4 sm:p-6 bg-white border-t border-slate-100">
                         <Button 
                             variant="outline" 
                             onClick={() => setOpen(false)}
-                            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-slate-200 text-slate-500 hover:bg-slate-50 transition-all"
+                            className="w-full h-11 sm:h-12 rounded-xl text-xs font-black uppercase tracking-widest border-slate-200 text-slate-500 hover:bg-slate-50 transition-all"
                         >
                             Back to Dashboard
                         </Button>
