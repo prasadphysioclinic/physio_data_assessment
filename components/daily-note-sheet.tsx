@@ -75,7 +75,6 @@ export function DailyNoteSheet({ assessment, onUpdate, children }: DailyNoteShee
                             <FileText className="h-4 w-4" />
                         </div>
                         <div className="flex flex-col min-w-0">
-                            <span className="text-[9px] font-black uppercase tracking-tighter text-slate-400 group-hover:text-primary transition-colors">Daily Note</span>
                             <span className="text-[10px] text-slate-600 truncate font-medium italic">
                                 {note || "Add note..."}
                             </span>

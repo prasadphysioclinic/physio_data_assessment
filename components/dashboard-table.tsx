@@ -121,7 +121,7 @@ export function DashboardTable({ assessments }: DashboardTableProps) {
                                 <TableHead className="w-[140px] px-3 text-center font-black text-[11px] uppercase tracking-widest text-slate-800">Occupation</TableHead>
                                 <TableHead className="w-[140px] px-3 text-center font-black text-[11px] uppercase tracking-widest text-slate-800">Contact</TableHead>
                                 <TableHead className="w-[250px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Clinical Diagnosis</TableHead>
-                                <TableHead className="w-[200px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">Review Note</TableHead>
+                                <TableHead className="w-[200px] px-3 font-black text-[11px] uppercase tracking-widest text-slate-800">DAILY NOTE</TableHead>
                                 <TableHead className="text-right w-[140px] px-3 pr-8 font-black text-[11px] uppercase tracking-widest text-slate-800">Action</TableHead>
                             </TableRow>
                         </TableHeader>
