@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { formatDate, formatDateTime } from "@/lib/format-date";
 import { DownloadReportButton } from "@/components/download-report";
 import { ClinicalMediaGallery } from "@/components/media-gallery";
+import { DailyNoteSheet } from "@/components/daily-note-sheet";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -88,7 +89,13 @@ export default async function AssessmentDetailPage(props: PageProps) {
                         <div className="flex-1 xs:flex-initial">
                             <DownloadReportButton assessment={assessment} className="w-full" />
                         </div>
-                        <Button asChild size="sm" className="w-full sm:w-auto rounded-xl shadow-lg h-11 px-6 font-bold bg-primary hover:bg-primary/90">
+                        <DailyNoteSheet assessment={assessment}>
+                            <Button variant="secondary" size="sm" className="w-full sm:w-auto rounded-xl shadow-md h-11 px-6 font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border-none transition-all active:scale-95">
+                                <FileText className="mr-2 h-4 w-4" />
+                                Session Note
+                            </Button>
+                        </DailyNoteSheet>
+                        <Button asChild size="sm" className="w-full sm:w-auto rounded-xl shadow-lg h-11 px-6 font-bold bg-primary hover:bg-primary/90 transition-all active:scale-95">
                             <Link href={`/assessment/${assessmentIndex}/edit`} className="flex items-center justify-center">
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Edit Record
