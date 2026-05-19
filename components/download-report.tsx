@@ -23,18 +23,17 @@ const loadImage = (src: string): Promise<HTMLImageElement> => {
 
 // Helper to draw the letterhead header on each page
 const drawHeader = (doc: any, logoImg: HTMLImageElement | null, pageWidth: number) => {
-    // Dr. C. BABUPRASAD in serif Times-Bold font
+    // Dr. C. BABUPRASAD PT., on a single line in serif Times-Bold font
     doc.setFont('times', 'bold');
     doc.setFontSize(13);
     doc.setTextColor(40, 40, 40); // Dark grey
-    const mainName = 'Dr. C. BABUPRASAD';
-    doc.text(mainName, 15, 21);
+    doc.text('Dr. C. BABUPRASAD PT.,', 15, 21);
     
-    // PT., on the line below in helvetica bold
+    // Subtitle in helvetica bold
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.5);
     doc.setTextColor(115, 115, 115); // Lighter grey
-    doc.text('PT., PHYSIOTHERAPIST & MANUAL THERAPIST', 15, 25.5);
+    doc.text('PHYSIOTHERAPIST & MANUAL THERAPIST', 15, 25.5);
     
     // Regd No: L13530
     doc.setFont('helvetica', 'normal');
@@ -73,20 +72,25 @@ const drawFooter = (doc: any, pageWidth: number, i: number, totalPages: number) 
 };
 
 // Helper to draw the E-Signature & Stamp Area
-const drawSignatureAndStamp = (doc: any, sigImg: HTMLImageElement | null, stampImg: HTMLImageElement | null, pageWidth: number, y: number): number => {
-    // If drawing the stamp/signature extends beyond page boundaries, add page
-    if (y > 200) {
+const drawSignatureAndStamp = (doc: any, sigImg: HTMLImageElement | null, pageWidth: number, y: number): number => {
+    // Only wrap page if we are very close to the footer to maximize keeping signatures on the last page
+    if (y > 230) {
         doc.addPage();
         y = 50;
     } else {
         y += 10;
     }
 
-    // Draw Stamp on the left
-    if (stampImg) {
-        // Width 40, Height 22.5 (maintaining ratio)
-        doc.addImage(stampImg, 'PNG', 20, y, 40, 22.5);
-    }
+    // Draw Stamp as royal blue text on the left (clean vector-like stamp imprint)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(26, 54, 153); // Royal Blue stamp color
+    doc.text('Dr.C.Babuprasad.PT.,', 20, y + 4);
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.text('Physiotherapist', 20, y + 9);
+    doc.text('Reg No:L13530', 20, y + 14);
 
     // Draw Signature on the right
     if (sigImg) {
@@ -127,16 +131,12 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             // Load Images
             let logoImg: HTMLImageElement | null = null;
             let sigImg: HTMLImageElement | null = null;
-            let stampImg: HTMLImageElement | null = null;
             try {
                 logoImg = await loadImage('/58ef474e-0785-4b57-ad47-1f10d96ed4dc-removebg-preview.png');
             } catch (e) { console.error("Logo error:", e); }
             try {
                 sigImg = await loadImage('/image-removebg-preview (5).png');
             } catch (e) { console.error("Signature error:", e); }
-            try {
-                stampImg = await loadImage('/clinical-stamp.png');
-            } catch (e) { console.error("Stamp error:", e); }
 
             const addTitle = (text: string) => {
                 if (y > 250) { 
@@ -272,7 +272,7 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             addField('Record Timestamp', formatDateTime(assessment.Timestamp));
 
             // ── E-Signature & Stamp ──
-            y = drawSignatureAndStamp(doc, sigImg, stampImg, pageWidth, y);
+            y = drawSignatureAndStamp(doc, sigImg, pageWidth, y);
 
             // ── Post-Process Headers and Footers ──
             const totalPages = doc.getNumberOfPages();
@@ -328,16 +328,12 @@ export function DownloadSummaryButton({ assessment, className }: ReportProps) {
             // Load Images
             let logoImg: HTMLImageElement | null = null;
             let sigImg: HTMLImageElement | null = null;
-            let stampImg: HTMLImageElement | null = null;
             try {
                 logoImg = await loadImage('/58ef474e-0785-4b57-ad47-1f10d96ed4dc-removebg-preview.png');
             } catch (e) { console.error("Logo error:", e); }
             try {
                 sigImg = await loadImage('/image-removebg-preview (5).png');
             } catch (e) { console.error("Signature error:", e); }
-            try {
-                stampImg = await loadImage('/clinical-stamp.png');
-            } catch (e) { console.error("Stamp error:", e); }
 
             const addTitle = (text: string) => {
                 if (y > 250) { 
@@ -396,7 +392,7 @@ export function DownloadSummaryButton({ assessment, className }: ReportProps) {
             y += 4;
 
             // ── E-Signature & Stamp ──
-            y = drawSignatureAndStamp(doc, sigImg, stampImg, pageWidth, y);
+            y = drawSignatureAndStamp(doc, sigImg, pageWidth, y);
 
             // ── Post-Process Headers and Footers ──
             const totalPages = doc.getNumberOfPages();
