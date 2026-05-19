@@ -178,30 +178,41 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
                 doc.setPage(i);
                 
                 // Draw Header Left
-                doc.setFont('helvetica', 'bold');
+                // Dr. C. BABUPRASAD in serif Times-Bold font
+                doc.setFont('times', 'bold');
                 doc.setFontSize(13);
-                doc.setTextColor(30, 41, 59); // slate-800
-                doc.text('Dr. C. BABUPRASAD PT.,', 15, 20);
+                doc.setTextColor(40, 40, 40); // Dark grey
+                const mainName = 'Dr. C. BABUPRASAD';
+                doc.text(mainName, 15, 21);
                 
-                doc.setFont('helvetica', 'bold');
+                // PT., in small font right next to it
+                const nameWidth = doc.getTextWidth(mainName);
+                doc.setFont('times', 'bold');
                 doc.setFontSize(7.5);
-                doc.setTextColor(71, 85, 105); // slate-600
-                doc.text('PHYSIOTHERAPIST & MANUAL THERAPIST', 15, 24.5);
+                doc.setTextColor(60, 60, 60);
+                doc.text('PT.,', 15 + nameWidth + 0.5, 19.8);
                 
+                // PHYSIOTHERAPIST & MANUAL THERAPIST
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(6.5);
+                doc.setTextColor(115, 115, 115); // Lighter grey
+                doc.text('PHYSIOTHERAPIST & MANUAL THERAPIST', 15, 25.5);
+                
+                // Regd No: L13530
                 doc.setFont('helvetica', 'normal');
-                doc.setFontSize(8.5);
-                doc.setTextColor(100, 116, 139); // slate-500
-                doc.text('Regd No: L13530', 15, 28.5);
+                doc.setFontSize(7.5);
+                doc.setTextColor(140, 140, 140); // Even lighter grey
+                doc.text('Regd No: L13530', 15, 29.5);
                 
                 // Draw Header Logo (Right)
                 if (logoImg) {
-                    doc.addImage(logoImg, 'PNG', pageWidth - 15 - 28, 11, 28, 28);
+                    doc.addImage(logoImg, 'PNG', pageWidth - 15 - 30, 11, 30, 30);
                 }
                 
-                // Divider Line
+                // Divider Line (Subtle)
                 doc.setDrawColor(226, 232, 240); // slate-200
                 doc.setLineWidth(0.4);
-                doc.line(15, 42, pageWidth - 15, 42);
+                doc.line(15, 43, pageWidth - 15, 43);
                 
                 // Draw Footer
                 doc.setDrawColor(226, 232, 240);
@@ -210,7 +221,7 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
                 
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(7.5);
-                doc.setTextColor(71, 85, 105);
+                doc.setTextColor(115, 115, 115);
                 doc.text('Gurupatham Hospital, Subramaniya Nagar, Opp to Thirubeni Cars, Junction, Salem - 5', pageWidth / 2, 276, { align: 'center' });
                 doc.text('Email: cbprasad08@gmail.com   |   Phone: 98422 44441', pageWidth / 2, 280, { align: 'center' });
                 
