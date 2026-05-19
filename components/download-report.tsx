@@ -1,10 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { FileDown } from "lucide-react";
+import { FileDown, FileText } from "lucide-react";
 import { useState } from "react";
 import { formatDate, formatDateTime } from "@/lib/format-date";
-
 import { cn } from "@/lib/utils";
 
 interface ReportProps {
@@ -12,6 +11,108 @@ interface ReportProps {
     className?: string;
 }
 
+// Helper to load image in browser
+const loadImage = (src: string): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => resolve(img);
+        img.onerror = (err) => reject(err);
+    });
+};
+
+// Helper to draw the letterhead header on each page
+const drawHeader = (doc: any, logoImg: HTMLImageElement | null, pageWidth: number) => {
+    // Dr. C. BABUPRASAD in serif Times-Bold font
+    doc.setFont('times', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(40, 40, 40); // Dark grey
+    const mainName = 'Dr. C. BABUPRASAD';
+    doc.text(mainName, 15, 21);
+    
+    // PT., on the line below in helvetica bold
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.setTextColor(115, 115, 115); // Lighter grey
+    doc.text('PT., PHYSIOTHERAPIST & MANUAL THERAPIST', 15, 25.5);
+    
+    // Regd No: L13530
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(140, 140, 140); // Even lighter grey
+    doc.text('Regd No: L13530', 15, 29.5);
+    
+    // Draw Header Logo (Right)
+    if (logoImg) {
+        doc.addImage(logoImg, 'PNG', pageWidth - 15 - 30, 11, 30, 30);
+    }
+    
+    // Divider Line (Subtle)
+    doc.setDrawColor(226, 232, 240); // slate-200
+    doc.setLineWidth(0.4);
+    doc.line(15, 43, pageWidth - 15, 43);
+};
+
+// Helper to draw the footer on each page
+const drawFooter = (doc: any, pageWidth: number, i: number, totalPages: number) => {
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.4);
+    doc.line(15, 271, pageWidth - 15, 271);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(115, 115, 115);
+    doc.text('Gurupatham Hospital, Subramaniya Nagar, Opp to Thirubeni Cars, Junction, Salem - 5', pageWidth / 2, 276, { align: 'center' });
+    doc.text('Email: cbprasad08@gmail.com   |   Phone: 98422 44441', pageWidth / 2, 280, { align: 'center' });
+    
+    // Page Numbers & Confidentiality
+    doc.setFontSize(7);
+    doc.setTextColor(148, 163, 184);
+    doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, 287, { align: 'center' });
+    doc.text('This document is a confidential medical record and should be treated as such.', pageWidth / 2, 291, { align: 'center' });
+};
+
+// Helper to draw the E-Signature & Stamp Area
+const drawSignatureAndStamp = (doc: any, sigImg: HTMLImageElement | null, stampImg: HTMLImageElement | null, pageWidth: number, y: number): number => {
+    // If drawing the stamp/signature extends beyond page boundaries, add page
+    if (y > 200) {
+        doc.addPage();
+        y = 50;
+    } else {
+        y += 10;
+    }
+
+    // Draw Stamp on the left
+    if (stampImg) {
+        // Width 40, Height 22.5 (maintaining ratio)
+        doc.addImage(stampImg, 'PNG', 20, y, 40, 22.5);
+    }
+
+    // Draw Signature on the right
+    if (sigImg) {
+        // Width 35, Height 22 (maintaining ratio)
+        doc.addImage(sigImg, 'PNG', pageWidth - 20 - 35, y - 2, 35, 22);
+    }
+
+    // Signature Line
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.4);
+    doc.line(pageWidth - 20 - 45, y + 21, pageWidth - 20, y + 21);
+
+    // Authorized Signature Text
+    doc.setFont('times', 'bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(30, 41, 59);
+    doc.text('Dr. C. Babuprasad', pageWidth - 20 - 22.5, y + 26, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(115, 115, 115);
+    doc.text('Authorized Signature', pageWidth - 20 - 22.5, y + 30, { align: 'center' });
+    
+    return y + 35;
+};
+
+// ── 1. Full Assessment Report Button ──
 export function DownloadReportButton({ assessment, className }: ReportProps) {
     const [isGenerating, setIsGenerating] = useState(false);
 
@@ -23,21 +124,19 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             const pageWidth = doc.internal.pageSize.getWidth();
             let y = 15;
 
-            // Load Logo Image
+            // Load Images
             let logoImg: HTMLImageElement | null = null;
+            let sigImg: HTMLImageElement | null = null;
+            let stampImg: HTMLImageElement | null = null;
             try {
-                const loadImage = (src: string): Promise<HTMLImageElement> => {
-                    return new Promise((resolve, reject) => {
-                        const img = new Image();
-                        img.src = src;
-                        img.onload = () => resolve(img);
-                        img.onerror = (err) => reject(err);
-                    });
-                };
                 logoImg = await loadImage('/58ef474e-0785-4b57-ad47-1f10d96ed4dc-removebg-preview.png');
-            } catch (err) {
-                console.error("Failed to load logo image:", err);
-            }
+            } catch (e) { console.error("Logo error:", e); }
+            try {
+                sigImg = await loadImage('/image-removebg-preview (5).png');
+            } catch (e) { console.error("Signature error:", e); }
+            try {
+                stampImg = await loadImage('/clinical-stamp.png');
+            } catch (e) { console.error("Stamp error:", e); }
 
             const addTitle = (text: string) => {
                 if (y > 250) { 
@@ -172,71 +271,22 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             addField('Record Date', formatDate(assessment.Date));
             addField('Record Timestamp', formatDateTime(assessment.Timestamp));
 
-            // ── Page Header & Footer Post-Processing ──
+            // ── E-Signature & Stamp ──
+            y = drawSignatureAndStamp(doc, sigImg, stampImg, pageWidth, y);
+
+            // ── Post-Process Headers and Footers ──
             const totalPages = doc.getNumberOfPages();
             for (let i = 1; i <= totalPages; i++) {
                 doc.setPage(i);
-                
-                // Draw Header Left
-                // Dr. C. BABUPRASAD in serif Times-Bold font
-                doc.setFont('times', 'bold');
-                doc.setFontSize(13);
-                doc.setTextColor(40, 40, 40); // Dark grey
-                const mainName = 'Dr. C. BABUPRASAD';
-                doc.text(mainName, 15, 21);
-                
-                // PT., in small font right next to it
-                const nameWidth = doc.getTextWidth(mainName);
-                doc.setFont('times', 'bold');
-                doc.setFontSize(7.5);
-                doc.setTextColor(60, 60, 60);
-                doc.text('PT.,', 15 + nameWidth + 0.5, 19.8);
-                
-                // PHYSIOTHERAPIST & MANUAL THERAPIST
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(6.5);
-                doc.setTextColor(115, 115, 115); // Lighter grey
-                doc.text('PHYSIOTHERAPIST & MANUAL THERAPIST', 15, 25.5);
-                
-                // Regd No: L13530
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(7.5);
-                doc.setTextColor(140, 140, 140); // Even lighter grey
-                doc.text('Regd No: L13530', 15, 29.5);
-                
-                // Draw Header Logo (Right)
-                if (logoImg) {
-                    doc.addImage(logoImg, 'PNG', pageWidth - 15 - 30, 11, 30, 30);
-                }
-                
-                // Divider Line (Subtle)
-                doc.setDrawColor(226, 232, 240); // slate-200
-                doc.setLineWidth(0.4);
-                doc.line(15, 43, pageWidth - 15, 43);
-                
-                // Draw Footer
-                doc.setDrawColor(226, 232, 240);
-                doc.setLineWidth(0.4);
-                doc.line(15, 271, pageWidth - 15, 271);
-                
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(7.5);
-                doc.setTextColor(115, 115, 115);
-                doc.text('Gurupatham Hospital, Subramaniya Nagar, Opp to Thirubeni Cars, Junction, Salem - 5', pageWidth / 2, 276, { align: 'center' });
-                doc.text('Email: cbprasad08@gmail.com   |   Phone: 98422 44441', pageWidth / 2, 280, { align: 'center' });
-                
-                // Page Numbers & Confidentiality
-                doc.setFontSize(7);
-                doc.setTextColor(148, 163, 184);
-                doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, 287, { align: 'center' });
-                doc.text('This document is a confidential medical record and should be treated as such.', pageWidth / 2, 291, { align: 'center' });
+                drawHeader(doc, logoImg, pageWidth);
+                drawFooter(doc, pageWidth, i, totalPages);
             }
 
             const fileName = `PhysioReport_${(assessment.PatientName || 'Patient').replace(/\s+/g, '_')}_${assessment.Date || 'NoDate'}.pdf`;
             doc.save(fileName);
         } catch (error) {
             console.error('PDF generation error:', error);
-            alert('An unexpected error occurred during report generation. Please verify internet connectivity.');
+            alert('An unexpected error occurred during report generation.');
         } finally {
             setIsGenerating(false);
         }
@@ -256,6 +306,130 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
                     <span className="flex items-center">
                         <span className="hidden xs:inline">Download Assessment Report</span>
                         <span className="xs:hidden">Get Report</span>
+                    </span>
+                )}
+            </span>
+        </Button>
+    );
+}
+
+// ── 2. Limited Summary Report Button ──
+export function DownloadSummaryButton({ assessment, className }: ReportProps) {
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    async function generatePDF() {
+        setIsGenerating(true);
+        try {
+            const { jsPDF } = await import('jspdf');
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = doc.internal.pageSize.getWidth();
+            let y = 15;
+
+            // Load Images
+            let logoImg: HTMLImageElement | null = null;
+            let sigImg: HTMLImageElement | null = null;
+            let stampImg: HTMLImageElement | null = null;
+            try {
+                logoImg = await loadImage('/58ef474e-0785-4b57-ad47-1f10d96ed4dc-removebg-preview.png');
+            } catch (e) { console.error("Logo error:", e); }
+            try {
+                sigImg = await loadImage('/image-removebg-preview (5).png');
+            } catch (e) { console.error("Signature error:", e); }
+            try {
+                stampImg = await loadImage('/clinical-stamp.png');
+            } catch (e) { console.error("Stamp error:", e); }
+
+            const addTitle = (text: string) => {
+                if (y > 250) { 
+                    doc.addPage(); 
+                    y = 50; 
+                }
+                doc.setFontSize(10.5);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(30, 58, 138); // Blue-800
+                doc.text(text, 15, y);
+                y += 2;
+                doc.setDrawColor(219, 234, 254); // Blue-100
+                doc.setLineWidth(0.4);
+                doc.line(15, y, pageWidth - 15, y);
+                y += 6;
+            };
+
+            const addField = (label: string, value: string | undefined | null) => {
+                if (y > 260) { 
+                    doc.addPage(); 
+                    y = 50; 
+                }
+                const val = value || 'N/A';
+                doc.setFontSize(8.5);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(71, 85, 105); // Slate-600
+                doc.text(`${label}:`, 15, y);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(30, 41, 59); // Slate-800
+                const lines = doc.splitTextToSize(String(val), pageWidth - 70);
+                doc.text(lines, 55, y);
+                y += Math.max(lines.length * 4, 5) + 1;
+            };
+
+            // ── Document Title ──
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.setTextColor(30, 41, 59);
+            doc.text('CLINICAL SESSION SUMMARY', pageWidth / 2, 50, { align: 'center' });
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8.5);
+            doc.text(`Patient ID: #${String(assessment.id || 'NEW').padStart(4, '0')}`, pageWidth / 2, 55, { align: 'center' });
+            y = 65;
+
+            // ── Patient Identification ──
+            addTitle('PATIENT IDENTIFICATION');
+            addField('Patient Name', assessment.PatientName);
+            addField('Age / Gender', `${assessment.Age || 'N/A'} / ${assessment.Sex || 'N/A'}`);
+            addField('Occupation', assessment.Occupation);
+            y += 4;
+
+            // ── Session Summary & Clinical Note ──
+            addTitle('CLINICAL SUMMARY');
+            addField('Chief Complaint', assessment.ChiefComplaint);
+            addField('Session Notes & Summary', assessment.DailyNote);
+            y += 4;
+
+            // ── E-Signature & Stamp ──
+            y = drawSignatureAndStamp(doc, sigImg, stampImg, pageWidth, y);
+
+            // ── Post-Process Headers and Footers ──
+            const totalPages = doc.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                drawHeader(doc, logoImg, pageWidth);
+                drawFooter(doc, pageWidth, i, totalPages);
+            }
+
+            const fileName = `PhysioSummary_${(assessment.PatientName || 'Patient').replace(/\s+/g, '_')}_${assessment.Date || 'NoDate'}.pdf`;
+            doc.save(fileName);
+        } catch (error) {
+            console.error('PDF generation error:', error);
+            alert('An unexpected error occurred during summary report generation.');
+        } finally {
+            setIsGenerating(false);
+        }
+    }
+
+    return (
+        <Button 
+            onClick={generatePDF} 
+            disabled={isGenerating} 
+            variant="outline" 
+            size="sm" 
+            className={cn("gap-2 border-emerald-200 hover:bg-emerald-50 text-emerald-700 font-bold h-11", className)}
+        >
+            <FileText className="h-4 w-4 shrink-0" />
+            <span className="truncate">
+                {isGenerating ? 'Compiling...' : (
+                    <span className="flex items-center">
+                        <span className="hidden xs:inline">Download Session Summary</span>
+                        <span className="xs:hidden">Get Summary</span>
                     </span>
                 )}
             </span>

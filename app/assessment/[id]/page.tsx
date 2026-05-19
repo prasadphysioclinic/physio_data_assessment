@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Pencil, User, ClipboardList, Activity, Stethoscope, FileText, Camera, CalendarDays, Pill } from "lucide-react";
 import { notFound } from "next/navigation";
 import { formatDate, formatDateTime } from "@/lib/format-date";
-import { DownloadReportButton } from "@/components/download-report";
+import { DownloadReportButton, DownloadSummaryButton } from "@/components/download-report";
 import { ClinicalMediaGallery } from "@/components/media-gallery";
 import { DailyNoteSheet } from "@/components/daily-note-sheet";
 
@@ -88,6 +88,9 @@ export default async function AssessmentDetailPage(props: PageProps) {
                     <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
                         <div className="flex-1 xs:flex-initial">
                             <DownloadReportButton assessment={assessment} className="w-full" />
+                        </div>
+                        <div className="flex-1 xs:flex-initial">
+                            <DownloadSummaryButton assessment={assessment} className="w-full" />
                         </div>
                         <DailyNoteSheet assessment={assessment}>
                             <Button variant="secondary" size="sm" className="w-full sm:w-auto rounded-xl shadow-md h-11 px-6 font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border-none transition-all active:scale-95">
