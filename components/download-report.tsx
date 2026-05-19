@@ -23,46 +23,64 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             const pageWidth = doc.internal.pageSize.getWidth();
             let y = 15;
 
+            // Load Logo Image
+            let logoImg: HTMLImageElement | null = null;
+            try {
+                const loadImage = (src: string): Promise<HTMLImageElement> => {
+                    return new Promise((resolve, reject) => {
+                        const img = new Image();
+                        img.src = src;
+                        img.onload = () => resolve(img);
+                        img.onerror = (err) => reject(err);
+                    });
+                };
+                logoImg = await loadImage('/58ef474e-0785-4b57-ad47-1f10d96ed4dc-removebg-preview.png');
+            } catch (err) {
+                console.error("Failed to load logo image:", err);
+            }
+
             const addTitle = (text: string) => {
-                if (y > 260) { doc.addPage(); y = 15; }
-                doc.setFontSize(11);
+                if (y > 250) { 
+                    doc.addPage(); 
+                    y = 50; 
+                }
+                doc.setFontSize(10.5);
                 doc.setFont('helvetica', 'bold');
-                doc.setTextColor(30, 64, 175);
-                doc.text(text, 14, y);
+                doc.setTextColor(30, 58, 138); // Blue-800
+                doc.text(text, 15, y);
                 y += 2;
-                doc.setDrawColor(219, 234, 254);
-                doc.line(14, y, pageWidth - 14, y);
+                doc.setDrawColor(219, 234, 254); // Blue-100
+                doc.setLineWidth(0.4);
+                doc.line(15, y, pageWidth - 15, y);
                 y += 6;
             };
 
             const addField = (label: string, value: string | undefined | null) => {
-                if (y > 275) { doc.addPage(); y = 15; }
+                if (y > 260) { 
+                    doc.addPage(); 
+                    y = 50; 
+                }
                 const val = value || 'N/A';
                 doc.setFontSize(8.5);
                 doc.setFont('helvetica', 'bold');
-                doc.setTextColor(100, 116, 139);
-                doc.text(`${label}:`, 14, y);
+                doc.setTextColor(71, 85, 105); // Slate-600
+                doc.text(`${label}:`, 15, y);
                 doc.setFont('helvetica', 'normal');
-                doc.setTextColor(30, 41, 59);
-                const lines = doc.splitTextToSize(String(val), pageWidth - 65);
+                doc.setTextColor(30, 41, 59); // Slate-800
+                const lines = doc.splitTextToSize(String(val), pageWidth - 70);
                 doc.text(lines, 55, y);
                 y += Math.max(lines.length * 4, 5) + 1;
             };
 
-            // ── Header ──
-            doc.setFillColor(30, 64, 175);
-            doc.rect(0, 0, pageWidth, 40, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(15);
+            // ── Document Title ──
             doc.setFont('helvetica', 'bold');
-            doc.text('Prasad Physiotherapy Clinic', pageWidth / 2, 16, { align: 'center' });
-            doc.setFontSize(9);
+            doc.setFontSize(12);
+            doc.setTextColor(30, 41, 59);
+            doc.text('CLINICAL ASSESSMENT REPORT', pageWidth / 2, 50, { align: 'center' });
             doc.setFont('helvetica', 'normal');
-            doc.text(`Patient ID: #${String(assessment.id || 'NEW').padStart(4, '0')}`, pageWidth / 2, 23, { align: 'center' });
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'bold');
-            doc.text('CLINICAL ASSESSMENT REPORT', pageWidth / 2, 32, { align: 'center' });
-            y = 50;
+            doc.setFontSize(8.5);
+            doc.text(`Patient ID: #${String(assessment.id || 'NEW').padStart(4, '0')}`, pageWidth / 2, 55, { align: 'center' });
+            y = 65;
 
             // ── Patient Demographics ──
             addTitle('I. PATIENT IDENTIFICATION');
@@ -113,11 +131,11 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             // VAS Intensity Rendering
             const rawVas = Number(assessment.PainIntensity_VAS || 0);
             const displayVas = rawVas / 10;
-            if (y > 265) { doc.addPage(); y = 15; }
+            if (y > 250) { doc.addPage(); y = 50; }
             doc.setFontSize(8.5);
             doc.setFont('helvetica', 'bold');
-            doc.setTextColor(100, 116, 139);
-            doc.text('Pain Intensity (VAS):', 14, y);
+            doc.setTextColor(71, 85, 105);
+            doc.text('Pain Intensity (VAS):', 15, y);
             const barX = 55;
             const barW = 100;
             const barH = 4;
@@ -154,14 +172,53 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             addField('Record Date', formatDate(assessment.Date));
             addField('Record Timestamp', formatDateTime(assessment.Timestamp));
 
-            // ── Page Numbers & Footer ──
+            // ── Page Header & Footer Post-Processing ──
             const totalPages = doc.getNumberOfPages();
             for (let i = 1; i <= totalPages; i++) {
                 doc.setPage(i);
+                
+                // Draw Header Left
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(13);
+                doc.setTextColor(30, 41, 59); // slate-800
+                doc.text('Dr. C. BABUPRASAD PT.,', 15, 20);
+                
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(7.5);
+                doc.setTextColor(71, 85, 105); // slate-600
+                doc.text('PHYSIOTHERAPIST & MANUAL THERAPIST', 15, 24.5);
+                
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8.5);
+                doc.setTextColor(100, 116, 139); // slate-500
+                doc.text('Regd No: L13530', 15, 28.5);
+                
+                // Draw Header Logo (Right)
+                if (logoImg) {
+                    doc.addImage(logoImg, 'PNG', pageWidth - 15 - 28, 11, 28, 28);
+                }
+                
+                // Divider Line
+                doc.setDrawColor(226, 232, 240); // slate-200
+                doc.setLineWidth(0.4);
+                doc.line(15, 42, pageWidth - 15, 42);
+                
+                // Draw Footer
+                doc.setDrawColor(226, 232, 240);
+                doc.setLineWidth(0.4);
+                doc.line(15, 271, pageWidth - 15, 271);
+                
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(7.5);
+                doc.setTextColor(71, 85, 105);
+                doc.text('Gurupatham Hospital, Subramaniya Nagar, Opp to Thirubeni Cars, Junction, Salem - 5', pageWidth / 2, 276, { align: 'center' });
+                doc.text('Email: cbprasad08@gmail.com   |   Phone: 98422 44441', pageWidth / 2, 280, { align: 'center' });
+                
+                // Page Numbers & Confidentiality
                 doc.setFontSize(7);
                 doc.setTextColor(148, 163, 184);
-                doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, 288, { align: 'center' });
-                doc.text('This document is a confidential medical record and should be treated as such.', pageWidth / 2, 292, { align: 'center' });
+                doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, 287, { align: 'center' });
+                doc.text('This document is a confidential medical record and should be treated as such.', pageWidth / 2, 291, { align: 'center' });
             }
 
             const fileName = `PhysioReport_${(assessment.PatientName || 'Patient').replace(/\s+/g, '_')}_${assessment.Date || 'NoDate'}.pdf`;
