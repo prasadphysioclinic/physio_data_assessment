@@ -9,6 +9,10 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Physio Assessment",
   description: "Physiotherapy Assessment Software",
+  icons: {
+    icon: "/logo.jpg",
+    apple: "/logo.jpg",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -60,6 +64,24 @@ export default function RootLayout({
         <main className="container mx-auto py-4 sm:py-8 px-3 sm:px-4 max-w-7xl">
           {children}
         </main>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    function(registration) {
+                      console.log('Service Worker registered with scope:', registration.scope);
+                    },
+                    function(err) {
+                      console.log('Service Worker registration failed:', err);
+                    }
+                  );
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
