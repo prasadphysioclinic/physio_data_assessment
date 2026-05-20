@@ -79,12 +79,12 @@ const drawFooter = (doc: any, pageWidth: number, i: number, totalPages: number) 
 
 // Helper to draw the E-Signature & Stamp Area
 const drawSignatureAndStamp = (doc: any, sigImg: HTMLImageElement | null, pageWidth: number, y: number): number => {
-    // Only wrap page if we exceed y = 220, as signature + stamp now takes ~45mm height
-    if (y > 220) {
+    // Pin signature block to the bottom of the page (starts at y = 210, right above footer)
+    if (y > 210) {
         doc.addPage();
-        y = 50;
+        y = 210;
     } else {
-        y += 10;
+        y = 210;
     }
 
     const rightXCenter = pageWidth - 20 - 22.5; // Center of the signature area on the right
@@ -249,13 +249,6 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
                     y = 50; 
                 }
                 const val = value || 'N/A';
-                
-                // Draw a subtle divider line before the field if it's not the start of a page
-                if (y > 55) {
-                    doc.setDrawColor(241, 245, 249); // slate-100
-                    doc.setLineWidth(0.2);
-                    doc.line(15, y - 2.5, pageWidth - 15, y - 2.5);
-                }
 
                 doc.setFontSize(8);
                 doc.setFont('helvetica', 'bold');
@@ -474,12 +467,6 @@ export function DownloadSummaryButton({ assessment, className }: ReportProps) {
                     y = 50; 
                 }
                 const val = value || 'N/A';
-                
-                if (y > 55) {
-                    doc.setDrawColor(241, 245, 249);
-                    doc.setLineWidth(0.2);
-                    doc.line(15, y - 2.5, pageWidth - 15, y - 2.5);
-                }
 
                 doc.setFontSize(8);
                 doc.setFont('helvetica', 'bold');
