@@ -73,24 +73,15 @@ const drawFooter = (doc: any, pageWidth: number, i: number, totalPages: number) 
 
 // Helper to draw the E-Signature & Stamp Area
 const drawSignatureAndStamp = (doc: any, sigImg: HTMLImageElement | null, pageWidth: number, y: number): number => {
-    // Only wrap page if we are very close to the footer to maximize keeping signatures on the last page
-    if (y > 230) {
+    // Only wrap page if we exceed y = 220, as signature + stamp now takes ~45mm height
+    if (y > 220) {
         doc.addPage();
         y = 50;
     } else {
         y += 10;
     }
 
-    // Draw Stamp as royal blue text on the left (clean vector-like stamp imprint)
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor(26, 54, 153); // Royal Blue stamp color
-    doc.text('Dr.C.Babuprasad.PT.,', 20, y + 4);
-    
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    doc.text('Physiotherapist', 20, y + 9);
-    doc.text('Reg No:L13530', 20, y + 14);
+    const rightXCenter = pageWidth - 20 - 22.5; // Center of the signature area on the right
 
     // Draw Signature on the right
     if (sigImg) {
@@ -107,13 +98,101 @@ const drawSignatureAndStamp = (doc: any, sigImg: HTMLImageElement | null, pageWi
     doc.setFont('times', 'bold');
     doc.setFontSize(9.5);
     doc.setTextColor(30, 41, 59);
-    doc.text('Dr. C. Babuprasad', pageWidth - 20 - 22.5, y + 26, { align: 'center' });
+    doc.text('Dr. C. Babuprasad', rightXCenter, y + 26, { align: 'center' });
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(115, 115, 115);
-    doc.text('Authorized Signature', pageWidth - 20 - 22.5, y + 30, { align: 'center' });
+    doc.text('Authorized Signature', rightXCenter, y + 30, { align: 'center' });
+
+    // Draw Stamp as royal blue text centered on the right directly below signature
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(26, 54, 153); // Royal Blue stamp color
+    doc.text('Dr.C.Babuprasad.PT.,', rightXCenter, y + 37, { align: 'center' });
     
-    return y + 35;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.text('Physiotherapist', rightXCenter, y + 41, { align: 'center' });
+    doc.text('Reg No:L13530', rightXCenter, y + 45, { align: 'center' });
+    
+    return y + 50;
+};
+
+// Helper to render demographics box in standard report
+const drawDemographicsGrid = (doc: any, assessment: any, yStart: number, pageWidth: number): number => {
+    let y = yStart;
+    
+    // Draw a subtle border container with light background
+    doc.setFillColor(250, 250, 250); // grey-50 background
+    doc.setDrawColor(226, 232, 240); // slate-200 border
+    doc.setLineWidth(0.3);
+    doc.rect(15, y, pageWidth - 30, 48, 'FD');
+    
+    // Column boundaries
+    const col1X = 20;
+    const col2X = 110;
+    
+    const drawGridItem = (label: string, value: string | undefined | null, x: number, gridY: number) => {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.setTextColor(100, 116, 139); // slate-500
+        doc.text(label.toUpperCase(), x, gridY);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(30, 41, 59); // slate-800
+        doc.text(value || 'N/A', x, gridY + 4);
+    };
+    
+    // Row 1
+    drawGridItem('Patient Name', assessment.PatientName, col1X, y + 6);
+    drawGridItem('Clinical Date', formatDate(assessment.Date), col2X, y + 6);
+    
+    // Row 2
+    drawGridItem('Age / Gender', `${assessment.Age || 'N/A'} / ${assessment.Sex || 'N/A'}`, col1X, y + 16);
+    drawGridItem('Primary Contact', assessment.PhoneNumber, col2X, y + 16);
+    
+    // Row 3
+    drawGridItem('Occupation', assessment.Occupation, col1X, y + 26);
+    drawGridItem('Physique (H/W)', `${assessment.Height || '-'} / ${assessment.Weight || '-'}`, col2X, y + 26);
+    
+    // Row 4
+    drawGridItem('Clinical Vitals', `BP: ${assessment.BloodPressure || 'N/A'} | DM: ${assessment.DiabeticMellitus || 'N/A'}`, col1X, y + 36);
+    drawGridItem('Sleep & Cycle', `Sleep: ${assessment.SleepingHistory || 'N/A'} | Cycle: ${assessment.MenstruationHistory || 'N/A'}`, col2X, y + 36);
+
+    return y + 54;
+};
+
+// Helper to render demographics box in summary report
+const drawSummaryDemographicsGrid = (doc: any, assessment: any, yStart: number, pageWidth: number): number => {
+    let y = yStart;
+    
+    doc.setFillColor(250, 250, 250);
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.3);
+    doc.rect(15, y, pageWidth - 30, 26, 'FD');
+    
+    const col1X = 20;
+    const col2X = 110;
+    
+    const drawGridItem = (label: string, value: string | undefined | null, x: number, gridY: number) => {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.setTextColor(100, 116, 139);
+        doc.text(label.toUpperCase(), x, gridY);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(30, 41, 59);
+        doc.text(value || 'N/A', x, gridY + 4);
+    };
+    
+    drawGridItem('Patient Name', assessment.PatientName, col1X, y + 6);
+    drawGridItem('Clinical Date', formatDate(assessment.Date), col2X, y + 6);
+    drawGridItem('Age / Gender', `${assessment.Age || 'N/A'} / ${assessment.Sex || 'N/A'}`, col1X, y + 16);
+    drawGridItem('Occupation', assessment.Occupation, col2X, y + 16);
+
+    return y + 32;
 };
 
 // ── 1. Full Assessment Report Button ──
@@ -139,19 +218,23 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             } catch (e) { console.error("Signature error:", e); }
 
             const addTitle = (text: string) => {
-                if (y > 250) { 
+                if (y > 240) { 
                     doc.addPage(); 
                     y = 50; 
                 }
+                // Section header accent bar on the left
+                doc.setFillColor(30, 58, 138); // Blue-800
+                doc.rect(15, y - 4.5, 3, 6.5, 'F');
+
                 doc.setFontSize(10.5);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(30, 58, 138); // Blue-800
-                doc.text(text, 15, y);
+                doc.text(text, 20, y);
                 y += 2;
-                doc.setDrawColor(219, 234, 254); // Blue-100
+                doc.setDrawColor(226, 232, 240); // slate-200
                 doc.setLineWidth(0.4);
                 doc.line(15, y, pageWidth - 15, y);
-                y += 6;
+                y += 7;
             };
 
             const addField = (label: string, value: string | undefined | null) => {
@@ -160,15 +243,25 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
                     y = 50; 
                 }
                 const val = value || 'N/A';
-                doc.setFontSize(8.5);
+                
+                // Draw a subtle divider line before the field if it's not the start of a page
+                if (y > 55) {
+                    doc.setDrawColor(241, 245, 249); // slate-100
+                    doc.setLineWidth(0.2);
+                    doc.line(15, y - 2.5, pageWidth - 15, y - 2.5);
+                }
+
+                doc.setFontSize(8);
                 doc.setFont('helvetica', 'bold');
-                doc.setTextColor(71, 85, 105); // Slate-600
-                doc.text(`${label}:`, 15, y);
+                doc.setTextColor(100, 116, 139); // slate-500
+                doc.text(`${label.toUpperCase()}`, 15, y);
+                
                 doc.setFont('helvetica', 'normal');
-                doc.setTextColor(30, 41, 59); // Slate-800
+                doc.setFontSize(9);
+                doc.setTextColor(30, 41, 59); // slate-800
                 const lines = doc.splitTextToSize(String(val), pageWidth - 70);
                 doc.text(lines, 55, y);
-                y += Math.max(lines.length * 4, 5) + 1;
+                y += Math.max(lines.length * 4.2, 6) + 1.5;
             };
 
             // ── Document Title ──
@@ -183,16 +276,8 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
 
             // ── Patient Demographics ──
             addTitle('I. PATIENT IDENTIFICATION');
-            addField('Patient Name', assessment.PatientName);
-            addField('Age / Gender', `${assessment.Age || 'N/A'} / ${assessment.Sex || 'N/A'}`);
-            addField('Occupation', assessment.Occupation);
-            addField('Primary Contact', assessment.PhoneNumber);
-            addField('Clinical Date', formatDate(assessment.Date));
-            addField('Physique (H/W)', `${assessment.Height || '-'} / ${assessment.Weight || '-'}`);
-            addField('Clinical Vitals', `BP: ${assessment.BloodPressure || 'N/A'} | DM: ${assessment.DiabeticMellitus || 'N/A'}`);
-            addField('Habits & Lifestyle', assessment.DietHabit);
-            addField('Sleep & Cycle', `Sleep: ${assessment.SleepingHistory || 'N/A'} | Cycle: ${assessment.MenstruationHistory || 'N/A'}`);
-            y += 4;
+            y = drawDemographicsGrid(doc, assessment, y, pageWidth);
+            y += 8;
 
             // ── History & Complaint ──
             addTitle('II. CLINICAL HISTORY');
@@ -231,25 +316,32 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             const rawVas = Number(assessment.PainIntensity_VAS || 0);
             const displayVas = rawVas / 10;
             if (y > 250) { doc.addPage(); y = 50; }
-            doc.setFontSize(8.5);
+            
+            if (y > 55) {
+                doc.setDrawColor(241, 245, 249);
+                doc.setLineWidth(0.2);
+                doc.line(15, y - 2.5, pageWidth - 15, y - 2.5);
+            }
+            doc.setFontSize(8);
             doc.setFont('helvetica', 'bold');
-            doc.setTextColor(71, 85, 105);
-            doc.text('Pain Intensity (VAS):', 15, y);
+            doc.setTextColor(100, 116, 139);
+            doc.text('PAIN INTENSITY (VAS)', 15, y);
             const barX = 55;
             const barW = 100;
-            const barH = 4;
+            const barH = 5;
             doc.setFillColor(241, 245, 249);
-            doc.rect(barX, y - 3, barW, barH, 'F');
+            doc.rect(barX, y - 3.5, barW, barH, 'F');
             const filledW = (Math.min(displayVas, 10) / 10) * barW;
             const r = displayVas <= 3 ? 34 : displayVas <= 6 ? 234 : 220;
             const g = displayVas <= 3 ? 197 : displayVas <= 6 ? 179 : 38;
             const b = displayVas <= 3 ? 94 : displayVas <= 6 ? 8 : 38;
             doc.setFillColor(r, g, b);
-            doc.rect(barX, y - 3, filledW, barH, 'F');
+            doc.rect(barX, y - 3.5, filledW, barH, 'F');
             doc.setTextColor(30, 41, 59);
             doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9);
             doc.text(`${displayVas}/10`, barX + barW + 5, y);
-            y += 10;
+            y += 12;
 
             // ── Plan & Diagnosis ──
             addTitle('V. DIAGNOSIS & INTERVENTION');
@@ -336,19 +428,22 @@ export function DownloadSummaryButton({ assessment, className }: ReportProps) {
             } catch (e) { console.error("Signature error:", e); }
 
             const addTitle = (text: string) => {
-                if (y > 250) { 
+                if (y > 240) { 
                     doc.addPage(); 
                     y = 50; 
                 }
+                doc.setFillColor(30, 58, 138); // Blue-800
+                doc.rect(15, y - 4.5, 3, 6.5, 'F');
+
                 doc.setFontSize(10.5);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(30, 58, 138); // Blue-800
-                doc.text(text, 15, y);
+                doc.text(text, 20, y);
                 y += 2;
-                doc.setDrawColor(219, 234, 254); // Blue-100
+                doc.setDrawColor(226, 232, 240); // slate-200
                 doc.setLineWidth(0.4);
                 doc.line(15, y, pageWidth - 15, y);
-                y += 6;
+                y += 7;
             };
 
             const addField = (label: string, value: string | undefined | null) => {
@@ -357,15 +452,24 @@ export function DownloadSummaryButton({ assessment, className }: ReportProps) {
                     y = 50; 
                 }
                 const val = value || 'N/A';
-                doc.setFontSize(8.5);
+                
+                if (y > 55) {
+                    doc.setDrawColor(241, 245, 249);
+                    doc.setLineWidth(0.2);
+                    doc.line(15, y - 2.5, pageWidth - 15, y - 2.5);
+                }
+
+                doc.setFontSize(8);
                 doc.setFont('helvetica', 'bold');
-                doc.setTextColor(71, 85, 105); // Slate-600
-                doc.text(`${label}:`, 15, y);
+                doc.setTextColor(100, 116, 139);
+                doc.text(`${label.toUpperCase()}`, 15, y);
+                
                 doc.setFont('helvetica', 'normal');
-                doc.setTextColor(30, 41, 59); // Slate-800
+                doc.setFontSize(9);
+                doc.setTextColor(30, 41, 59);
                 const lines = doc.splitTextToSize(String(val), pageWidth - 70);
                 doc.text(lines, 55, y);
-                y += Math.max(lines.length * 4, 5) + 1;
+                y += Math.max(lines.length * 4.2, 6) + 1.5;
             };
 
             // ── Document Title ──
@@ -380,14 +484,14 @@ export function DownloadSummaryButton({ assessment, className }: ReportProps) {
 
             // ── Patient Identification ──
             addTitle('PATIENT IDENTIFICATION');
-            addField('Patient Name', assessment.PatientName);
-            addField('Age / Gender', `${assessment.Age || 'N/A'} / ${assessment.Sex || 'N/A'}`);
-            addField('Occupation', assessment.Occupation);
-            y += 4;
+            y = drawSummaryDemographicsGrid(doc, assessment, y, pageWidth);
+            y += 8;
 
             // ── Session Summary & Clinical Note ──
             addTitle('CLINICAL SUMMARY');
             addField('Chief Complaint', assessment.ChiefComplaint);
+            addField('Diagnosis', assessment.Diagnosis);
+            addField('Treatment', assessment.TreatmentPlan);
             addField('Session Notes & Summary', assessment.DailyNote);
             y += 4;
 
