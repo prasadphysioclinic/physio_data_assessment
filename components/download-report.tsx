@@ -23,11 +23,17 @@ const loadImage = (src: string): Promise<HTMLImageElement> => {
 
 // Helper to draw the letterhead header on each page
 const drawHeader = (doc: any, logoImg: HTMLImageElement | null, pageWidth: number) => {
-    // Dr. C. BABUPRASAD PT., on a single line in serif Times-Bold font
+    // Dr. C. BABUPRASAD in serif Times-Bold font size 13
     doc.setFont('times', 'bold');
     doc.setFontSize(13);
     doc.setTextColor(40, 40, 40); // Dark grey
-    doc.text('Dr. C. BABUPRASAD PT.,', 15, 21);
+    doc.text('Dr. C. BABUPRASAD', 15, 21);
+    
+    // Measure width and render PT., in a smaller font size (9.5)
+    const nameWidth = doc.getTextWidth('Dr. C. BABUPRASAD');
+    doc.setFont('times', 'bold');
+    doc.setFontSize(9.5);
+    doc.text(' PT.,', 15 + nameWidth, 21);
     
     // Subtitle in helvetica bold
     doc.setFont('helvetica', 'bold');
@@ -259,8 +265,8 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(9);
                 doc.setTextColor(30, 41, 59); // slate-800
-                const lines = doc.splitTextToSize(String(val), pageWidth - 70);
-                doc.text(lines, 55, y);
+                const lines = doc.splitTextToSize(String(val), pageWidth - 80);
+                doc.text(lines, 65, y);
                 y += Math.max(lines.length * 4.2, 6) + 1.5;
             };
 
@@ -366,10 +372,26 @@ export function DownloadReportButton({ assessment, className }: ReportProps) {
             // ── E-Signature & Stamp ──
             y = drawSignatureAndStamp(doc, sigImg, pageWidth, y);
 
-            // ── Post-Process Headers and Footers ──
+            // ── Post-Process Headers, Footers, and Watermarks ──
             const totalPages = doc.getNumberOfPages();
             for (let i = 1; i <= totalPages; i++) {
                 doc.setPage(i);
+                
+                // Draw background watermark centered with low opacity (letterhead style)
+                if (logoImg) {
+                    try {
+                        const GStateClass = (doc as any).GState;
+                        if (GStateClass) {
+                            doc.saveGraphicsState();
+                            doc.setGState(new GStateClass({ opacity: 0.05 }));
+                            doc.addImage(logoImg, 'PNG', (pageWidth - 90) / 2, (297 - 90) / 2, 90, 90);
+                            doc.restoreGraphicsState();
+                        }
+                    } catch (err) {
+                        console.error("Watermark rendering error:", err);
+                    }
+                }
+
                 drawHeader(doc, logoImg, pageWidth);
                 drawFooter(doc, pageWidth, i, totalPages);
             }
@@ -467,8 +489,8 @@ export function DownloadSummaryButton({ assessment, className }: ReportProps) {
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(9);
                 doc.setTextColor(30, 41, 59);
-                const lines = doc.splitTextToSize(String(val), pageWidth - 70);
-                doc.text(lines, 55, y);
+                const lines = doc.splitTextToSize(String(val), pageWidth - 80);
+                doc.text(lines, 65, y);
                 y += Math.max(lines.length * 4.2, 6) + 1.5;
             };
 
@@ -498,10 +520,26 @@ export function DownloadSummaryButton({ assessment, className }: ReportProps) {
             // ── E-Signature & Stamp ──
             y = drawSignatureAndStamp(doc, sigImg, pageWidth, y);
 
-            // ── Post-Process Headers and Footers ──
+            // ── Post-Process Headers, Footers, and Watermarks ──
             const totalPages = doc.getNumberOfPages();
             for (let i = 1; i <= totalPages; i++) {
                 doc.setPage(i);
+                
+                // Draw background watermark centered with low opacity (letterhead style)
+                if (logoImg) {
+                    try {
+                        const GStateClass = (doc as any).GState;
+                        if (GStateClass) {
+                            doc.saveGraphicsState();
+                            doc.setGState(new GStateClass({ opacity: 0.05 }));
+                            doc.addImage(logoImg, 'PNG', (pageWidth - 90) / 2, (297 - 90) / 2, 90, 90);
+                            doc.restoreGraphicsState();
+                        }
+                    } catch (err) {
+                        console.error("Watermark rendering error:", err);
+                    }
+                }
+
                 drawHeader(doc, logoImg, pageWidth);
                 drawFooter(doc, pageWidth, i, totalPages);
             }
