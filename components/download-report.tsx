@@ -79,28 +79,34 @@ const drawFooter = (doc: any, pageWidth: number, i: number, totalPages: number) 
 
 // Helper to draw the E-Signature & Stamp Area
 const drawSignatureAndStamp = (doc: any, sigImg: HTMLImageElement | null, pageWidth: number, y: number): number => {
-    // Pin stamp block to the bottom of the page (starts at y = 225, right above footer)
-    if (y > 225) {
+    // Pin stamp block to the bottom of the page (starts at y = 215, right above footer)
+    if (y > 215) {
         doc.addPage();
-        y = 225;
+        y = 215;
     } else {
-        y = 225;
+        y = 215;
     }
 
     const rightXCenter = pageWidth - 20 - 22.5; // Center of the authorization block on the right
 
-    // Draw Stamp as royal blue text centered on the right directly (no signature/line/authorized text)
+    // Draw Signature image above the stamp (no line, name, or authorization text)
+    if (sigImg) {
+        // Width 35, Height 22
+        doc.addImage(sigImg, 'PNG', pageWidth - 20 - 35, y - 2, 35, 22);
+    }
+
+    // Draw Stamp as royal blue text centered on the right directly below signature
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(26, 54, 153); // Royal Blue stamp color
-    doc.text('Dr.C.Babuprasad.PT.,', rightXCenter, y + 10, { align: 'center' });
+    doc.text('Dr.C.Babuprasad.PT.,', rightXCenter, y + 25, { align: 'center' });
     
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
-    doc.text('Physiotherapist', rightXCenter, y + 14, { align: 'center' });
-    doc.text('Reg No:L13530', rightXCenter, y + 18, { align: 'center' });
+    doc.text('Physiotherapist', rightXCenter, y + 29, { align: 'center' });
+    doc.text('Reg No:L13530', rightXCenter, y + 33, { align: 'center' });
     
-    return y + 25;
+    return y + 40;
 };
 
 // Helper to render demographics box in standard report
