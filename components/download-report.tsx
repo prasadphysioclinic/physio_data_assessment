@@ -67,7 +67,7 @@ const drawFooter = (doc: any, pageWidth: number, i: number, totalPages: number) 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(115, 115, 115);
-    doc.text('Gurupatham Hospital, Subramaniya Nagar, Opp to Thirubeni Cars, Junction, Salem - 5', pageWidth / 2, 276, { align: 'center' });
+    doc.text('Gurupatham Hospital, Subramaniya Nagar, Opp to Thiruveni Cars, Junction, Salem - 5', pageWidth / 2, 276, { align: 'center' });
     doc.text('Email: cbprasad08@gmail.com   |   Phone: 98422 44441', pageWidth / 2, 280, { align: 'center' });
     
     // Page Numbers & Confidentiality
