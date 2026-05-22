@@ -79,49 +79,28 @@ const drawFooter = (doc: any, pageWidth: number, i: number, totalPages: number) 
 
 // Helper to draw the E-Signature & Stamp Area
 const drawSignatureAndStamp = (doc: any, sigImg: HTMLImageElement | null, pageWidth: number, y: number): number => {
-    // Pin signature block to the bottom of the page (starts at y = 210, right above footer)
-    if (y > 210) {
+    // Pin stamp block to the bottom of the page (starts at y = 225, right above footer)
+    if (y > 225) {
         doc.addPage();
-        y = 210;
+        y = 225;
     } else {
-        y = 210;
+        y = 225;
     }
 
-    const rightXCenter = pageWidth - 20 - 22.5; // Center of the signature area on the right
+    const rightXCenter = pageWidth - 20 - 22.5; // Center of the authorization block on the right
 
-    // Draw Signature on the right
-    if (sigImg) {
-        // Width 35, Height 22 (maintaining ratio)
-        doc.addImage(sigImg, 'PNG', pageWidth - 20 - 35, y - 2, 35, 22);
-    }
-
-    // Signature Line
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.4);
-    doc.line(pageWidth - 20 - 45, y + 21, pageWidth - 20, y + 21);
-
-    // Authorized Signature Text
-    doc.setFont('times', 'bold');
-    doc.setFontSize(9.5);
-    doc.setTextColor(30, 41, 59);
-    doc.text('Dr. C. Babuprasad', rightXCenter, y + 26, { align: 'center' });
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(115, 115, 115);
-    doc.text('Authorized Signature', rightXCenter, y + 30, { align: 'center' });
-
-    // Draw Stamp as royal blue text centered on the right directly below signature
+    // Draw Stamp as royal blue text centered on the right directly (no signature/line/authorized text)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(26, 54, 153); // Royal Blue stamp color
-    doc.text('Dr.C.Babuprasad.PT.,', rightXCenter, y + 37, { align: 'center' });
+    doc.text('Dr.C.Babuprasad.PT.,', rightXCenter, y + 10, { align: 'center' });
     
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
-    doc.text('Physiotherapist', rightXCenter, y + 41, { align: 'center' });
-    doc.text('Reg No:L13530', rightXCenter, y + 45, { align: 'center' });
+    doc.text('Physiotherapist', rightXCenter, y + 14, { align: 'center' });
+    doc.text('Reg No:L13530', rightXCenter, y + 18, { align: 'center' });
     
-    return y + 50;
+    return y + 25;
 };
 
 // Helper to render demographics box in standard report
@@ -498,7 +477,6 @@ export function DownloadSummaryButton({ assessment, className }: ReportProps) {
 
             // ── Session Summary & Clinical Note ──
             addTitle('CLINICAL SUMMARY');
-            addField('Chief Complaint', assessment.ChiefComplaint);
             addField('Diagnosis', assessment.Diagnosis);
             addField('Treatment', assessment.TreatmentPlan);
             addField('Session Notes & Summary', assessment.DailyNote);
